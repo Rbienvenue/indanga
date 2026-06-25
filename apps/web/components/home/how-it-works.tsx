@@ -56,9 +56,7 @@ export function HowItWorks() {
               </div>
 
               {/* Content */}
-              <h3 className="text-base font-semibold text-foreground">
-                {item.title}
-              </h3>
+              <h3 className="text-base font-semibold text-foreground">{item.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {item.description}
               </p>

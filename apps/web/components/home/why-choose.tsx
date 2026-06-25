@@ -46,9 +46,7 @@ export function WhyChoose() {
                 <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                   <feature.icon className="size-7" />
                 </div>
-                <h3 className="text-base font-semibold text-foreground">
-                  {feature.title}
-                </h3>
+                <h3 className="text-base font-semibold text-foreground">{feature.title}</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {feature.description}
                 </p>

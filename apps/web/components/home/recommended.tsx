@@ -115,9 +115,7 @@ export function Recommended() {
 
               <CardContent className="p-4">
                 {/* Title */}
-                <h3 className="text-base font-semibold text-foreground">
-                  {listing.title}
-                </h3>
+                <h3 className="text-base font-semibold text-foreground">{listing.title}</h3>
                 {/* Location */}
                 <div className="mt-1.5 flex items-center gap-1 text-sm text-muted-foreground">
                   <MapPin className="size-3.5" />
@@ -128,23 +126,15 @@ export function Recommended() {
                 {listing.rating && (
                   <div className="mt-2 flex items-center gap-1.5">
                     <Star className="size-3.5 fill-primary text-primary" />
-                    <span className="text-sm font-medium text-foreground">
-                      {listing.rating}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      ({listing.ratingCount})
-                    </span>
+                    <span className="text-sm font-medium text-foreground">{listing.rating}</span>
+                    <span className="text-xs text-muted-foreground">({listing.ratingCount})</span>
                   </div>
                 )}
 
                 {/* Price */}
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-lg font-bold text-primary">
-                    {listing.price}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    {listing.priceUnit}
-                  </span>
+                  <span className="text-lg font-bold text-primary">{listing.price}</span>
+                  <span className="text-sm text-muted-foreground">{listing.priceUnit}</span>
                 </div>
 
                 {/* Features */}

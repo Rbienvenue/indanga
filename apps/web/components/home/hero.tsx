@@ -28,25 +28,16 @@ export function Hero() {
             <br />
             Endless Possibilities.
             <br />
-            Your Journey,{" "}
-            <span className="italic text-primary">Simplified.</span>
+            Your Journey, <span className="italic text-primary">Simplified.</span>
           </h1>
 
           <p className="mt-6 max-w-lg text-base leading-relaxed text-white/65 sm:text-lg md:text-xl">
-            Find your next home, book the perfect hotel, or rent a car — all in
-            one place.
+            Find your next home, book the perfect hotel, or rent a car — all in one place.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Button
-              size="lg"
-            >
-              Explore Now
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-            >
+            <Button size="lg">Explore Now</Button>
+            <Button variant="outline" size="lg">
               <Play className="mr-1.5 size-4 fill-current" />
               How It Works
             </Button>

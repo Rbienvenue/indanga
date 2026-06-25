@@ -68,9 +68,7 @@ export function Categories() {
               <div className="absolute inset-x-0 bottom-0 p-5">
                 <h3 className="text-xl font-bold text-white">{cat.title}</h3>
                 <p className="mt-1 text-sm text-white/70">{cat.subtitle}</p>
-                <p className="mt-2 text-xs font-medium text-white/70">
-                  {cat.count}
-                </p>
+                <p className="mt-2 text-xs font-medium text-white/70">{cat.count}</p>
               </div>
             </Link>
           ))}

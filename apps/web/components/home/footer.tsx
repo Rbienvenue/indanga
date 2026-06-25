@@ -32,16 +32,13 @@ export function Footer() {
           <div className="sm:col-span-2 lg:col-span-1">
             <span className="text-xl font-bold text-primary">INDANGA</span>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-background/50">
-              Your all-in-one platform for homes, hotels, and car rentals in
-              Rwanda.
+              Your all-in-one platform for homes, hotels, and car rentals in Rwanda.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-background">
-              Quick Links
-            </h3>
+            <h3 className="mb-4 text-sm font-semibold text-background">Quick Links</h3>
             <ul className="flex flex-col gap-2.5">
               {quickLinks.map((link) => (
                 <li key={link.label}>
@@ -58,9 +55,7 @@ export function Footer() {
 
           {/* Support */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-background">
-              Support
-            </h3>
+            <h3 className="mb-4 text-sm font-semibold text-background">Support</h3>
             <ul className="flex flex-col gap-2.5">
               {supportLinks.map((link) => (
                 <li key={link.label}>
@@ -77,9 +72,7 @@ export function Footer() {
 
           {/* Follow Us */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-background">
-              Follow Us
-            </h3>
+            <h3 className="mb-4 text-sm font-semibold text-background">Follow Us</h3>
             <div className="flex items-center gap-3">
               {/*{socialLinks.map((social) => (
                 <Link

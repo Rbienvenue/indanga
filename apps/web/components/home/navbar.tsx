@@ -4,12 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 
 const navLinks = [
   { label: "Home", href: "#" },
@@ -31,17 +26,13 @@ export function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${
-        scrolled
-          ? "bg-foreground/95 shadow-lg shadow-black/20 backdrop-blur-xl"
-          : "bg-transparent"
+        scrolled ? "bg-foreground/95 shadow-lg shadow-black/20 backdrop-blur-xl" : "bg-transparent"
       }`}
     >
       <nav className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="text-xl font-bold tracking-tight text-white">
-            INDANGA
-          </span>
+          <span className="text-xl font-bold tracking-tight text-white">INDANGA</span>
         </Link>
 
         {/* Desktop Nav Links */}
@@ -68,11 +59,7 @@ export function Navbar() {
         <div className="md:hidden">
           <Sheet>
             <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white/80 hover:text-primary"
-              >
+              <Button variant="ghost" size="icon" className="text-white/80 hover:text-primary">
                 <Menu className="size-5" />
                 <span className="sr-only">Open menu</span>
               </Button>
@@ -90,10 +77,7 @@ export function Navbar() {
                   </Link>
                 ))}
                 <div className="mt-4 px-4">
-                  <Button
-                    size="lg"
-                    className="w-full font-semibold"
-                  >
+                  <Button size="lg" className="w-full font-semibold">
                     Login / Sign Up
                   </Button>
                 </div>

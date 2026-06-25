@@ -21,11 +21,7 @@ export function CTASection() {
               Join thousands of happy customers who trust INDANGA.
             </p>
             <div className="mt-8">
-              <Button
-                size="lg"
-              >
-                Get Started
-              </Button>
+              <Button size="lg">Get Started</Button>
             </div>
           </div>
         </div>
