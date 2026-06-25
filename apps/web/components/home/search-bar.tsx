@@ -6,27 +6,24 @@ import { Home, Building2, Car, MapPin, ChevronDown, Search } from "lucide-react"
 
 export function SearchBar() {
   return (
-    <section className="relative z-10 -mt-8 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl rounded-2xl border border-border bg-card p-6 shadow-xl shadow-foreground/5">
+    <section className="relative z-20 -mt-10 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl rounded-md border border-border/50 bg-card/95 p-6 shadow-2xl shadow-black/10 backdrop-blur-sm">
         <Tabs defaultValue="homes" className="gap-4">
-          <TabsList className="mx-auto w-fit rounded-full bg-muted p-1">
+          <TabsList className="mx-auto w-fit bg-muted p-1">
             <TabsTrigger
               value="homes"
-              className="rounded-full px-5 py-2 data-active:bg-primary data-active:text-primary-foreground"
             >
               <Home className="mr-1.5 size-4" />
               Homes
             </TabsTrigger>
             <TabsTrigger
               value="hotels"
-              className="rounded-full px-5 py-2 data-active:bg-primary data-active:text-primary-foreground"
             >
               <Building2 className="mr-1.5 size-4" />
               Hotels
             </TabsTrigger>
             <TabsTrigger
               value="cars"
-              className="rounded-full px-5 py-2 data-active:bg-primary data-active:text-primary-foreground"
             >
               <Car className="mr-1.5 size-4" />
               Cars

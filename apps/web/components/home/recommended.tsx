@@ -1,9 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   ArrowRight,
   ArrowLeft,
@@ -45,7 +42,6 @@ const listings = [
     priceUnit: "/ night",
     rating: "4.8",
     ratingCount: "1020",
-    badge: "Featured",
     badgeColor: "bg-blue-500 text-white",
     features: [
       { icon: Wifi, label: "Free Wi-Fi" },
@@ -59,7 +55,6 @@ const listings = [
     location: "Kigali, Rwanda",
     price: "$45",
     priceUnit: "/ day",
-    badge: "Featured",
     badgeColor: "bg-emerald-500 text-white",
     features: [
       { icon: Gauge, label: "Automatic" },
@@ -106,13 +101,13 @@ export function Recommended() {
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
-                {/* Badge */}
-                <Badge
-                  className={`absolute top-3 left-3 ${listing.badgeColor} rounded-md px-2.5 py-1 text-xs font-semibold shadow-md`}
-                >
-                  {listing.badge}
-                </Badge>
-                {/* Favorite */}
+                {listing.badge && (
+                  <Badge
+                    className={`absolute top-3 left-3  ${listing.badgeColor} rounded-md px-2.5 py-1 text-xs font-semibold shadow-md`}
+                  >
+                    {listing.badge}
+                  </Badge>
+                )}
                 <button className="absolute top-3 right-3 inline-flex size-8 items-center justify-center rounded-full bg-white/90 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-red-500">
                   <Heart className="size-4" />
                 </button>

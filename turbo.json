@@ -13,6 +13,34 @@
       "cache": false,
       "dependsOn": ["^dev"],
       "persistent": true
-    }
+    },
+    "typecheck": {
+        "dependsOn": ["^typecheck"],
+        "outputs": []
+      },
+      "lint": {
+        "dependsOn": ["^lint"],
+        "outputs": []
+      },
+      "lint:fix": {
+        "cache": false,
+        "outputs": []
+      },
+      "fmt": {
+        "cache": false,
+        "outputs": []
+      },
+      "fmt:check": {
+        "outputs": []
+      },
+      "db:generate": {
+        "cache": false
+      },
+      "db:migrate": {
+        "cache": false
+      },
+      "db:studio": {
+        "cache": false
+      },
   }
 }

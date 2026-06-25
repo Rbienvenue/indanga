@@ -5,7 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "oxlint . --type-aware --type-check",
+    "lint:fix": "oxlint . --fix --type-aware --type-check",
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt . --check",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules dist .turbo"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

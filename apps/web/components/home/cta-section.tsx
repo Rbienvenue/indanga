@@ -23,7 +23,6 @@ export function CTASection() {
             <div className="mt-8">
               <Button
                 size="lg"
-                className="rounded-full px-10 py-3 text-base font-semibold shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
               >
                 Get Started
               </Button>

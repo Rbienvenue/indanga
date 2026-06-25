@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -30,16 +30,16 @@ export function Navbar() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${
         scrolled
-          ? "bg-foreground/95 shadow-lg backdrop-blur-md"
-          : "bg-foreground"
+          ? "bg-foreground/95 shadow-lg shadow-black/20 backdrop-blur-xl"
+          : "bg-transparent"
       }`}
     >
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <nav className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight text-primary">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span className="text-xl font-bold tracking-tight text-white">
             INDANGA
           </span>
         </Link>
@@ -50,7 +50,7 @@ export function Navbar() {
             <Link
               key={link.label}
               href={link.href}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-background/70 transition-colors hover:text-primary"
+              className="rounded-lg px-3.5 py-2 text-sm font-medium text-white/75 transition-colors hover:text-primary"
             >
               {link.label}
             </Link>
@@ -59,7 +59,7 @@ export function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden items-center gap-3 md:flex">
-          <Button size="lg" className="rounded-full px-6 font-semibold">
+          <Button size="lg" className="px-6 font-semibold">
             Login / Sign Up
           </Button>
         </div>
@@ -71,7 +71,7 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-background/80 hover:text-primary"
+                className="text-white/80 hover:text-primary"
               >
                 <Menu className="size-5" />
                 <span className="sr-only">Open menu</span>
@@ -92,7 +92,7 @@ export function Navbar() {
                 <div className="mt-4 px-4">
                   <Button
                     size="lg"
-                    className="w-full rounded-full font-semibold"
+                    className="w-full font-semibold"
                   >
                     Login / Sign Up
                   </Button>

@@ -14,7 +14,6 @@
   "scripts": {
     "build": "tsdown",
     "lint": "oxlint . --type-aware --type-check",
-    "lint:github": "oxlint --format=github",
     "lint:fix": "oxlint . --fix --type-aware --type-check",
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt . --check",
@@ -23,7 +22,6 @@
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:pull": "prisma db  pull",
     "db:studio": "prisma studio"
   },
   "dependencies": {

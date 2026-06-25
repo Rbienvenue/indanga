@@ -8,13 +8,14 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "tsc --noEmit && nest build",
-    "fmt": "biome check --write --linter-enabled=false",
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt . --check",
     "dev": "nest start --watch",
     "start": "NODE_ENV=production node dist/main.js",
-    "lint": "biome lint",
-    "lint:fix": "biome lint --write",
+    "lint": "oxlint . --type-aware --type-check",
+    "lint:fix": "oxlint . --fix --type-aware --type-check",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist node_modules"
+    "clean": "rm -rf node_modules dist .turbo"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
