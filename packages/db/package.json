@@ -1,0 +1,40 @@
+{
+  "name": "@indanga/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "lint": "oxlint . --type-aware --type-check",
+    "lint:github": "oxlint --format=github",
+    "lint:fix": "oxlint . --fix --type-aware --type-check",
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt . --check",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules dist .turbo",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:pull": "prisma db  pull",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.8.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/pg": "^8.20.0",
+    "prisma": "^7.8.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5"
+  }
+}

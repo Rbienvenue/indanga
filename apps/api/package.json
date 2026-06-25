@@ -1,0 +1,52 @@
+{
+  "name": "api",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "tsc --noEmit && nest build",
+    "fmt": "biome check --write --linter-enabled=false",
+    "dev": "nest start --watch",
+    "start": "NODE_ENV=production node dist/main.js",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --write",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/mapped-types": "^2.1.0",
+    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.1.10",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/throttler": "^6.5.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jspdf-autotable": "^5.0.7",
+    "morgan": "^1.10.0",
+    "nanoid": "^5.1.15",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "ua-parser-js": "^2.0.7",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@swc/cli": "^0.7.9",
+    "@swc/core": "^1.15.1",
+    "@types/express": "^5.0.0",
+    "oxfmt": "^0.33.0",
+    "oxlint": "^1.48.0",
+    "ts-loader": "^9.5.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5"
+  }
+}
