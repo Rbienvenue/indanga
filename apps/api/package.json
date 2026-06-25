@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
-    "@nestjs/core": "^11.0.1",
+    "@nestjs/core": "^11.1.27",
     "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-socket.io": "^11.1.10",
@@ -40,8 +40,8 @@
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
-    "@swc/cli": "^0.7.9",
-    "@swc/core": "^1.15.1",
+    "@swc/cli": "^0.7.10",
+    "@swc/core": "^1.15.43",
     "@types/express": "^5.0.0",
     "oxfmt": "^0.33.0",
     "oxlint": "^1.48.0",
