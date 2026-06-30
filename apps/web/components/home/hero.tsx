@@ -7,7 +7,7 @@ export function Hero() {
     <section className="relative min-h-screen w-full overflow-hidden">
       {/* Background Cover Image */}
       <Image
-        src="/hero-bg.png"
+        src="/hero.jpg"
         alt="Kigali cityscape at sunset"
         fill
         className="object-cover"
