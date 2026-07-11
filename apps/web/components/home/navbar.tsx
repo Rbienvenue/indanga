@@ -26,7 +26,7 @@ export function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${
-        scrolled ? "bg-foreground/95 shadow-lg shadow-black/20 backdrop-blur-xl" : "bg-transparent"
+        scrolled ? "bg-[#0A0A2C]/95 shadow-lg shadow-black/20 backdrop-blur-xl" : "bg-transparent"
       }`}
     >
       <nav className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -51,7 +51,7 @@ export function Navbar() {
         {/* Desktop CTA */}
         <div className="hidden items-center gap-3 md:flex">
           <Button size="lg" className="px-6 font-semibold">
-            Login / Sign Up
+            Sign Up
           </Button>
         </div>
 
@@ -64,7 +64,7 @@ export function Navbar() {
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 bg-foreground">
+            <SheetContent side="right" className="w-72 bg-[#0A0A2C]">
               <SheetTitle className="text-primary">INDANGA</SheetTitle>
               <div className="flex flex-col gap-1 pt-4">
                 {navLinks.map((link) => (
@@ -77,8 +77,8 @@ export function Navbar() {
                   </Link>
                 ))}
                 <div className="mt-4 px-4">
-                  <Button size="lg" className="w-full font-semibold">
-                    Login / Sign Up
+                  <Button size="lg" className="w-full font-semibold cursor-pointer">
+                    Sign Up
                   </Button>
                 </div>
               </div>

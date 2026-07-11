@@ -48,7 +48,7 @@ export function HowItWorks() {
               )}
 
               {/* Step Number Circle */}
-              <div className="relative mx-auto mb-5 inline-flex size-20 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-lg group-hover:shadow-primary/20">
+              <div className="relative mx-auto mb-5 inline-flex size-20 items-center justify-center rounded-2xl bg-[#0A0A2C]/10 text-primary transition-all duration-300 group-hover:bg-[#0A0A2C] group-hover:text-primary-foreground group-hover:shadow-lg group-hover:shadow-primary/20">
                 <item.icon className="size-8" />
                 <span className="absolute -top-1.5 -right-1.5 inline-flex size-7 items-center justify-center rounded-full bg-foreground text-xs font-bold text-background">
                   {item.step}

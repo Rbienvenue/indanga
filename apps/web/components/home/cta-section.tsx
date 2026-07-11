@@ -4,13 +4,13 @@ export function CTASection() {
   return (
     <section className="px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="relative overflow-hidden rounded-3xl bg-foreground px-6 py-16 text-center sm:px-12 sm:py-20">
+        <div className="relative overflow-hidden rounded-3xl bg-[#0A0A2C] px-6 py-16 text-center sm:px-12 sm:py-20">
           {/* Decorative elements */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <div className="size-64 rounded-full bg-primary/10 blur-3xl" />
           </div>
           <div className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4">
-            <div className="size-48 rounded-full bg-primary/5 blur-2xl" />
+            <div className="size-48 rounded-full bg-[#0A0A2C] blur-2xl" />
           </div>
 
           <div className="relative z-10">

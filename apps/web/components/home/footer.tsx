@@ -25,7 +25,7 @@ const supportLinks = [
 
 export function Footer() {
   return (
-    <footer id="contact" className="bg-foreground">
+    <footer id="contact" className="bg-[#0A0A2C]">
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
