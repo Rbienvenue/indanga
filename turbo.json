@@ -31,7 +31,7 @@
     "db:generate": {
       "cache": false
     },
-    "db:migrate": {
+    "db:push": {
       "cache": false
     },
     "db:studio": {

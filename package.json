@@ -9,7 +9,7 @@
     "fmt": "turbo run fmt",
     "build": "turbo run build",
     "db:generate": "turbo run db:generate",
-    "db:migrate": "turbo run db:migrate ",
+    "db:push": "turbo run db:push ",
     "db:studio": "turbo run db:studio"
   },
   "keywords": [],

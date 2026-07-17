@@ -11,24 +11,140 @@ model User {
   id               String      @id
   name             String
   email            String
+  password         String?
+  phone            String?
+  role             UserRole    @default(TENANT)
+  nationalId       String?
   emailVerified    Boolean     @default(false)
   image            String?
   status           Status      @default(ACTIVE)
-  role             String      @default("USER")
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   twoFactorEnabled Boolean?    @default(false)
   sessions         Session[]
   accounts         Account[]
   twofactors       TwoFactor[]
+  houses           House[]     @relation("HouseOwner")
+  bookings         Booking[]   @relation("BookingClient")
+  reviews          Review[]    @relation("ReviewTenant")
+  favorites        Favorite[]
 
   @@unique([email])
+  @@unique([phone])
+  @@unique([nationalId])
   @@map("user")
+}
+
+enum UserRole {
+  TENANT
+  LANDLORD
+  ADMIN
 }
 
 enum Status {
   ACTIVE
   INACTIVE
+}
+
+enum HouseStatus {
+  BOOKED
+  AVAILABLE
+}
+
+enum PaymentStatus {
+  PENDING
+  FAILED
+  COMPLETED
+}
+
+model House {
+  id           String      @id @default(cuid())
+  name         String
+  province     String?
+  city         String?
+  district     String
+  sector       String
+  village      String
+  cell         String
+  address      String?
+  price        Int
+  media        String[]
+  ownerId      String
+  description  String
+  propertyType String
+  bedrooms     Int
+  bathrooms    Int
+  status       HouseStatus @default(AVAILABLE)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  owner        User        @relation("HouseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  bookings     Booking[]
+  reviews      Review[]
+  favorites    Favorite[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([province, city, district, sector])
+  @@map("house")
+}
+
+model Booking {
+  id        String    @id @default(cuid())
+  clientId  String
+  houseId   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  client    User      @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)
+  house     House     @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  payments  Payment[]
+
+  @@index([clientId])
+  @@index([houseId])
+  @@map("booking")
+}
+
+model Payment {
+  id                   String        @id @default(cuid())
+  amount               Decimal       @db.Decimal(12, 2)
+  bookingId            String
+  status               PaymentStatus @default(PENDING)
+  method               String
+  transactionReference String        @unique
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  booking              Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@map("payment")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  houseId   String
+  tenantId  String
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  house     House    @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  tenant    User     @relation("ReviewTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([houseId])
+  @@index([tenantId])
+  @@map("review")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  houseId   String
+  userId    String
+  createdAt DateTime @default(now())
+  house     House    @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([houseId, userId])
+  @@index([userId])
+  @@map("favorite")
 }
 
 model Session {
