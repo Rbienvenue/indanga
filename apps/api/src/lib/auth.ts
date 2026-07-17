@@ -8,7 +8,7 @@ export const auth=betterAuth({
     secret: env.BETTER_AUTH_SECRET,
     debug: true,
     baseURL: env.BETTER_AUTH_URL,
-    basePath: "/api/auth",
+    basePath: "/v1/auth",
     trustedOrigins: [
       env.BETTER_AUTH_URL,
       env.FRONTEND_URL

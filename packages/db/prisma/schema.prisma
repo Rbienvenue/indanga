@@ -60,12 +60,7 @@ enum PaymentStatus {
 model House {
   id           String      @id @default(cuid())
   name         String
-  province     String?
-  city         String?
-  district     String
-  sector       String
-  village      String
-  cell         String
+  location     String
   address      String?
   price        Int
   media        String[]
@@ -83,8 +78,6 @@ model House {
   favorites    Favorite[]
 
   @@index([ownerId])
-  @@index([status])
-  @@index([province, city, district, sector])
   @@map("house")
 }
 

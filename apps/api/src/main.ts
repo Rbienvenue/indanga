@@ -1,10 +1,19 @@
+import "dotenv/config";
+import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
+import { env } from "./lib/env";
 
 async function main() {
   const app = await NestFactory.create(AppModule, {
-    bodyParser:false
+    bodyParser: false,
   });
-  await app.listen(process.env.PORT ?? 5000);
+  app.setGlobalPrefix("/v1")
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+    }),
+  );
+  await app.listen(env.PORT);
 }
 main();
