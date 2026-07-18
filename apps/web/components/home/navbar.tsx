@@ -50,8 +50,11 @@ export function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden items-center gap-3 md:flex">
-          <Button size="lg" className="px-6 font-semibold">
-            Sign Up
+          <Button size="lg" variant={"outline"} className="px-6 font-semibold" asChild>
+            <Link href="/auth/login">Login</Link>
+          </Button>
+          <Button size="lg"  className="px-6 font-semibold" asChild>
+            <Link href="/auth/signup">Sign Up</Link>
           </Button>
         </div>
 
@@ -77,8 +80,12 @@ export function Navbar() {
                   </Link>
                 ))}
                 <div className="mt-4 px-4">
-                  <Button size="lg" className="w-full font-semibold cursor-pointer">
-                    Sign Up
+
+                  <Button asChild size="lg" variant={"outline"} className="w-full font-semibold cursor-pointer">
+                    <Link href="/auth/login">Login</Link>
+                  </Button>
+                  <Button asChild size="lg" className="w-full font-semibold cursor-pointer">
+                    <Link href="/auth/signup">Sign Up</Link>
                   </Button>
                 </div>
               </div>

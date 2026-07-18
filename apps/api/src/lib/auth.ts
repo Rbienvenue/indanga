@@ -23,7 +23,6 @@ export const auth=betterAuth({
           required: true,
           input: true,
         },
-        // Stored on the user row, accepted at sign-up, never returned in session/user payloads.
         nationalId: {
           type: "string",
           required: true,

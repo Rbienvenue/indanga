@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import Providers from "@/components/providers";
+import { getSession } from "@/lib/auth-client";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -22,11 +24,15 @@ export const metadata: Metadata = {
     "Find your next home, book the perfect hotel, or rent a car — all in one place. INDANGA simplifies your journey.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { data: session } = await getSession({
+    fetchOptions: { headers: await headers() },
+  });
+
   return (
     <html
       lang="en"
@@ -40,10 +46,7 @@ export default function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col">
-        <Providers>
-
-          {children}
-        </Providers>
+        <Providers session={session ?? null}>{children}</Providers>
       </body>
     </html>
   );
