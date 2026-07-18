@@ -1,7 +1,13 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
-import { CreateHouseDto, FilterDto, UpdateHouseDto } from "./dtos";
+import {
+  CreateHouseDto,
+  CreateReviewDto,
+  FavoriteFilterDto,
+  FilterDto,
+  UpdateHouseDto,
+} from "./dtos";
 
 @Injectable()
 export class HousesService {
@@ -83,7 +89,8 @@ export class HousesService {
       province !== undefined ||
       district !== undefined ||
       sector !== undefined ||
-      cell !== undefined||village
+      cell !== undefined ||
+      village !== undefined
     ) {
       updateData.location = `${province}, ${district}, ${sector}, ${cell} ${village}`;
     }
@@ -99,5 +106,88 @@ export class HousesService {
     await this.getHouseById(id);
     const house = await this.db.house.delete({ where: { id } });
     return house;
+  }
+
+  async toggleFavorite(userId: string, houseId: string) {
+    const house=await this.getHouseById(houseId);
+
+    const where = {
+      houseId_userId: {
+        houseId:house.id,
+        userId,
+      },
+    };
+    const favorite = await this.db.favorite.findUnique({ where });
+
+    if (favorite) {
+      await this.db.favorite.delete({ where });
+
+      return {
+        isFavorite: false,
+        favorite: null,
+      };
+    }
+
+    const createdFavorite = await this.db.favorite.create({
+      data: {
+        houseId: house.id,
+        userId,
+      },
+      include: {
+        house: true,
+      },
+    });
+
+    return {
+      isFavorite: true,
+      favorite: createdFavorite,
+    };
+  }
+
+  async getFavorites(userId: string, data: FavoriteFilterDto) {
+    const { page = 1, limit = 20 } = data;
+    const where: Prisma.FavoriteWhereInput = { userId };
+
+    const [favorites, total] = await Promise.all([
+      this.db.favorite.findMany({
+        where,
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          house: true,
+        },
+      }),
+      this.db.favorite.count({ where }),
+    ]);
+
+    return {
+      data: favorites,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async leaveReview(userId: string, houseId: string, data: CreateReviewDto) {
+    const house = await this.getHouseById(houseId);
+
+    return this.db.review.create({
+      data: {
+        houseId:house.id,
+        tenantId: userId,
+        rating: data.rating,
+        comment: data.comment,
+      },
+      include: {
+        house: true,
+        tenant: true,
+      },
+    });
   }
 }

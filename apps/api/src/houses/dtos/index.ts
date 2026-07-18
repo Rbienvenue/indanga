@@ -81,3 +81,24 @@ export class FilterDto {
   @IsEnum(HouseStatus)
   status?: HouseStatus;
 }
+
+export class CreateReviewDto {
+  @Type(() => Number)
+  @IsInt()
+  rating: number;
+
+  @IsString()
+  comment: string;
+}
+
+export class FavoriteFilterDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  limit?: number;
+}
