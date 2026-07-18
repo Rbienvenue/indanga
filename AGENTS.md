@@ -11,6 +11,7 @@ This is indanga a platform to allow tentants to search,book houses.
 
 ### Keep consistency with existing implementation
   * your implementation should match existing implementation no new patterns should be introduced wihout clarfying you a user
+  * Patterns to be used useQuery datafetching,useMutation all methods expect GET,shadcn and reacthookform,zod for forms.
   
 ### Plan Mode First
 * Use plan mode for any non-trivial task
