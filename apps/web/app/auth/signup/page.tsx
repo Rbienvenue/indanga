@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -26,6 +25,7 @@ export default function SignupPage() {
     defaultValues: {
       name: "",
       phoneNumber: "",
+      nationalId: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -34,6 +34,7 @@ export default function SignupPage() {
 
   const onSubmit = async ({ confirmPassword: _, ...values }: SignupValues) => {
     form.clearErrors("root");
+    // nationalId is accepted by Better Auth (input: true) but never returned in session (returned: false).
     const { error } = await signUp.email(values);
 
     if (error) {
@@ -50,11 +51,19 @@ export default function SignupPage() {
   const isPending = form.formState.isSubmitting;
 
   return (
-    <AuthShell
-      eyebrow="Join INDANGA"
-      title="Create your account"
-      description="Save favorites, contact hosts, and keep every booking in one place."
-    >
+    <>
+      <div className="mb-8">
+        <p className="mb-3 text-xs font-bold tracking-[0.2em] text-[#8a6300] uppercase">
+          Join INDANGA
+        </p>
+        <h1 className="text-3xl font-semibold tracking-tight text-[#090a2d] sm:text-4xl">
+          Create your account
+        </h1>
+        <p className="mt-3 max-w-sm leading-6 text-muted-foreground">
+          Save favorites, contact hosts, and keep every booking in one place.
+        </p>
+      </div>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -99,26 +108,48 @@ export default function SignupPage() {
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    className="h-11 bg-white px-3"
-                    disabled={isPending}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      className="h-11 bg-white px-3"
+                      disabled={isPending}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="nationalId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>National ID</FormLabel>
+                  <FormControl>
+                    <Input
+                      inputMode="numeric"
+                      autoComplete="off"
+                      placeholder="16-digit ID number"
+                      className="h-11 bg-white px-3"
+                      disabled={isPending}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
@@ -189,6 +220,6 @@ export default function SignupPage() {
           Sign in
         </Link>
       </p>
-    </AuthShell>
+    </>
   );
 }

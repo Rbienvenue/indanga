@@ -2,16 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
-type AuthShellProps = {
-  children: React.ReactNode;
-  eyebrow: string;
-  title: string;
-  description: string;
-};
-
 const benefits = ["Verified property listings", "Simple, secure bookings", "Homes across Rwanda"];
 
-export function AuthShell({ children, eyebrow, title, description }: AuthShellProps) {
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-screen bg-[#f7f5ef] lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(32rem,0.95fr)]">
       <section className="relative hidden min-h-screen overflow-hidden bg-[#090a2d] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
@@ -69,15 +62,6 @@ export function AuthShell({ children, eyebrow, title, description }: AuthShellPr
         </div>
 
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-12">
-          <div className="mb-8">
-            <p className="mb-3 text-xs font-bold tracking-[0.2em] text-[#8a6300] uppercase">
-              {eyebrow}
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-[#090a2d] sm:text-4xl">
-              {title}
-            </h1>
-            <p className="mt-3 max-w-sm leading-6 text-muted-foreground">{description}</p>
-          </div>
           {children}
         </div>
       </section>

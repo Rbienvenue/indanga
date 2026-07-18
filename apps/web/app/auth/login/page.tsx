@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -42,11 +41,19 @@ export default function LoginPage() {
   const isPending = form.formState.isSubmitting;
 
   return (
-    <AuthShell
-      eyebrow="Welcome back"
-      title="Sign in to continue"
-      description="Access your saved homes, bookings, and conversations."
-    >
+    <>
+      <div className="mb-8">
+        <p className="mb-3 text-xs font-bold tracking-[0.2em] text-[#8a6300] uppercase">
+          Welcome back
+        </p>
+        <h1 className="text-3xl font-semibold tracking-tight text-[#090a2d] sm:text-4xl">
+          Sign in to continue
+        </h1>
+        <p className="mt-3 max-w-sm leading-6 text-muted-foreground">
+          Access your saved homes, bookings, and conversations.
+        </p>
+      </div>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
           <FormField
@@ -120,6 +127,6 @@ export default function LoginPage() {
           Create an account
         </Link>
       </p>
-    </AuthShell>
+    </>
   );
 }

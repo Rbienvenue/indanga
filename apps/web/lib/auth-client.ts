@@ -12,6 +12,12 @@ export const authClient = createAuthClient({
           required: true,
           input: true,
         },
+        nationalId: {
+          type: "string",
+          required: true,
+          input: true,
+          returned: false,
+        },
       },
     }),
   ],

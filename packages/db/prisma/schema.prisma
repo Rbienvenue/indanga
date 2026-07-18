@@ -12,7 +12,7 @@ model User {
   name             String
   email            String
   password         String?
-  phone            String?
+  phoneNumber            String?
   role             UserRole    @default(TENANT)
   nationalId       String?
   emailVerified    Boolean     @default(false)
@@ -30,7 +30,7 @@ model User {
   favorites        Favorite[]
 
   @@unique([email])
-  @@unique([phone])
+  @@unique([phoneNumber])
   @@unique([nationalId])
   @@map("user")
 }
