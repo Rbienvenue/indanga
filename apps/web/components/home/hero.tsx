@@ -36,8 +36,10 @@ export function Hero() {
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Button size="lg">Explore Now</Button>
-            <Button variant="outline" size="lg">
+            <Button size="lg" variant="default" className="px-6 font-semibold">
+              Explore Now
+            </Button>
+            <Button variant="outline" size="lg" className="px-6 font-semibold">
               <Play className="mr-1.5 size-4 fill-current" />
               How It Works
             </Button>

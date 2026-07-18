@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
+import { RolePicker } from "@/components/auth/role-picker";
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -24,6 +26,7 @@ export default function SignupPage() {
     resolver: zodResolver(signupSchema),
     defaultValues: {
       name: "",
+      role: "tenant",
       phoneNumber: "",
       nationalId: "",
       email: "",
@@ -66,6 +69,23 @@ export default function SignupPage() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Select your role</FormLabel>
+                <FormDescription>
+                  Choose whether you want to rent or list properties.
+                </FormDescription>
+                <FormControl>
+                  <RolePicker value={field.value} onValueChange={field.onChange} disabled={isPending} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}

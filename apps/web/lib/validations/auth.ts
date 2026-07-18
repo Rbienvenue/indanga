@@ -8,6 +8,7 @@ export const loginSchema = z.object({
 export const signupSchema = z
   .object({
     name: z.string().trim().min(2, "Enter your full name"),
+    role: z.enum(["tenant", "landlord"], { message: "Select a role" }),
     phoneNumber: z
       .string()
       .trim()
