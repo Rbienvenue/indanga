@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import type { Session } from "@/lib/auth-client";
 import { SessionProvider } from "./session-provider";
+import { ThemeProvider } from "next-themes";
 
 export default function Providers({
   children,
@@ -16,7 +17,13 @@ export default function Providers({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionProvider session={session}>{children}</SessionProvider>
+      <ThemeProvider
+        attribute={"class"}
+        defaultTheme="system"
+        disableTransitionOnChange
+      >
+        <SessionProvider session={session}>{children}</SessionProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

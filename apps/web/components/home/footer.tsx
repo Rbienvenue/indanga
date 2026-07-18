@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import ThemeToggle from "@/components/providers/theme-toggle";
 // import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
 
 const quickLinks = [
@@ -95,9 +96,12 @@ export function Footer() {
           <p className="text-xs text-background/40">
             &copy; {new Date().getFullYear()} INDANGA. All rights reserved.
           </p>
-          <p className="text-xs text-background/40">
-            Made with <span className="text-red-400">❤</span> in Rwanda
-          </p>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <p className="text-xs text-background/40">
+              Made with <span className="text-red-400">❤</span> in Rwanda
+            </p>
+          </div>
         </div>
       </div>
     </footer>

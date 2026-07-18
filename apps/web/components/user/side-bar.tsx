@@ -23,6 +23,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut } from "@/lib/auth-client";
 import { useSession } from "@/components/providers/session-provider";
+import ThemeToggle from "@/components/providers/theme-toggle";
 
 const items = [
   {
@@ -76,9 +77,7 @@ export function AppSidebar() {
         </div>
         <div className="grid flex-1 text-left text-sm leading-tight">
           <span className="truncate font-semibold">INDANGA</span>
-          <span className="truncate text-xs">
-            {user?.email ?? "Hotels & Tours"}
-          </span>
+          <span className="truncate text-xs">{user?.email ?? "Hotels & Tours"}</span>
         </div>
       </SidebarMenuButton>
       <SidebarContent className="bg-[#0A0A2C]">
@@ -100,6 +99,10 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="bg-[#0A0A2C]">
+        <div className="flex items-center justify-between gap-3 px-2 py-1 group-data-[collapsible=icon]:hidden">
+          <span className="text-sm text-white/70">Appearance</span>
+          <ThemeToggle />
+        </div>
         <SidebarMenuButton size="lg" onClick={handleLogout}>
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-white text-red-600">
             <LucideLogOut />
