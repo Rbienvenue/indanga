@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -37,7 +36,6 @@ export default function SignupPage() {
 
   const onSubmit = async ({ confirmPassword: _, ...values }: SignupValues) => {
     form.clearErrors("root");
-    // nationalId is accepted by Better Auth (input: true) but never returned in session (returned: false).
     const { error } = await signUp.email(values);
 
     if (error) {
@@ -56,9 +54,6 @@ export default function SignupPage() {
   return (
     <>
       <div className="mb-8">
-        <p className="mb-3 text-xs font-bold tracking-[0.2em] text-[#8a6300] uppercase">
-          Join INDANGA
-        </p>
         <h1 className="text-3xl font-semibold tracking-tight text-[#090a2d] sm:text-4xl">
           Create your account
         </h1>
@@ -74,10 +69,7 @@ export default function SignupPage() {
             name="role"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Select your role</FormLabel>
-                <FormDescription>
-                  Choose whether you want to rent or list properties.
-                </FormDescription>
+                <FormLabel>Are you?</FormLabel>
                 <FormControl>
                   <RolePicker value={field.value} onValueChange={field.onChange} disabled={isPending} />
                 </FormControl>
@@ -154,12 +146,12 @@ export default function SignupPage() {
               name="nationalId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>National ID</FormLabel>
+                  <FormLabel>National ID/Passport</FormLabel>
                   <FormControl>
                     <Input
                       inputMode="numeric"
                       autoComplete="off"
-                      placeholder="16-digit ID number"
+                      placeholder="National ID/Passport"
                       className="h-11 bg-white px-3"
                       disabled={isPending}
                       {...field}
@@ -236,7 +228,7 @@ export default function SignupPage() {
 
       <p className="mt-7 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/auth/login" className="font-semibold text-[#6f5000] hover:underline">
+        <Link href="/auth/login" className="font-semibold hover:underline">
           Sign in
         </Link>
       </p>

@@ -2,22 +2,22 @@ import { Button } from "@/components/ui/button";
 
 export function CTASection() {
   return (
-    <section className="px-4 py-20 sm:px-6 lg:px-8">
+    <section className="px-4 py-20 sm:px-6 lg:px-8 border-t">
       <div className="mx-auto max-w-7xl">
-        <div className="relative overflow-hidden rounded-3xl bg-[#0A0A2C] px-6 py-16 text-center sm:px-12 sm:py-20">
+        <div className="relative overflow-hidden rounded-3xl px-6 py-16 text-center sm:px-12 sm:py-20">
           {/* Decorative elements */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="size-64 rounded-full bg-primary/10 blur-3xl" />
-          </div>
+          {/*<div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="size-64 rounded-full  blur-3xl" />
+          </div>*/}
           <div className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4">
-            <div className="size-48 rounded-full bg-[#0A0A2C] blur-2xl" />
+            <div className="size-48 rounded-full blur-2xl" />
           </div>
 
           <div className="relative z-10">
-            <h2 className="text-3xl font-bold tracking-tight text-background sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight  sm:text-4xl">
               Start Your Journey Today
             </h2>
-            <p className="mx-auto mt-4 max-w-md text-base text-background/60 sm:text-lg">
+            <p className="mx-auto mt-4 max-w-md text-base text-muted-foreground sm:text-lg">
               Join thousands of happy customers who trust INDANGA.
             </p>
             <div className="mt-8">

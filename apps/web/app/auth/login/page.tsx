@@ -43,9 +43,6 @@ export default function LoginPage() {
   return (
     <>
       <div className="mb-8">
-        <p className="mb-3 text-xs font-bold tracking-[0.2em] text-[#8a6300] uppercase">
-          Welcome back
-        </p>
         <h1 className="text-3xl font-semibold tracking-tight text-[#090a2d] sm:text-4xl">
           Sign in to continue
         </h1>
@@ -84,7 +81,9 @@ export default function LoginPage() {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>Password</FormLabel>
-                  <span className="text-xs text-muted-foreground">Minimum 5 characters</span>
+                  <Button asChild variant={"link"}>
+                    <Link href="/auth/forgot-password">Forgot password?</Link>
+                  </Button>
                 </div>
                 <FormControl>
                   <Input
@@ -123,7 +122,7 @@ export default function LoginPage() {
 
       <p className="mt-7 text-center text-sm text-muted-foreground">
         New to INDANGA?{" "}
-        <Link href="/auth/signup" className="font-semibold text-[#6f5000] hover:underline">
+        <Link href="/auth/signup" className="font-semibold hover:underline">
           Create an account
         </Link>
       </p>

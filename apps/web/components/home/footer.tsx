@@ -26,7 +26,7 @@ const supportLinks = [
 
 export function Footer() {
   return (
-    <footer id="contact" className="bg-[#0A0A2C]">
+    <footer id="contact" className="border-t ">
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
@@ -39,13 +39,13 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-background">Quick Links</h3>
+            <h3 className="mb-4 text-sm font-semibold">Quick Links</h3>
             <ul className="flex flex-col gap-2.5">
               {quickLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-background/50 transition-colors hover:text-primary"
+                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
                   >
                     {link.label}
                   </Link>
@@ -56,13 +56,13 @@ export function Footer() {
 
           {/* Support */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-background">Support</h3>
+            <h3 className="mb-4 text-sm font-semibold">Support</h3>
             <ul className="flex flex-col gap-2.5">
               {supportLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-background/50 transition-colors hover:text-primary"
+                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
                   >
                     {link.label}
                   </Link>
@@ -73,7 +73,7 @@ export function Footer() {
 
           {/* Follow Us */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-background">Follow Us</h3>
+            <h3 className="mb-4 text-sm font-semibold">Follow Us</h3>
             <div className="flex items-center gap-3">
               {/*{socialLinks.map((social) => (
                 <Link
@@ -93,12 +93,12 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <p className="text-xs text-background/40">
+          <p className="text-xs text-muted-foreground/40">
             &copy; {new Date().getFullYear()} INDANGA. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <p className="text-xs text-background/40">
+            <p className="text-xs text-muted-foreground/40">
               Made with <span className="text-red-400">❤</span> in Rwanda
             </p>
           </div>

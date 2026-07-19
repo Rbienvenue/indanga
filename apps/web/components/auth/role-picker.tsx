@@ -59,7 +59,7 @@ export function RolePicker({
     <RadioGroup
       value={selectedValue}
       onValueChange={handleChange}
-      className={cn("grid gap-3", className)}
+      className={cn("grid grid-cols-2 gap-3", className)}
       disabled={disabled}
     >
       {options.map((option) => {
@@ -70,7 +70,7 @@ export function RolePicker({
           <div
             key={option.value}
             className={cn(
-              "group relative rounded-2xl border p-4 transition-all duration-200",
+              "group relative rounded-2xl border py-3 px-3 transition-all duration-200",
               isActive
                 ? "border-primary bg-primary/10 shadow-[0_0_0_2px_hsl(var(--primary)/0.16)]"
                 : "border-border bg-background hover:border-primary/40 hover:bg-muted/40",
@@ -84,7 +84,7 @@ export function RolePicker({
                 aria-label={option.title}
               />
 
-              <div
+              {/*<div
                 className={cn(
                   "mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-all duration-200",
                   isActive
@@ -93,7 +93,7 @@ export function RolePicker({
                 )}
               >
                 <Icon className="h-5 w-5" />
-              </div>
+              </div>*/}
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
