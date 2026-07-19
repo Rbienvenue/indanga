@@ -2,37 +2,41 @@ import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { getSession } from "@/lib/auth-client";
-const protectedPaths = [
-  "/dashboard",
-  "/bookings",
-  "/settings"
-];
+
+const protectedPaths = ["/dashboard", "/bookings", "/settings"];
+
+function getCallbackUrl(request: NextRequest) {
+  const callbackUrl = request.nextUrl.searchParams.get("callbackUrl");
+
+  if (!callbackUrl?.startsWith("/") || callbackUrl.startsWith("//")) return null;
+
+  return new URL(callbackUrl, request.url);
+}
+
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
 
-    const session = await getSession({
-      fetchOptions: { headers: await headers() },
-    });
-   const user = session.data?.user;
-
+  const session = await getSession({
+    fetchOptions: { headers: await headers() },
+  });
+  const user = session.data?.user;
 
   const isAuthenticated = !!user;
 
   const isProtectedRoute = protectedPaths.some((path) => pathname.startsWith(path));
   if (isProtectedRoute && !isAuthenticated) {
     const loginUrl = new URL("/auth/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
+    loginUrl.searchParams.set("callbackUrl", `${pathname}${search}`);
     return NextResponse.redirect(loginUrl);
   }
 
-  const isAuthRoute = pathname.startsWith("/auth")|| pathname ==="/";
+  const isAuthRoute = pathname.startsWith("/auth") || pathname === "/";
   if (isAuthRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(getCallbackUrl(request) ?? new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();
-
-  }
+}
 
 export const config = {
   matcher: [

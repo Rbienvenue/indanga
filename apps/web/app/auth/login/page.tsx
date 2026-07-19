@@ -34,7 +34,11 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+    const destination =
+      callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//") ? callbackUrl : "/dashboard";
+
+    router.push(destination);
     router.refresh();
   };
 

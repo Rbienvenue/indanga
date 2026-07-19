@@ -15,13 +15,13 @@ type RoleOption = {
 
 const defaultRoles: RoleOption[] = [
   {
-    value: "tenant",
+    value: "TENANT",
     title: "Tenant",
     description: "Looking for a house to rent",
     icon: Home,
   },
   {
-    value: "landlord",
+    value: "LANDLORD",
     title: "Landlord",
     description: "Want to list and manage properties",
     icon: Building2,
@@ -39,7 +39,7 @@ type RolePickerProps = {
 
 export function RolePicker({
   value,
-  defaultValue = "tenant",
+  defaultValue = "TENANT",
   onValueChange,
   options = defaultRoles,
   className,
@@ -101,9 +101,7 @@ export function RolePicker({
                   {isActive ? <CheckCircle2 className="h-4 w-4 text-primary" /> : null}
                 </div>
 
-                <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                  {option.description}
-                </p>
+                <p className="mt-1 text-sm leading-5 text-muted-foreground">{option.description}</p>
               </div>
             </label>
           </div>

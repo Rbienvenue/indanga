@@ -25,7 +25,7 @@ export default function SignupPage() {
     resolver: zodResolver(signupSchema),
     defaultValues: {
       name: "",
-      role: "tenant",
+      role: "TENANT",
       phoneNumber: "",
       nationalId: "",
       email: "",
@@ -71,7 +71,11 @@ export default function SignupPage() {
               <FormItem>
                 <FormLabel>Are you?</FormLabel>
                 <FormControl>
-                  <RolePicker value={field.value} onValueChange={field.onChange} disabled={isPending} />
+                  <RolePicker
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isPending}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

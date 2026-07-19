@@ -8,7 +8,6 @@ import type { PaginationResponse } from "@/@types";
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 import { fetcher } from "@/lib/fetcher";
 
-
 export function Recommended() {
   const { data, isLoading, isError } = useQuery<PaginationResponse<House>>({
     queryKey: ["houses", "recommended"],
@@ -62,6 +61,7 @@ export function Recommended() {
               <ProductCard
                 key={house.id}
                 id={house.id}
+                href={`/houses/${house.id}`}
                 name={house.name}
                 location={house.location}
                 price={house.price}

@@ -18,6 +18,11 @@ export const authClient = createAuthClient({
           input: true,
           returned: false,
         },
+        role: {
+          type: ["TENANT", "LANDLORD"],
+          required: true,
+          input: true,
+        },
       },
     }),
   ],
