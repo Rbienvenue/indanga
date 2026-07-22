@@ -5,6 +5,9 @@
   "description": "",
   "license": "UNLICENSED",
   "author": "",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "build": "tsc --noEmit && nest build",
     "fmt": "oxfmt .",
