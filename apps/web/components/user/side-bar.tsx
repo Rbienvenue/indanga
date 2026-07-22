@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { signOut } from "@/lib/auth-client";
 import { useSession } from "@/components/providers/session-provider";
 import ThemeToggle from "@/components/providers/theme-toggle";
+import Image from "next/image";
 
 const items = [
   {
@@ -33,27 +34,27 @@ const items = [
   },
   {
     title: "My Bookings",
-    url: "/bookings",
+    url: "dashboard/bookings",
     icon: Calendar,
   },
   {
     title: "My Favorites",
-    url: "/favorites",
+    url: "dashboard/favorites",
     icon: Heart,
   },
   {
     title: "Payments",
-    url: "/payments",
+    url: "dashboard/payments",
     icon: CreditCard,
   },
   {
     title: "Profile Settings",
-    url: "/profile",
+    url: "dashboard/profile",
     icon: User,
   },
   {
     title: "Support",
-    url: "/support",
+    url: "dashboard/support",
     icon: LifeBuoy,
   },
 ];
@@ -71,15 +72,20 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="bg-[#0A0A2C] text-white">
-      <SidebarMenuButton size="lg" className="bg-[#0A0A2C] rounded-none">
-        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          I
+      <div className="bg-[#0A0A2C] p-4 group-data-[collapsible=icon]:hidden">
+        <div className="mx-auto flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#0A0A2C] p-2 shadow-sm">
+          <Image
+            src="/logo.png"
+            alt="INDANGA"
+            width={90}
+            height={90}
+            className="h-full w-full rounded-full object-contain"
+          />
         </div>
-        <div className="grid flex-1 text-left text-sm leading-tight">
-          <span className="truncate font-semibold">INDANGA</span>
-          <span className="truncate text-xs">{user?.email ?? "Hotels & Tours"}</span>
-        </div>
-      </SidebarMenuButton>
+        <h2 className="mt-4 text-center text-2xl font-bold text-white">
+          MUGISHA
+        </h2>
+      </div>
       <SidebarContent className="bg-[#0A0A2C]">
         <SidebarGroup>
           <SidebarGroupContent>

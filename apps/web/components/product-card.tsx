@@ -48,11 +48,11 @@ export function ProductCard({
     <Card
       key={id}
       className={cn(
-        "group overflow-hidden border-border/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-foreground/5",
+        "group h-full w-full overflow-hidden border-border/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-foreground/5",
         className,
       )}
     >
-      <div className="relative aspect-[16/10] w-full overflow-hidden">
+      <div className="relative aspect-16/10 w-full overflow-hidden">
         <Image
           src={imageSrc}
           alt={name}
@@ -113,7 +113,7 @@ export function ProductCard({
   if (!href) return card;
 
   return (
-    <Link href={href} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl">
+    <Link href={href} className="block h-full w-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
       {card}
     </Link>
   );
@@ -123,7 +123,7 @@ export function ProductCard({
 export function ProductCardSkeleton() {
   return (
     <div className="overflow-hidden rounded-xl border border-border/50">
-      <Skeleton className="aspect-[16/10] w-full rounded-none" />
+      <Skeleton className="aspect-16/10 w-full rounded-none" />
       <div className="space-y-3 p-4">
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-4 w-1/2" />
