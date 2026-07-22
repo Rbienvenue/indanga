@@ -2,7 +2,6 @@
 This is indanga a platform to allow tentants to search,book houses.
 
 # Folder structure
-
 * apps/web: using nextjs,shadcn,tailwind,react query for data fetching.
 * apps/api: using nestjs
 * package/db: using prisma
