@@ -21,6 +21,7 @@ import {
   User,
   LifeBuoy,
   LogOut,
+  House,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -32,6 +33,7 @@ const items = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "My Bookings", href: "/dashboard/bookings", icon: Calendar },
   { title: "My Favorites", href: "/dashboard/favorites", icon: Heart },
+  { title: "Properties", href: "/dashboard/properties", icon: House },
   { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
   { title: "Profile Settings", href: "/dashboard/profile", icon: User },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },

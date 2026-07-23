@@ -33,12 +33,34 @@ export class HousesService {
   }
 
   async getHouses(data: FilterDto) {
-    const { search, ownerId, status, page = 1, limit = 20 } = data;
+    const {
+      search,
+      ownerId,
+      status,
+      location,
+      propertyType,
+      minPrice,
+      maxPrice,
+      page = 1,
+      limit = 20,
+    } = data;
     const where: Prisma.HouseWhereInput = {};
 
     if (search) where.name = { startsWith: search, mode: "insensitive" };
     if (ownerId) where.ownerId = ownerId;
     if (status) where.status = status;
+    if (location) {
+      where.location = { contains: location, mode: "insensitive" };
+    }
+    if (propertyType) {
+      where.propertyType = { equals: propertyType, mode: "insensitive" };
+    }
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.price = {
+        gte: minPrice,
+        lte: maxPrice,
+      };
+    }
 
     const [houses, total] = await Promise.all([
       this.db.house.findMany({

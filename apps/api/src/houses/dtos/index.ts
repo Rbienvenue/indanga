@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsInt,
   IsOptional,
+  IsPositive,
   IsString,
 } from "class-validator";
 
@@ -80,6 +81,26 @@ export class FilterDto {
   @IsOptional()
   @IsEnum(HouseStatus)
   status?: HouseStatus;
+
+  @IsOptional()
+  @IsString()
+  location?: string;
+
+  @IsOptional()
+  @IsString()
+  propertyType?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  minPrice?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  maxPrice?: number;
 }
 
 export class CreateReviewDto {
