@@ -51,13 +51,9 @@ export function AppSidebar() {
           <Image
             src="/logo.png"
             alt="Indanga"
-            width={32}
-            height={32}
-            className="hidden size-6 group-data-[collapsible=icon]:block"
+            width={54}
+            height={54}
           />
-          <span className="text-lg font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
-            Indanga
-          </span>
         </Link>
       </SidebarHeader>
       <SidebarContent>

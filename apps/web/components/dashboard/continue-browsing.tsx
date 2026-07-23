@@ -1,79 +1,26 @@
+"use client";
+
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { House } from "@indanga/db";
 
+import type { PaginationResponse } from "@/@types";
 import { Button } from "@/components/ui/button";
-import { ProductCard } from "../product-card";
-export const mockHouses = [
-    {
-        id: "1",
-        name: "Modern Apartment",
-        location: "Kacyiru, Kigali",
-        price: 250000,
-        media: [
-            "/image1.jpeg",
-        ],
-        bedrooms: 2,
-        bathrooms: 2,
-    },
-    {
-        id: "2",
-        name: "Luxury Villa",
-        location: "Nyarutarama, Kigali",
-        price: 850000,
-        media: [
-            "/image2.jpeg",
-        ],
-        bedrooms: 5,
-        bathrooms: 4,
-    },
-    {
-        id: "3",
-        name: "Cozy Studio",
-        location: "Kimihurura, Kigali",
-        price: 180000,
-        media: [
-            "/image3.jpeg",
-        ],
-        bedrooms: 1,
-        bathrooms: 1,
-    },
-    {
-        id: "4",
-        name: "Family Home",
-        location: "Remera, Kigali",
-        price: 450000,
-        media: [
-            "/image2.jpeg",
-        ],
-        bedrooms: 4,
-        bathrooms: 3,
-    },
-    {
-        id: "5",
-        name: "Green Villa",
-        location: "Kibagabaga, Kigali",
-        price: 600000,
-        media: [
-            "/image3.jpeg",
-        ],
-        bedrooms: 4,
-        bathrooms: 4,
-    },
-    {
-        id: "6",
-        name: "City Loft",
-        location: "Kiyovu, Kigali",
-        price: 320000,
-        media: [
-            "/image1.jpeg",
-        ],
-        bedrooms: 2,
-        bathrooms: 2,
-    },
-];
+import { ProductCard, ProductCardSkeleton } from "../product-card";
+import { fetcher } from "@/lib/fetcher";
 
 export function ContinueBrowsing() {
-    if (!mockHouses.length) return null;
+    const { data, isLoading, isError } = useQuery<PaginationResponse<House>>({
+        queryKey: ["houses", "continue-browsing"],
+        queryFn: () => fetcher("/houses?limit=6"),
+    });
+
+    const houses = data?.data ?? [];
+
+    if (isError) {
+        return null;
+    }
 
     return (
         <section className="w-full space-y-5">
@@ -96,22 +43,31 @@ export function ContinueBrowsing() {
                 </Button>
             </div>
 
-            <div className="grid w-full gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                {mockHouses.map((house) => (
-                    <ProductCard
-                        key={house.id}
-                        id={house.id}
-                        href={`/houses/${house.id}`}
-                        name={house.name}
-                        location={house.location}
-                        price={house.price}
-                        media={house.media}
-                        bedrooms={house.bedrooms}
-                        bathrooms={house.bathrooms}
-                        badge="Featured"
-                    />
-                ))}
-            </div>
+            {isLoading ? (
+                <div className="grid w-full gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                        <ProductCardSkeleton key={i} />
+                    ))}
+                </div>
+            ) : houses.length === 0 ? null : (
+                <div className="grid w-full gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                    {houses.map((house) => (
+                        <ProductCard
+                            key={house.id}
+                            id={house.id}
+                            href={`/houses/${house.id}`}
+                            name={house.name}
+                            location={house.location}
+                            price={house.price}
+                            media={house.media}
+                            bedrooms={house.bedrooms}
+                            bathrooms={house.bathrooms}
+                            badge="Featured"
+                          
+                        />
+                    ))}
+                </div>
+            )}
         </section>
     );
 }

@@ -1,10 +1,15 @@
+"use client";
+
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { Bath, BedDouble, Heart, MapPin } from "lucide-react";
 
+import type { ApiResponse } from "@/@types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { fetcher } from "@/lib/fetcher";
 import { cn } from "@/lib/utils";
 
 export type ProductCardProps = {
@@ -20,13 +25,12 @@ export type ProductCardProps = {
   href?: string;
   priceUnit?: string;
   className?: string;
-  onFavoriteClick?: () => void;
+  isFavorite?: boolean;
 };
 
 function formatPrice(price: number) {
   return `$${price.toLocaleString()}`;
 }
-
 
 export function ProductCard({
   id,
@@ -41,8 +45,20 @@ export function ProductCard({
   href,
   priceUnit = "/ month",
   className,
-  onFavoriteClick,
+  isFavorite = false,
 }: ProductCardProps) {
+  const queryClient = useQueryClient();
+  const favoriteMutation = useMutation({
+    mutationFn: () =>
+      fetcher<ApiResponse<{ isFavorite: boolean }>>(`/houses/${id}/favorites`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["houses", "favorites"] });
+      void queryClient.invalidateQueries({ queryKey: ["houses", id] });
+    },
+  });
+  const favoriteState = favoriteMutation.data?.data.isFavorite ?? isFavorite;
   const imageSrc = media?.[0] || "/image2.jpeg";
   const card = (
     <Card
@@ -72,15 +88,16 @@ export function ProductCard({
         )}
         <button
           type="button"
-          aria-label="Add to favorites"
+          aria-label={favoriteState ? "Remove from favorites" : "Add to favorites"}
+          disabled={favoriteMutation.isPending}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onFavoriteClick?.();
+            favoriteMutation.mutate();
           }}
-          className="absolute top-3 right-3 inline-flex size-8 items-center justify-center rounded-full bg-white/90 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-red-500"
+          className="absolute top-3 right-3 inline-flex size-8 items-center justify-center rounded-full bg-white/90 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <Heart className="size-4" />
+          <Heart className={cn("size-4", favoriteState && "fill-red-500 text-red-500")} />
         </button>
       </div>
 
@@ -113,12 +130,14 @@ export function ProductCard({
   if (!href) return card;
 
   return (
-    <Link href={href} className="block h-full w-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+    <Link
+      href={href}
+      className="block h-full w-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
       {card}
     </Link>
   );
 }
-
 
 export function ProductCardSkeleton() {
   return (

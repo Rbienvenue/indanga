@@ -3,8 +3,13 @@
 import { Heart, Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
-import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@/components/ui/select";
-
+import {
+  Select,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+} from "@/components/ui/select";
 
 interface FavoritesHeaderProps {
   search: string;
@@ -28,13 +33,9 @@ export default function FavoritesHeader({
           </div>
 
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Favorites
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">Favorites</h1>
 
-            <p className="text-muted-foreground">
-              Your saved places and vehicles, ready whenever you are.
-            </p>
+            <p className="text-muted-foreground">Your saved houses, ready whenever you are.</p>
           </div>
         </div>
       </div>
@@ -57,25 +58,13 @@ export default function FavoritesHeader({
           </SelectTrigger>
 
           <SelectContent>
-            <SelectItem value="recent">
-              Recently Added
-            </SelectItem>
+            <SelectItem value="recent">Recently Added</SelectItem>
 
-            <SelectItem value="price-asc">
-              Price: Low → High
-            </SelectItem>
+            <SelectItem value="price-asc">Price: Low → High</SelectItem>
 
-            <SelectItem value="price-desc">
-              Price: High → Low
-            </SelectItem>
+            <SelectItem value="price-desc">Price: High → Low</SelectItem>
 
-            <SelectItem value="rating">
-              Highest Rated
-            </SelectItem>
-
-            <SelectItem value="alphabetical">
-              Alphabetical
-            </SelectItem>
+            <SelectItem value="alphabetical">Alphabetical</SelectItem>
           </SelectContent>
         </Select>
       </div>

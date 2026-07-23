@@ -1,31 +1,24 @@
 "use client";
 
+import type { House } from "@indanga/db";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { ProductCard } from "@/components/product-card";
+import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 
-type Favorite =
-  | {
-      id: string;
-      type: "property";
-      data: Record<string, any>;
-    }
-  | {
-      id: string;
-      type: "hotel";
-      data: Record<string, any>;
-    }
-  | {
-      id: string;
-      type: "car";
-      data: Record<string, any>;
-    };
+export type FavoriteWithHouse = {
+  id: string;
+  houseId: string;
+  userId: string;
+  createdAt: string;
+  house: House;
+};
 
 interface FavoritesGridProps {
-  favorites: Favorite[];
-  activeTab: string;
+  favorites: FavoriteWithHouse[];
+  isLoading: boolean;
+  isError: boolean;
 }
 
 function EmptyFavorites() {
@@ -36,61 +29,53 @@ function EmptyFavorites() {
       </div>
       <h3 className="mt-6 text-xl font-semibold">No favorites yet</h3>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        Save properties, hotel rooms, or cars and they will show up here for quick access.
+        Save houses you like and they will show up here for quick access.
       </p>
       <Button asChild className="mt-6">
-        <Link href="/houses">Explore Listings</Link>
+        <Link href="/">Explore Listings</Link>
       </Button>
     </div>
   );
 }
 
-function getProductCardProps(favorite: Favorite) {
-  const data = favorite.data ?? {};
+export function FavoritesGrid({ favorites, isLoading, isError }: FavoritesGridProps) {
+  if (isLoading) {
+    return (
+      <section className="mt-6 grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <ProductCardSkeleton key={index} />
+        ))}
+      </section>
+    );
+  }
 
-  const title = data.title ?? data.name ?? data.model ?? "Untitled";
-  const location = data.location ?? data.address ?? data.city ?? "Location not added";
-  const price = Number(data.price ?? data.rate ?? data.amount ?? 0);
-  const media = Array.isArray(data.media)
-    ? data.media
-    : Array.isArray(data.images)
-      ? data.images
-      : [data.image ?? "/image2.jpeg"];
-  const bedrooms = Number(data.bedrooms ?? data.rooms ?? 0);
-  const bathrooms = Number(data.bathrooms ?? data.baths ?? 0);
+  if (isError) {
+    return (
+      <p className="mt-10 text-center text-sm text-muted-foreground">
+        Could not load your favorites. Please try again later.
+      </p>
+    );
+  }
 
-  return {
-    id: favorite.id,
-    name: title,
-    location,
-    price,
-    media,
-    bedrooms,
-    bathrooms,
-    badge: favorite.type === "property" ? "Property" : favorite.type === "hotel" ? "Hotel" : "Car",
-    href: data.href,
-  };
-}
-
-export function FavoritesGrid({ favorites, activeTab }: FavoritesGridProps) {
-  const visibleFavorites = favorites.filter((favorite) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "properties") return favorite.type === "property";
-    if (activeTab === "hotels") return favorite.type === "hotel";
-    if (activeTab === "cars") return favorite.type === "car";
-    return true;
-  });
-
-  if (!visibleFavorites.length) {
+  if (!favorites.length) {
     return <EmptyFavorites />;
   }
 
   return (
     <section className="mt-6 grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-      {visibleFavorites.map((favorite) => (
+      {favorites.map(({ id, house }) => (
         <ProductCard
-          key={favorite.id}
-          {...getProductCardProps(favorite)}
+          key={id}
+          id={house.id}
+          href={`/houses/${house.id}`}
+          name={house.name}
+          location={house.location}
+          price={house.price}
+          media={house.media}
+          bedrooms={house.bedrooms}
+          bathrooms={house.bathrooms}
+          badge={house.propertyType}
+          isFavorite
         />
       ))}
     </section>

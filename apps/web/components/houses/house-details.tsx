@@ -462,7 +462,7 @@ function BookingCard({
       </div>
 
       <Button
-        className="h-12 w-full rounded-xl text-base font-bold shadow-lg shadow-indigo-900/15"
+        className="h-12 w-full text-base font-bold"
         disabled={!isAvailable || isPending}
         onClick={onBook}
       >

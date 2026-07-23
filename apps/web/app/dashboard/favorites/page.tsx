@@ -1,65 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 
+import type { PaginationResponse } from "@/@types";
 import FavoritesHeader from "@/components/dashboard/favorites/favorites-header";
-import { FavoritesGrid } from "./favorites-grid";
-import { FavoritesTabs } from "./favorites-tab";
-
-const favorites = [
-    {
-        id: "prop-1",
-        type: "property" as const,
-        data: {
-            title: "Modern Apartment",
-            location: "Kacyiru, Kigali",
-            price: 250000,
-            media: ["/image1.jpeg"],
-            bedrooms: 2,
-            bathrooms: 2,
-        },
-    },
-    {
-        id: "hotel-1",
-        type: "hotel" as const,
-        data: {
-            title: "Skyline Suites",
-            location: "Kigali City Center",
-            price: 180000,
-            media: ["/image2.jpeg"],
-            bedrooms: 1,
-            bathrooms: 1,
-        },
-    },
-    {
-        id: "car-1",
-        type: "car" as const,
-        data: {
-            title: "Luxury SUV",
-            location: "Remera, Kigali",
-            price: 120000,
-            media: ["/image3.jpeg"],
-            bedrooms: 0,
-            bathrooms: 0,
-        },
-    },
-];
+import { fetcher } from "@/lib/fetcher";
+import { FavoritesGrid, type FavoriteWithHouse } from "./favorites-grid";
 
 export default function Page() {
-    const [search, setSearch] = useState("");
-    const [sort, setSort] = useState("recent");
-    const [activeTab, setActiveTab] = useState("all");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("recent");
 
-    return (
-        <main>
-            <FavoritesHeader
-                search={search}
-                onSearchChange={setSearch}
-                sort={sort}
-                onSortChange={setSort}
-            />
-            <FavoritesTabs value={activeTab} onValueChange={setActiveTab} />
-            <FavoritesGrid favorites={favorites} activeTab={activeTab} />
-        </main>
+  const favoritesQuery = useQuery<PaginationResponse<FavoriteWithHouse>>({
+    queryKey: ["houses", "favorites"],
+    queryFn: () => fetcher("/houses/favorites"),
+  });
+
+  const favorites = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    const filtered = (favoritesQuery.data?.data ?? []).filter(({ house }) =>
+      [house.name, house.location, house.address, house.propertyType].some((value) =>
+        value?.toLowerCase().includes(normalizedSearch),
+      ),
     );
+
+    return filtered.toSorted((a, b) => {
+      if (sort === "price-asc") return a.house.price - b.house.price;
+      if (sort === "price-desc") return b.house.price - a.house.price;
+      if (sort === "alphabetical") return a.house.name.localeCompare(b.house.name);
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [favoritesQuery.data?.data, search, sort]);
+
+  return (
+    <main>
+      <FavoritesHeader
+        search={search}
+        onSearchChange={setSearch}
+        sort={sort}
+        onSortChange={setSort}
+      />
+      <FavoritesGrid
+        favorites={favorites}
+        isLoading={favoritesQuery.isLoading}
+        isError={favoritesQuery.isError}
+      />
+    </main>
+  );
 }
