@@ -17,11 +17,11 @@ export function Recommended() {
   const houses = data?.data ?? [];
 
   return (
-    <section className="px-4 py-20 sm:px-6 lg:px-8">
+    <section className="px-4 sm:px-6 lg:px-8 pb-10">
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 flex items-end justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               Recommended For You
             </h2>
           </div>

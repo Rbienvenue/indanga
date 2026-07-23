@@ -1,33 +1,24 @@
-import { Icon } from "lucide-react"
-import { Card, CardContent } from "../ui/card"
+import { Card, CardContent } from "@/components/ui/card";
+import type { ReactNode } from "react";
 
-export default function StatCard({ iconBg, iconColor, title, value, subtitle, icon }: any) {
-
-
-    const Icon = icon;
-    return (
-        <Card>
-            <CardContent className="flex items-center gap-2 p-3">
-                <div
-                    className={`flex h-16 w-16 items-center justify-center rounded-2xl ${iconBg}`}
-                >
-                    <Icon className={iconColor} size={30} strokeWidth={2} />
-                </div>
-
-                <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">
-                        {title}
-                    </p>
-
-                    <h3 className="text-4xl font-bold tracking-tight">
-                        {value}
-                    </h3>
-
-                    <p className="text-sm text-muted-foreground">
-                        {subtitle}
-                    </p>
-                </div>
-            </CardContent>
-        </Card >
-    )
+export function StatCard({
+  title,
+  value,
+  icon,
+}: {
+  title: string;
+  value: ReactNode;
+  icon: ReactNode;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex min-h-32 items-start gap-3 p-5">
+        <div className="rounded-lg bg-primary/10 p-2.5 text-primary">{icon}</div>
+        <div>
+          <p className="text-sm text-muted-foreground">{title}</p>
+          <p className="mt-1 text-2xl font-semibold tracking-tight">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }

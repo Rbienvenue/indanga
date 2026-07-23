@@ -33,7 +33,7 @@ const actions = [
 
 export function QuickActions() {
   return (
-    <Card className="rounded-3xl border-0 shadow-sm">
+    <Card className="border-0 shadow-sm">
       <CardHeader>
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
@@ -42,7 +42,7 @@ export function QuickActions() {
         {actions.map((action) => (
           <button
             key={action.title}
-            className="flex w-full items-center gap-4 rounded-2xl border bg-white px-5 py-4 transition hover:bg-slate-50"
+            className="flex w-full items-center gap-4 rounded-2xl border  px-5 py-4 transition0"
           >
             <action.icon className="h-5 w-5 text-indigo-600" />
 
