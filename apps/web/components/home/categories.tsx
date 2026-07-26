@@ -7,19 +7,22 @@ const categories = [
     title: "Homes",
     subtitle: "Find your next home",
     count: "1200+ Listings",
-    link: "#",
+    image: "/image2.jpeg",
+    link: "/houses",
   },
   {
-    title: "Hotels",
+    title: "Hotel Rooms",
     subtitle: "Book the best hotels",
+    image: "/room3.jpg",
     count: "850+ Listings",
-    link: "#",
+    link: "/hotels",
   },
   {
     title: "Cars",
     subtitle: "Rent a car easily",
     count: "650+ Listings",
-    link: "#",
+    image: "/car2.jpg",
+    link: "/cars",
   },
 ];
 
@@ -52,16 +55,16 @@ export function Categories() {
               className="group relative overflow-hidden rounded-2xl"
             >
               {/* Image */}
-              <div className="relative aspect-[4/3] w-full overflow-hidden">
+              <div className="relative aspect-4/3 w-full overflow-hidden">
                 <Image
-                  src="/image2.jpeg"
+                  src={cat.image}
                   alt={cat.title}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
                 {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent" />
               </div>
 
               {/* Text overlay */}

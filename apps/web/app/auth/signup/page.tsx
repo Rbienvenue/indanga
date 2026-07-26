@@ -222,7 +222,7 @@ export default function SignupPage() {
           <Button
             type="submit"
             size="lg"
-            className="h-11 w-full font-semibold"
+            className="h-11 w-full font-semibold cursor-pointer"
             disabled={isPending}
           >
             {isPending ? "Creating account…" : "Create account"}

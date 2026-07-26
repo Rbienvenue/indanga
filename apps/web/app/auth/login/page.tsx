@@ -116,7 +116,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             size="lg"
-            className="h-11 w-full font-semibold"
+            className="h-11 w-full font-semibold cursor-pointer"
             disabled={isPending}
           >
             {isPending ? "Signing in…" : "Sign in"}
