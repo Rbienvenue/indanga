@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "@/components/providers/session-provider";
+import { AgentDashboard } from "@/components/dashboard/agent-dashboard";
 import { StatisticsCards } from "@/components/dashboard/stat-card-grid";
 import { RecentActivity } from "@/components/dashboard/recent-activities";
 import { QuickActions } from "@/components/user/quick-actions";
@@ -23,6 +24,10 @@ export default function Page() {
     user?.name?.split(" ")[0] ??
     user?.email?.split("@")[0] ??
     "there";
+
+  if (user?.role === "LANDLORD") {
+    return <AgentDashboard firstName={firstName} />;
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">

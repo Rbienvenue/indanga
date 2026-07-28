@@ -18,6 +18,7 @@
     "clean": "rm -rf node_modules dist .turbo"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1096.0",
     "@indanga/db": "workspace:*",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.1.27",
@@ -30,6 +31,7 @@
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "file-type": "^22.0.1",
     "jspdf-autotable": "^5.0.7",
     "morgan": "^1.10.0",
     "nanoid": "^5.1.15",

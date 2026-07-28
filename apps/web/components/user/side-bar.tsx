@@ -22,14 +22,16 @@ import {
   LifeBuoy,
   LogOut,
   House,
+  PlusCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "@/lib/auth-client";
+import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
-const items = [
+const tenantItems = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "My Bookings", href: "/dashboard/bookings", icon: Calendar },
   { title: "My Favorites", href: "/dashboard/favorites", icon: Heart },
@@ -39,9 +41,21 @@ const items = [
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
 ];
 
+const agentItems = [
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { title: "My Properties", href: "/dashboard/properties", icon: House },
+  { title: "Add Property", href: "/dashboard/properties/new", icon: PlusCircle },
+  { title: "Booking Requests", href: "/dashboard/bookings", icon: Calendar },
+  { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
+  { title: "Profile Settings", href: "/dashboard/profile", icon: User },
+  { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
+];
+
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const session = useSession();
+  const items = session?.user?.role === "LANDLORD" ? agentItems : tenantItems;
 
   return (
     <Sidebar collapsible="icon">
@@ -53,6 +67,7 @@ export function AppSidebar() {
           <Image
             src="/logo.png"
             alt="Indanga"
+            className="rounded-xl"
             width={54}
             height={54}
           />

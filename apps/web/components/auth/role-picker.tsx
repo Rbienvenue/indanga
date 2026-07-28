@@ -22,7 +22,7 @@ const defaultRoles: RoleOption[] = [
   },
   {
     value: "LANDLORD",
-    title: "Landlord",
+    title: "Agent",
     description: "Want to list and manage properties",
     icon: Building2,
   },
@@ -63,7 +63,6 @@ export function RolePicker({
       disabled={disabled}
     >
       {options.map((option) => {
-        const Icon = option.icon;
         const isActive = selectedValue === option.value;
 
         return (
@@ -84,16 +83,6 @@ export function RolePicker({
                 aria-label={option.title}
               />
 
-              {/*<div
-                className={cn(
-                  "mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-all duration-200",
-                  isActive
-                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                    : "border-border bg-muted text-muted-foreground",
-                )}
-              >
-                <Icon className="h-5 w-5" />
-              </div>*/}
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
