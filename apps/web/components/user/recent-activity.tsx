@@ -18,9 +18,9 @@ const activities = [
     description: "You paid $360 for Kigali Marriott Hotel",
     date: "May 15, 2024",
     amount: "$360",
-    color: "bg-green-100",
+    color: "bg-green-100 dark:bg-green-900/40",
     icon: BadgeCheck,
-    statusColor: "text-green-600",
+    statusColor: "text-green-600 dark:text-green-400",
   },
   {
     id: 2,
@@ -28,9 +28,9 @@ const activities = [
     description: "Your booking for Toyota RAV4 2022 is confirmed",
     date: "May 14, 2024",
     amount: "$225",
-    color: "bg-purple-100",
+    color: "bg-purple-100 dark:bg-purple-900/40",
     icon: CalendarCheck,
-    statusColor: "text-green-600",
+    statusColor: "text-green-600 dark:text-green-400",
   },
   {
     id: 3,
@@ -38,9 +38,9 @@ const activities = [
     description: "You requested Modern Apartment",
     date: "May 13, 2024",
     amount: "Pending",
-    color: "bg-orange-100",
+    color: "bg-orange-100 dark:bg-orange-900/40",
     icon: Clock3,
-    statusColor: "text-orange-500",
+    statusColor: "text-orange-500 dark:text-orange-400",
   },
 ]
 
@@ -50,7 +50,7 @@ export function RecentActivity() {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Recent Activity</CardTitle>
 
-        <button className="text-sm font-medium text-indigo-600 hover:underline">
+        <button className="text-sm font-medium text-primary hover:underline">
           View all
         </button>
       </CardHeader>

@@ -7,8 +7,8 @@ const stats = [
     value: "12",
     description: "Total Bookings",
     icon: BookOpen,
-    bg: "bg-purple-100",
-    text: "text-purple-700",
+    bg: "bg-purple-100 dark:bg-purple-900/40",
+    text: "text-purple-700 dark:text-purple-300",
     border: "border-purple-500",
   },
   {
@@ -16,8 +16,8 @@ const stats = [
     value: "4",
     description: "Next 7 Days",
     icon: Calendar,
-    bg: "bg-blue-100",
-    text: "text-blue-700",
+    bg: "bg-blue-100 dark:bg-blue-900/40",
+    text: "text-blue-700 dark:text-blue-300",
     border: "border-blue-500",
   },
   {
@@ -25,8 +25,8 @@ const stats = [
     value: "8",
     description: "Completed Bookings",
     icon: CheckCircle,
-    bg: "bg-green-100",
-    text: "text-green-700",
+    bg: "bg-green-100 dark:bg-green-900/40",
+    text: "text-green-700 dark:text-green-300",
     border: "border-green-500",
   },
 ]

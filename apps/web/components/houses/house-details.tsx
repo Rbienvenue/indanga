@@ -413,13 +413,13 @@ function Feature({
   description: string;
 }) {
   return (
-    <div className="flex gap-4 rounded-2xl border border-slate-900/8 bg-white/55 p-5">
-      <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-indigo-100 text-[#17174a]">
+    <div className="flex gap-4 rounded-2xl border border-border bg-card/55 p-5">
+      <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
         <Icon className="size-5" />
       </div>
       <div>
         <h3 className="font-bold">{title}</h3>
-        <p className="mt-1 text-sm leading-6 text-slate-600">{description}</p>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p>
       </div>
     </div>
   );

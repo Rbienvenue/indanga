@@ -64,7 +64,7 @@ export default function PaymentsPage() {
             <CreditCard className="size-6" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Payments</h1>
             <p className="text-muted-foreground">Manage your payment overview and upcoming charges.</p>
           </div>
         </div>

@@ -53,7 +53,7 @@ export default function BookingsPage() {
             <Calendar className="size-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">My Bookings</h1>
+            <h1 className="text-2xl font-bold tracking-tight">My Bookings</h1>
             <p className="text-muted-foreground">Houses you have booked.</p>
           </div>
         </div>

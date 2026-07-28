@@ -33,7 +33,7 @@ export default function FavoritesHeader({
           </div>
 
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Favorites</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Favorites</h1>
 
             <p className="text-muted-foreground">Your saved houses, ready whenever you are.</p>
           </div>

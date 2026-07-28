@@ -5,6 +5,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import Providers from "@/components/providers";
 import { getSession } from "@/lib/auth-client";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -47,6 +48,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Providers session={session ?? null}>{children}</Providers>
+        <Toaster richColors />
       </body>
     </html>
   );

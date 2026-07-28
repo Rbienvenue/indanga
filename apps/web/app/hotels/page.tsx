@@ -3,13 +3,10 @@
 import type { House } from "@indanga/db";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Building2, Compass, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { parseAsString, useQueryState } from "nuqs";
 
 import type { PaginationResponse } from "@/@types";
-import {
-  type PropertySearchValues,
-  SearchBar,
-} from "@/components/home/search-bar";
+import { SearchBar } from "@/components/home/search-bar";
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { fetcher } from "@/lib/fetcher";
@@ -23,14 +20,16 @@ function getBudgetRange(budget: string) {
   };
 }
 
-function buildHotelsUrl(page: number, filters: PropertySearchValues) {
+function buildHotelsUrl(
+  page: number,
+  filters: { propertyType: string; budget: string },
+) {
   const params = new URLSearchParams({
     page: String(page),
     limit: "20",
     status: "AVAILABLE",
   });
 
-  if (filters.location !== "all") params.set("location", filters.location);
   if (filters.propertyType !== "all") {
     params.set("propertyType", filters.propertyType);
   }
@@ -45,11 +44,16 @@ function buildHotelsUrl(page: number, filters: PropertySearchValues) {
 }
 
 export default function HotelsPage() {
-  const [filters, setFilters] = useState<PropertySearchValues>({
-    location: "all",
-    propertyType: "all",
-    budget: "any",
-  });
+  const [propertyType] = useQueryState(
+    "type",
+    parseAsString.withDefault("all"),
+  );
+  const [budget] = useQueryState(
+    "budget",
+    parseAsString.withDefault("any"),
+  );
+
+  const filters = { propertyType, budget };
 
   const hotelsQuery = useInfiniteQuery({
     queryKey: ["hotels", filters],
@@ -93,7 +97,7 @@ export default function HotelsPage() {
         </div>
       </section>
 
-      <SearchBar className="mt-8 px-0" defaultValues={filters} onSearch={setFilters} />
+      <SearchBar className="mt-8 px-0" />
 
       {hotelsQuery.isLoading ? (
         <section className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -104,7 +108,7 @@ export default function HotelsPage() {
       ) : hotelsQuery.isError ? (
         <div className="mt-10 rounded-2xl border border-dashed border-border/70 bg-muted/30 px-6 py-16 text-center">
           <p className="text-sm text-muted-foreground">
-            We couldn’t load the available hotels right now. Please try again.
+            We couldn't load the available hotels right now. Please try again.
           </p>
           <Button variant="outline" className="mt-5" onClick={() => void hotelsQuery.refetch()}>
             Try again
@@ -117,7 +121,7 @@ export default function HotelsPage() {
           </div>
           <h2 className="mt-6 text-xl font-semibold">No hotel rooms found</h2>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            Try changing the location, type, or budget to find another stay.
+            Try changing the type or budget to find another stay.
           </p>
         </div>
       ) : (

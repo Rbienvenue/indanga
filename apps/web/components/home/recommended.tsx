@@ -7,6 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import type { PaginationResponse } from "@/@types";
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 import { fetcher } from "@/lib/fetcher";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
 export function Recommended() {
   const { data, isLoading, isError } = useQuery<PaginationResponse<House>>({
@@ -42,8 +44,8 @@ export function Recommended() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, i) => (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
               <ProductCardSkeleton key={i} />
             ))}
           </div>
@@ -55,8 +57,9 @@ export function Recommended() {
           <p className="text-center text-sm text-muted-foreground">
             No recommended houses available right now.
           </p>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            ) : (
+                <>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {houses.map((house) => (
               <ProductCard
                 key={house.id}
@@ -72,6 +75,14 @@ export function Recommended() {
               />
             ))}
           </div>
+          <div className="flex justify-center items-center mt-5 ">
+            <Button size={"lg"} className="w-40" asChild>
+              <Link href="/houses">
+                View All
+              </Link>
+            </Button>
+         </div>
+            </>
         )}
       </div>
     </section>

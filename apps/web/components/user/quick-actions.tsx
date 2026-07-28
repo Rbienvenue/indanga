@@ -42,9 +42,9 @@ export function QuickActions() {
         {actions.map((action) => (
           <button
             key={action.title}
-            className="flex w-full items-center gap-4 rounded-2xl border  px-5 py-4 transition0"
+            className="flex w-full items-center gap-4 rounded-2xl border px-5 py-4 transition hover:bg-muted"
           >
-            <action.icon className="h-5 w-5 text-indigo-600" />
+            <action.icon className="h-5 w-5 text-primary" />
 
             <span className="font-medium">
               {action.title}

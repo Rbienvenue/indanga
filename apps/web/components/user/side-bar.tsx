@@ -45,7 +45,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b p-2">
+      <SidebarHeader className="border-b border-sidebar-border p-2">
         <Link
           href="/dashboard"
           className="flex h-12 items-center px-2"
@@ -88,7 +88,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t">
+      <SidebarFooter className="border-t border-sidebar-border">
         <Button
           variant="ghost"
           className="justify-start gap-2 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:px-2"
