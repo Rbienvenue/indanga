@@ -2,9 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSession } from "@/components/providers/session-provider";
+import { signOut } from "@/lib/auth-client";
+import { UserAvatar } from "@/components/user/user-avatar";
 
 const navLinks = [
   { label: "Home", href: "#" },
@@ -14,8 +19,22 @@ const navLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
 export function Navbar() {
   const [scrolled, setScrolled] = React.useState(false);
+  const router = useRouter();
+  const session = useSession();
+  const user = session?.user;
+  const displayName = user?.name ?? "Guest";
+  const initials = getInitials(displayName) || "G";
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -48,14 +67,20 @@ export function Navbar() {
           ))}
         </div>
 
-        {/* Desktop CTA */}
+        {/* Desktop CTA - Show avatar if authenticated, otherwise show auth links */}
         <div className="hidden items-center gap-3 md:flex">
-          <Button size="lg" variant="outline" className="px-6 font-semibold" asChild>
-            <Link href="/auth/login">Login</Link>
-          </Button>
-          <Button size="lg" variant="default" className="px-6 font-semibold" asChild>
-            <Link href="/auth/signup">Sign Up</Link>
-          </Button>
+          {session ? (
+            <UserAvatar />
+          ) : (
+            <>
+              <Button size="lg" variant="outline" className="px-6 font-semibold" asChild>
+                <Link href="/auth/login">Login</Link>
+              </Button>
+              <Button size="lg" variant="default" className="px-6 font-semibold" asChild>
+                <Link href="/auth/signup">Sign Up</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu */}
@@ -79,14 +104,65 @@ export function Navbar() {
                     {link.label}
                   </Link>
                 ))}
-                <div className="mt-4 px-4">
-
-                  <Button asChild size="lg" variant="outline" className="w-full font-semibold cursor-pointer">
-                    <Link href="/auth/login">Login</Link>
-                  </Button>
-                  <Button asChild size="lg" variant="default" className="w-full font-semibold cursor-pointer">
-                    <Link href="/auth/signup">Sign Up</Link>
-                  </Button>
+                <div className="mt-4 flex flex-col gap-2 px-4">
+                  {session ? (
+                    <>
+                      <div className="flex items-center gap-3 rounded-lg bg-background/5 p-3">
+                        <Avatar>
+                          <AvatarImage src={user?.image ?? undefined} alt={displayName} />
+                          <AvatarFallback className="bg-primary text-primary-foreground">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">{displayName}</p>
+                          <p className="text-xs text-white/60">{user?.email ?? ""}</p>
+                        </div>
+                      </div>
+                      <Button
+                        asChild
+                        size="lg"
+                        variant="outline"
+                        className="w-full font-semibold"
+                      >
+                        <Link href="/dashboard">Dashboard</Link>
+                      </Button>
+                      <Button
+                        size="lg"
+                        variant="destructive"
+                        className="w-full font-semibold"
+                        onClick={async () =>
+                          signOut({
+                            fetchOptions: {
+                              onSuccess: () => router.push("/"),
+                            },
+                          })
+                        }
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign out
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        asChild
+                        size="lg"
+                        variant="outline"
+                        className="w-full font-semibold cursor-pointer"
+                      >
+                        <Link href="/auth/login">Login</Link>
+                      </Button>
+                      <Button
+                        asChild
+                        size="lg"
+                        variant="default"
+                        className="w-full font-semibold cursor-pointer"
+                      >
+                        <Link href="/auth/signup">Sign Up</Link>
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </SheetContent>

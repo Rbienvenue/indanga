@@ -30,7 +30,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  const isAuthRoute = pathname.startsWith("/auth") || pathname === "/";
+  const isAuthRoute = pathname.startsWith("/auth");
   if (isAuthRoute && isAuthenticated) {
     return NextResponse.redirect(getCallbackUrl(request) ?? new URL("/dashboard", request.url));
   }

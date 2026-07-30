@@ -2,8 +2,10 @@ import { createAuthClient } from "better-auth/react";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  basePath: "/v1/auth",
+  ...(typeof window === "undefined" && {
+    baseURL: `${process.env.NEXT_PUBLIC_API_URL ?? "https://indanga-api-tau.vercel.app"}/v1/auth`,
+  }),
+  basePath: "/api/auth",
   plugins: [
     inferAdditionalFields({
       user: {

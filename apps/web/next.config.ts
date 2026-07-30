@@ -1,19 +1,28 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
   typescript: {
-    ignoreBuildErrors:true
+    ignoreBuildErrors: true,
   },
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "images.unsplash.com",
-      }
-    ]
-  }
+      },
+    ],
+  },
+  async rewrites() {
+    return {
+      afterFiles: [
+        {
+          source: "/api/:path*",
+          destination: `${process.env.NEXT_PUBLIC_API_URL ?? "https://indanga-api-tau.vercel.app"}/v1/:path*`,
+        },
+      ],
+    };
+  },
 };
 
 export default nextConfig;

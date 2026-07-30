@@ -5,7 +5,7 @@
  * @returns The response from the API
  */
 export async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1${url}`, {
+  const response = await fetch(`/api${url}`, {
     ...options,
     credentials: "include",
     headers: {

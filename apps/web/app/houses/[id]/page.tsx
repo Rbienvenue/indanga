@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { HouseDetails } from "@/components/houses/house-details";
 
 export const metadata: Metadata = {
-  title: "House details | INDANGA",
+  title: "Property details | INDANGA",
   description: "Explore a home and book your next place with INDANGA.",
 };
 
