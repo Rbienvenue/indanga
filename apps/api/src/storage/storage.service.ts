@@ -6,7 +6,7 @@ import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client
 import { fileTypeFromBuffer } from 'file-type';
 import { customAlphabet } from 'nanoid';
 
-import { env } from '@/lib/env';
+import { env } from 'src/lib/env';
 
 export enum StorageBucket {
   HOUSE_MEDIA = 'houses',
