@@ -24,17 +24,17 @@ import {
 const actions = [
   {
     title: "Book a Hotel",
-    href: "/hotels",
+    href: "/properties?type=hotel",
     icon: Building2,
   },
   {
     title: "Rent a Car",
-    href: "/cars",
+    href: "/properties?type=car",
     icon: Car,
   },
   {
     title: "Find a Home",
-    href: "/houses",
+    href: "/properties?type=house",
     icon: House,
   },
   {
