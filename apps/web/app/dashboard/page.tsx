@@ -42,11 +42,7 @@ export default function Page() {
 
       <StatisticsCards />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <RecentActivity />
-        <QuickActions />
-      </div>
-
+      <QuickActions />
       <RecommendedHouses />
       <SearchBar />
       <ContinueBrowsing />

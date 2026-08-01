@@ -53,7 +53,21 @@ export class HousesService {
       where.location = { contains: location, mode: "insensitive" };
     }
     if (propertyType) {
-      where.propertyType = { equals: propertyType, mode: "insensitive" };
+      const normalizedPropertyTypes = propertyType
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+      if (normalizedPropertyTypes.length > 1) {
+        where.OR = normalizedPropertyTypes.map((value) => ({
+          propertyType: { equals: value, mode: "insensitive" },
+        }));
+      } else if (normalizedPropertyTypes.length === 1) {
+        where.propertyType = {
+          equals: normalizedPropertyTypes[0],
+          mode: "insensitive",
+        };
+      }
     }
     if (minPrice !== undefined || maxPrice !== undefined) {
       where.price = {

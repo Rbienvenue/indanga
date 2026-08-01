@@ -77,7 +77,7 @@ export function Recommended() {
           </div>
           <div className="flex justify-center items-center mt-5 ">
             <Button size={"lg"} className="w-40" asChild>
-              <Link href="/houses">
+              <Link href="/properties?type=houses">
                 View All
               </Link>
             </Button>

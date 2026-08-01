@@ -10,38 +10,7 @@ import { SearchBar } from "@/components/home/search-bar";
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { fetcher } from "@/lib/fetcher";
-
-function getBudgetRange(budget: string) {
-  const [minimum, maximum] = budget.split("-");
-
-  return {
-    minPrice: minimum && minimum !== "0" ? minimum : undefined,
-    maxPrice: maximum || undefined,
-  };
-}
-
-function buildHousesUrl(
-  page: number,
-  filters: { propertyType: string; budget: string },
-) {
-  const params = new URLSearchParams({
-    page: String(page),
-    limit: "20",
-    status: "AVAILABLE",
-  });
-
-  if (filters.propertyType !== "all") {
-    params.set("propertyType", filters.propertyType);
-  }
-
-  if (filters.budget !== "any") {
-    const { minPrice, maxPrice } = getBudgetRange(filters.budget);
-    if (minPrice) params.set("minPrice", minPrice);
-    if (maxPrice) params.set("maxPrice", maxPrice);
-  }
-
-  return `/houses?${params.toString()}`;
-}
+import { buildHousesUrl } from "@/lib/property-filters";
 
 export function PropertyFeed() {
   const [propertyType] = useQueryState(
