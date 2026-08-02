@@ -16,7 +16,7 @@ type RoleOption = {
 const defaultRoles: RoleOption[] = [
   {
     value: "TENANT",
-    title: "Tenant",
+    title: "Client",
     description: "Looking for a house to rent",
     icon: Home,
   },

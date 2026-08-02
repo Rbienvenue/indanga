@@ -52,7 +52,7 @@ function AgentQuickActions() {
           </Link>
         </Button>
         <Button asChild className="w-full justify-start gap-3" variant="outline" size="lg">
-          <Link href="/dashboard/properties">
+          <Link href="/dashboard/search">
             <Eye className="size-5" />
             View All Properties
           </Link>

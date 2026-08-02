@@ -34,9 +34,15 @@ export default function SignupPage() {
     },
   });
 
-  const onSubmit = async ({ confirmPassword: _, ...values }: SignupValues) => {
+  const selectedRole = form.watch("role");
+
+  const onSubmit = async ({ confirmPassword: _, nationalId, ...values }: SignupValues) => {
     form.clearErrors("root");
-    const { error } = await signUp.email(values);
+    const payload = {
+      ...values,
+      nationalId: nationalId?.trim() ? nationalId.trim() : undefined,
+    };
+    const { error } = await signUp.email(payload);
 
     if (error) {
       form.setError("root", {
@@ -129,7 +135,7 @@ export default function SignupPage() {
               control={form.control}
               name="email"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className={selectedRole === "TENANT" ? "sm:col-span-2" : undefined}>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
@@ -145,26 +151,28 @@ export default function SignupPage() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="nationalId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>National ID/Passport</FormLabel>
-                  <FormControl>
-                    <Input
-                      inputMode="numeric"
-                      autoComplete="off"
-                      placeholder="National ID/Passport"
-                      className="h-11 bg-white px-3"
-                      disabled={isPending}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {selectedRole === "LANDLORD" ? (
+              <FormField
+                control={form.control}
+                name="nationalId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>National ID/Passport</FormLabel>
+                    <FormControl>
+                      <Input
+                        inputMode="numeric"
+                        autoComplete="off"
+                        placeholder="National ID/Passport"
+                        className="h-11 bg-white px-3"
+                        disabled={isPending}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : null}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

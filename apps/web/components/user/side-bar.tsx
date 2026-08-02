@@ -23,6 +23,7 @@ import {
   LogOut,
   House,
   PlusCircle,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -35,7 +36,7 @@ const tenantItems = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "My Bookings", href: "/dashboard/bookings", icon: Calendar },
   { title: "My Favorites", href: "/dashboard/favorites", icon: Heart },
-  { title: "Properties", href: "/dashboard/properties", icon: House },
+  { title: "Search", href: "/dashboard/search", icon: Search },
   { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
   { title: "Profile Settings", href: "/dashboard/profile", icon: User },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
@@ -43,7 +44,7 @@ const tenantItems = [
 
 const agentItems = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { title: "My Properties", href: "/dashboard/properties", icon: House },
+  { title: "My Properties", href: "/dashboard/search", icon: House },
   { title: "Add Property", href: "/dashboard/properties/new", icon: PlusCircle },
   { title: "Booking Requests", href: "/dashboard/bookings", icon: Calendar },
   { title: "Payments", href: "/dashboard/payments", icon: CreditCard },

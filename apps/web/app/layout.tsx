@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "INDANGA — One Platform. Endless Possibilities.",
+  title: "INDANGA One Platform. Endless Possibilities.",
   description:
     "Find your next home, book the perfect hotel, or rent a car — all in one place. INDANGA simplifies your journey.",
 };

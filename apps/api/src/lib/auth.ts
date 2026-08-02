@@ -22,7 +22,7 @@ export const auth = betterAuth({
       },
       nationalId: {
         type: "string",
-        required: true,
+        required: false,
         input: true,
         returned: false,
       },

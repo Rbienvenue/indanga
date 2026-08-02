@@ -8,21 +8,21 @@ const categories = [
     subtitle: "Find your next home",
     count: "1200+ Listings",
     image: "/image2.jpeg",
-    link: "/houses",
+    link: "/properties?type=houses",
   },
   {
     title: "Hotel Rooms",
     subtitle: "Book the best hotels",
     image: "/room3.jpg",
     count: "850+ Listings",
-    link: "/hotels",
+    link: "/properties?type=hotels",
   },
   {
     title: "Cars",
     subtitle: "Rent a car easily",
     count: "650+ Listings",
     image: "/car2.jpg",
-    link: "/cars",
+    link: "/properties?type=cars",
   },
 ];
 
@@ -38,7 +38,7 @@ export function Categories() {
             </h2>
           </div>
           <Link
-            href="#"
+            href="/properties"
             className="hidden text-sm font-medium text-primary transition-colors hover:text-primary/80 sm:inline-flex sm:items-center sm:gap-1"
           >
             View all

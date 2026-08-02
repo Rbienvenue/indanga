@@ -13,15 +13,37 @@ export const signupSchema = z
       .string()
       .trim()
       .regex(/^\+?[0-9]{9,15}$/, "Enter a valid phone number"),
-    // Rwanda national ID is 16 digits; keep flexible enough for formatting edges.
-    nationalId: z.string().trim().min(9, "Enter a valid national ID/Passport"),
+    // Rwanda national ID is 16 digits; optional for TENANT, required for LANDLORD.
+    nationalId: z.string().trim().optional(),
     email: z.email("Enter a valid email address"),
     password: z.string().min(5, "Password must be at least 5 characters"),
     confirmPassword: z.string().min(1, "Confirm your password"),
   })
-  .refine((values) => values.password === values.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
+  .superRefine((values, ctx) => {
+    if (values.password !== values.confirmPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Passwords do not match",
+        path: ["confirmPassword"],
+      });
+    }
+
+    const nationalIdTrimmed = values.nationalId?.trim() ?? "";
+    if (values.role === "LANDLORD") {
+      if (!nationalIdTrimmed || nationalIdTrimmed.length < 9) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Enter a valid national ID/Passport",
+          path: ["nationalId"],
+        });
+      }
+    } else if (nationalIdTrimmed.length > 0 && nationalIdTrimmed.length < 9) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Enter a valid national ID/Passport",
+        path: ["nationalId"],
+      });
+    }
   });
 
 export type LoginValues = z.infer<typeof loginSchema>;

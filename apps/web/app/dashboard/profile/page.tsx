@@ -65,7 +65,7 @@ export default function ProfilePage() {
     return null;
   }
 
-  const role = user.role ?? "Tenant";
+  const role = user.role === "TENANT" ? "Client" : (user.role ?? "Client");
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">

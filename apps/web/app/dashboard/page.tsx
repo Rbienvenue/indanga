@@ -3,7 +3,6 @@
 import { useSession } from "@/components/providers/session-provider";
 import { AgentDashboard } from "@/components/dashboard/agent-dashboard";
 import { StatisticsCards } from "@/components/dashboard/stat-card-grid";
-import { RecentActivity } from "@/components/dashboard/recent-activities";
 import { QuickActions } from "@/components/user/quick-actions";
 import { RecommendedHouses } from "@/components/dashboard/recommended";
 import { ContinueBrowsing } from "@/components/dashboard/continue-browsing";

@@ -39,11 +39,15 @@ function getPropertyTypeFilter(propertyType) {
     case null:
       return null;
     case "houses":
+    case "house":
     case "homes":
+    case "home":
       return "House,Apartment,Studio";
     case "hotels":
+    case "hotel":
       return "Hotel";
     case "cars":
+    case "car":
       return "Car";
     default:
       return propertyType;
