@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { fetcher } from "@/lib/fetcher";
 import { buildHousesUrl } from "@/lib/property-filters";
 
-export function PropertyFeed() {
+export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
   const [propertyType] = useQueryState(
     "type",
     parseAsString.withDefault("all"),
@@ -25,9 +25,13 @@ export function PropertyFeed() {
   const filters = { propertyType, budget };
 
   const housesQuery = useInfiniteQuery({
-    queryKey: ["houses", "feed", filters],
-    queryFn: ({ pageParam }) =>
-      fetcher<PaginationResponse<House>>(buildHousesUrl(pageParam, filters)),
+    queryKey: ["houses", "feed", filters, ownerId],
+    queryFn: ({ pageParam }) => {
+      const url = buildHousesUrl(pageParam, filters);
+      const separator = url.includes("?") ? "&" : "?";
+      const ownerParam = ownerId ? `${separator}ownerId=${ownerId}` : "";
+      return fetcher<PaginationResponse<House>>(`${url}${ownerParam}`);
+    },
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.meta.page < lastPage.meta.totalPages
@@ -84,7 +88,11 @@ export function PropertyFeed() {
                 media={house.media}
                 bedrooms={house.bedrooms}
                 bathrooms={house.bathrooms}
+                description={house.description}
+                address={house.address}
+                propertyType={house.propertyType}
                 badge={house.propertyType}
+                showManageActions={!!ownerId}
               />
             ))}
           </section>

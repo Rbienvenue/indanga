@@ -17,11 +17,11 @@ export function typeHasRooms(type: PropertyType): boolean {
 
 export const createHouseSchema = z
   .object({
-    name: z.string().trim().min(2, "Property name must be at least 2 characters"),
-    propertyType: z.enum(propertyTypes, { message: "Select a property type" }),
-    price: z.coerce.number().int().positive("Enter a valid price"),
-    bedrooms: z.coerce.number<number>().int().min(0, "Bedrooms cannot be negative").optional(),
-    bathrooms: z.coerce.number<number>().int().min(0, "Bathrooms cannot be negative").optional(),
+  name: z.string().trim().min(2, "Property name must be at least 2 characters"),
+  propertyType: z.enum(propertyTypes, { message: "Select a property type" }),
+  price: z.coerce.number<number>().positive("Enter a valid price"),
+  bedrooms: z.coerce.number<number>().min(0, "Bedrooms cannot be negative").optional(),
+  bathrooms: z.coerce.number<number>().min(0, "Bathrooms cannot be negative").optional(),
   province: z.string().trim().optional(),
   district: z.string().trim().min(1, "District is required"),
   sector: z.string().trim().min(1, "Sector is required"),

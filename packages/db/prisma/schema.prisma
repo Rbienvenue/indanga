@@ -73,6 +73,13 @@ enum NotificationType {
   SYSTEM
 }
 
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
 model House {
   id           String      @id @default(cuid())
   name         String
@@ -100,13 +107,14 @@ model House {
 }
 
 model Booking {
-  id        String    @id @default(cuid())
+  id        String        @id @default(cuid())
   clientId  String
   houseId   String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  client    User      @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)
-  house     House     @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  status    BookingStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  client    User          @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)
+  house     House         @relation(fields: [houseId], references: [id], onDelete: Cascade)
   payments  Payment[]
   notifications Notification[]
 

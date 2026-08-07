@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetcher } from "@/lib/fetcher";
 import { cn } from "@/lib/utils";
+import { EditPropertyDialog } from "@/components/dashboard/properties/edit-property-dialog";
+import { DeletePropertyDialog } from "@/components/dashboard/properties/delete-property-dialog";
 
 export type ProductCardProps = {
   id: string;
@@ -20,12 +22,16 @@ export type ProductCardProps = {
   media?: string[];
   bedrooms: number;
   bathrooms: number;
+  description?: string;
+  address?: string | null;
+  propertyType?: string;
   badge?: string;
   badgeClassName?: string;
   href?: string;
   priceUnit?: string;
   className?: string;
   isFavorite?: boolean;
+  showManageActions?: boolean;
 };
 
 function formatPrice(price: number) {
@@ -40,12 +46,16 @@ export function ProductCard({
   media,
   bedrooms,
   bathrooms,
+  description = "",
+  address,
+  propertyType = "House",
   badge,
   badgeClassName = "bg-primary text-primary-foreground",
   href,
   priceUnit = "/ month",
   className,
   isFavorite = false,
+  showManageActions = false,
 }: ProductCardProps) {
   const queryClient = useQueryClient();
   const favoriteMutation = useMutation({
@@ -86,19 +96,38 @@ export function ProductCard({
             {badge}
           </Badge>
         )}
-        <button
-          type="button"
-          aria-label={favoriteState ? "Remove from favorites" : "Add to favorites"}
-          disabled={favoriteMutation.isPending}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            favoriteMutation.mutate();
-          }}
-          className="absolute top-3 right-3 inline-flex size-8 items-center justify-center rounded-full bg-white/90 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Heart className={cn("size-4", favoriteState && "fill-red-500 text-red-500")} />
-        </button>
+        {showManageActions ? (
+          <div className="absolute top-3 right-3 flex gap-1.5">
+            <EditPropertyDialog
+              house={{
+                id,
+                name,
+                location,
+                address: address ?? null,
+                price,
+                description,
+                propertyType,
+                bedrooms,
+                bathrooms,
+              }}
+            />
+            <DeletePropertyDialog houseId={id} houseName={name} />
+          </div>
+        ) : (
+          <button
+            type="button"
+            aria-label={favoriteState ? "Remove from favorites" : "Add to favorites"}
+            disabled={favoriteMutation.isPending}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              favoriteMutation.mutate();
+            }}
+            className="absolute top-3 right-3 inline-flex size-8 items-center justify-center rounded-full bg-white/90 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Heart className={cn("size-4", favoriteState && "fill-red-500 text-red-500")} />
+          </button>
+        )}
       </div>
 
       <CardContent className="p-4">

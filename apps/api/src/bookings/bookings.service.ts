@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { HouseStatus, Prisma } from "@indanga/db";
+import { BookingStatus, HouseStatus, Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
 import { FilterBookingDto, CreateBookingDto } from "./dtos";
 import { type UserSession } from "@thallesp/nestjs-better-auth";
@@ -107,4 +107,41 @@ export class BookingsService {
     return booking;
   }
 
+  async updateBookingStatus(
+    id: string,
+    status: BookingStatus,
+    user: UserSession["user"],
+  ) {
+    const booking = await this.db.booking.findUnique({
+      where: { id },
+      include: { house: true },
+    });
+
+    if (!booking) {
+      throw new NotFoundException("Booking not found");
+    }
+
+    if (booking.house.ownerId !== user.id) {
+      throw new ForbiddenException(
+        "Only the property owner can update booking status",
+      );
+    }
+
+    return this.db.$transaction(async (tx) => {
+      const updated = await tx.booking.update({
+        where: { id },
+        data: { status },
+        include: { house: true, client: true },
+      });
+
+      if (status === BookingStatus.REJECTED || status === BookingStatus.CANCELLED) {
+        await tx.house.update({
+          where: { id: booking.houseId },
+          data: { status: HouseStatus.AVAILABLE },
+        });
+      }
+
+      return updated;
+    });
+  }
 }

@@ -62,6 +62,13 @@ export class StorageService {
       endpoint: env.S3_ENDPOINT,
     });
   }
+  async uploadFiles(files: (string | Buffer | File | ArrayBufferLike)[], options?: { bucket: StorageBucket; customName?: string; }): Promise<FileMetaData[]> {
+    const results: FileMetaData[] = [];
+    for (const file of files) {
+      results.push(await this.uploadFile(file, options));
+    }
+    return results;
+  }
 
   async uploadFile(
     file: string | Buffer | File | ArrayBufferLike,

@@ -1,16 +1,15 @@
-import type { Metadata } from "next";
+"use client";
 
+import { useSession } from "@/components/providers/session-provider";
 import { PropertyFeed } from "@/components/houses/property-feed";
 
-export const metadata: Metadata = {
-  title: "Search properties for rent | INDANGA",
-  description: "Browse available houses and apartments for rent with INDANGA.",
-};
-
 export default function PropertiesPage() {
+  const session = useSession();
+  const isAgent = session?.user?.role === "LANDLORD";
+
   return (
     <div className="flex min-h-screen flex-col">
-      <PropertyFeed />
+      <PropertyFeed ownerId={isAgent ? session?.user?.id : undefined} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { Type } from "class-transformer";
-import { IsInt, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsInt, IsOptional, IsString } from "class-validator";
+import { BookingStatus } from "@indanga/db";
 
 export class CreateBookingDto {
   @IsString()
@@ -16,4 +17,9 @@ export class FilterBookingDto {
   @Type(() => Number)
   @IsInt()
   limit?: number;
+}
+
+export class UpdateBookingStatusDto {
+  @IsEnum(BookingStatus)
+  status: BookingStatus;
 }

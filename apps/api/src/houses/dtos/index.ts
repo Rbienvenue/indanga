@@ -37,9 +37,10 @@ export class CreateHouseDto {
   @IsInt()
   price: number;
 
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  media: string[];
+  media?: string[];
 
   @IsString()
   ownerId: string;

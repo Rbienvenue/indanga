@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { House } from "@indanga/db";
 import { Building2, Car, Home, Hotel, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -27,11 +28,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { ImageDropzone } from "@/components/ui/image-dropzone";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { fetcher } from "@/lib/fetcher";
 import {
   createHouseSchema,
   propertyTypes,
@@ -51,6 +52,7 @@ export function AddPropertyForm() {
   const session = useSession();
   const queryClient = useQueryClient();
   const router = useRouter();
+  const [files, setFiles] = useState<File[]>([]);
 
   const form = useForm<CreateHouseValues>({
     resolver: zodResolver(createHouseSchema),
@@ -74,20 +76,46 @@ export function AddPropertyForm() {
   const showRooms = typeHasRooms(selectedType);
 
   const addPropertyMutation = useMutation({
-    mutationFn: (values: CreateHouseValues) =>
-      fetcher<ApiResponse<House>>("/houses", {
+    mutationFn: async (values: CreateHouseValues) => {
+      const formData = new FormData();
+
+      formData.append("name", values.name);
+      formData.append("propertyType", values.propertyType);
+      formData.append("price", String(values.price));
+      formData.append("province", values.province ?? "");
+      formData.append("district", values.district);
+      formData.append("sector", values.sector);
+      formData.append("cell", values.cell);
+      formData.append("village", values.village);
+      formData.append("address", values.address ?? "");
+      formData.append("description", values.description);
+      formData.append("ownerId", session?.user?.id ?? "");
+
+      if (values.bedrooms != null) formData.append("bedrooms", String(values.bedrooms));
+      if (values.bathrooms != null) formData.append("bathrooms", String(values.bathrooms));
+
+      for (const file of files) {
+        formData.append("media", file);
+      }
+
+      const response = await fetch("/api/houses", {
         method: "POST",
-        body: JSON.stringify({
-          ...values,
-          province: values.province ?? "",
-          media: [],
-          ownerId: session?.user?.id,
-        }),
-      }),
+        credentials: "include",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.message || "Request failed");
+      }
+
+      return response.json() as Promise<ApiResponse<House>>;
+    },
     onSuccess: () => {
       toast.success("Property added successfully");
       void queryClient.invalidateQueries({ queryKey: ["houses"] });
       form.reset();
+      setFiles([]);
       router.push("/dashboard");
     },
     onError: (error: Error) => {
@@ -104,7 +132,7 @@ export function AddPropertyForm() {
       <CardHeader>
         <CardTitle>Property Details</CardTitle>
         <CardDescription>
-          Fill in the details of your property. Photos can be added later.
+          Fill in the details of your property and add photos.
         </CardDescription>
       </CardHeader>
 
@@ -304,7 +332,7 @@ export function AddPropertyForm() {
                   <FormControl>
                     <Textarea
                       placeholder="Describe your property..."
-                      className="min-h-28"
+                      className="min-h-20"
                       {...field}
                     />
                   </FormControl>
@@ -312,6 +340,11 @@ export function AddPropertyForm() {
                 </FormItem>
               )}
             />
+
+            <div className="space-y-2">
+              <Label>Photos</Label>
+              <ImageDropzone value={files} onChange={setFiles} />
+            </div>
           </CardContent>
 
           <CardFooter className="flex justify-between">

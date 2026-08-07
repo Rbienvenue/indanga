@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { ApiResponse, PaginationResponse } from "src/@types";
 import { BookingsService } from "./bookings.service";
-import { CreateBookingDto, FilterBookingDto } from "./dtos";
+import { CreateBookingDto, FilterBookingDto, UpdateBookingStatusDto } from "./dtos";
 
 @Controller("bookings")
 export class BookingsController {
@@ -42,5 +42,20 @@ export class BookingsController {
   ) {
     const booking = await this.bookingsService.getBookingById(id, session.user);
     return new ApiResponse(booking, "booking fetched");
+  }
+
+  @Patch(":id/status")
+  @Roles(["LANDLORD"])
+  async updateBookingStatus(
+    @Param("id") id: string,
+    @Session() session: UserSession,
+    @Body() data: UpdateBookingStatusDto,
+  ) {
+    const booking = await this.bookingsService.updateBookingStatus(
+      id,
+      data.status,
+      session.user,
+    );
+    return new ApiResponse(booking, "booking status updated");
   }
 }

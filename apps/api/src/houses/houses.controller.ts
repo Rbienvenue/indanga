@@ -7,9 +7,13 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFiles,
+  UseInterceptors,
 } from "@nestjs/common";
+import { FilesInterceptor } from "@nestjs/platform-express";
 import { AllowAnonymous, Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { ApiResponse, PaginationResponse } from "src/@types";
+import { StorageBucket, StorageService } from "src/storage/storage.service";
 import {
   CreateHouseDto,
   CreateReviewDto,
@@ -21,11 +25,26 @@ import { HousesService } from "./houses.service";
 
 @Controller("houses")
 export class HousesController {
-  constructor(private readonly houseService: HousesService) {}
+  constructor(
+    private readonly houseService: HousesService,
+    private readonly storageService: StorageService,
+  ) {}
 
   @Post()
-  async createHouse(@Body() data: CreateHouseDto) {
-    const house = await this.houseService.createHouse(data);
+  @UseInterceptors(FilesInterceptor("media", 10))
+  async createHouse(
+    @Body() data: CreateHouseDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+
+    const mediaUrls = await this.storageService.uploadFiles(
+      files?.map((file) => file.buffer),
+      { bucket: StorageBucket.HOUSE_MEDIA },
+    );
+    const house = await this.houseService.createHouse({
+      ...data,
+      media: mediaUrls.map((url) => url.url),
+    });
     return new ApiResponse(house, "house created");
   }
 
@@ -47,6 +66,13 @@ export class HousesController {
       query,
     );
     return new PaginationResponse(result.data, result.meta);
+  }
+
+  @Get("stats")
+  @Roles(["LANDLORD"])
+  async getAgentStats(@Session() session: UserSession) {
+    const stats = await this.houseService.getAgentStats(session.user.id);
+    return new ApiResponse(stats, "agent stats fetched");
   }
 
   @Get(":id")

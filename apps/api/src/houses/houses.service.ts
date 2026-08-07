@@ -109,7 +109,7 @@ export class HousesService {
 
   async updateHouse(id: string, data: UpdateHouseDto) {
     await this.getHouseById(id);
-
+   //check the agentid bypass for admins
     const {
       province,
       district,
@@ -139,6 +139,7 @@ export class HousesService {
   }
 
   async deleteHouse(id: string) {
+    //check the agentid bypass for admins
     await this.getHouseById(id);
     const house = await this.db.house.delete({ where: { id } });
     return house;
@@ -225,5 +226,38 @@ export class HousesService {
         tenant: true,
       },
     });
+  }
+
+  async getAgentStats(ownerId: string) {
+    const [totalProperties, activeBookings, revenueResult, ratingResult] =
+      await Promise.all([
+        this.db.house.count({ where: { ownerId } }),
+        this.db.booking.count({
+          where: {
+            house: { ownerId },
+            status: "APPROVED",
+          },
+        }),
+        this.db.payment.aggregate({
+          _sum: { amount: true },
+          where: {
+            status: "COMPLETED",
+            booking: { house: { ownerId } },
+          },
+        }),
+        this.db.review.aggregate({
+          _avg: { rating: true },
+          where: { house: { ownerId } },
+        }),
+      ]);
+
+    return {
+      totalProperties,
+      activeBookings,
+      totalRevenue: revenueResult._sum.amount?.toNumber() ?? 0,
+      avgRating: ratingResult._avg.rating
+        ? Math.round(ratingResult._avg.rating * 10) / 10
+        : null,
+    };
   }
 }
