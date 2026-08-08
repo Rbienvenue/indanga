@@ -96,11 +96,8 @@ export function Footer() {
           <p className="text-xs text-muted-foreground/40">
             &copy; {new Date().getFullYear()} INDANGA. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center">
             <ThemeToggle />
-            <p className="text-xs text-muted-foreground/40">
-              Made with <span className="text-red-400">❤</span> in Rwanda
-            </p>
           </div>
         </div>
       </div>
