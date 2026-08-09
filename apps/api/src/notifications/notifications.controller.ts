@@ -1,0 +1,60 @@
+import {
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+} from "@nestjs/common";
+import { Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
+import { PaginationResponse } from "src/@types";
+import { NotificationsService } from "./notifications.service";
+
+class NotificationQueryDto {
+  page?: number;
+  limit?: number;
+}
+
+@Controller("notifications")
+export class NotificationsController {
+  constructor(private readonly notificationsService: NotificationsService) {}
+
+  @Get()
+  @Roles(["TENANT", "LANDLORD", "ADMIN"])
+  async getNotifications(
+    @Session() session: UserSession,
+    @Query() query: NotificationQueryDto,
+  ) {
+    const result = await this.notificationsService.getNotifications(
+      session.user.id,
+      query,
+    );
+    return new PaginationResponse(result.data, result.meta);
+  }
+
+  @Get("unread-count")
+  @Roles(["TENANT", "LANDLORD", "ADMIN"])
+  async getUnreadCount(@Session() session: UserSession) {
+    const count = await this.notificationsService.getUnreadCount(session.user.id);
+    return { count };
+  }
+
+  @Patch("read-all")
+  @Roles(["TENANT", "LANDLORD", "ADMIN"])
+  async markAllAsRead(@Session() session: UserSession) {
+    const result = await this.notificationsService.markAllAsRead(session.user.id);
+    return { data: result, success: true, message: "notifications marked as read" };
+  }
+
+  @Patch(":id/read")
+  @Roles(["TENANT", "LANDLORD", "ADMIN"])
+  async markOneAsRead(
+    @Session() session: UserSession,
+    @Param("id") notificationId: string,
+  ) {
+    const notification = await this.notificationsService.markOneAsRead(
+      session.user.id,
+      notificationId,
+    );
+    return { data: notification, success: true, message: "notification marked as read" };
+  }
+}
