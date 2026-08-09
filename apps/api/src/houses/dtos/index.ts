@@ -34,6 +34,7 @@ export class CreateHouseDto {
   @IsString()
   address?: string;
 
+  @Type(() => Number)
   @IsInt()
   price: number;
 
@@ -51,9 +52,11 @@ export class CreateHouseDto {
   @IsString()
   propertyType: string;
 
+  @Type(() => Number)
   @IsInt()
   bedrooms: number;
 
+  @Type(() => Number)
   @IsInt()
   bathrooms: number;
 }

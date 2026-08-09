@@ -2,14 +2,13 @@ import { z } from "zod";
 
 export const propertyTypes = [
   "House",
-  "Apartment",
   "Hotel",
   "Car",
 ] as const;
 
 export type PropertyType = (typeof propertyTypes)[number];
 
-const typesWithRooms: PropertyType[] = ["House", "Apartment"];
+const typesWithRooms: PropertyType[] = ["House", "Hotel"];
 
 export function typeHasRooms(type: PropertyType): boolean {
   return typesWithRooms.includes(type);

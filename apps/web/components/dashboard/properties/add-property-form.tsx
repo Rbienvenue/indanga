@@ -156,7 +156,7 @@ export function AddPropertyForm() {
                             form.setValue("bathrooms", undefined);
                           }
                         }}
-                        className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+                        className="grid grid-cols-2 gap-3 sm:grid-cols-3"
                       >
                         {propertyTypes.map((type) => (
                           <Label
