@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import type { PaginationResponse } from "@/@types";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -22,6 +22,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { fetcher } from "@/lib/fetcher";
 
 type NotificationItem = {
@@ -63,6 +70,7 @@ function getNotificationIcon(type: string) {
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
+  const [selectedNotificationId, setSelectedNotificationId] = useState<string | null>(null);
 
   const notificationsQuery = useQuery<PaginationResponse<NotificationItem>>({
     queryKey: ["notifications"],
@@ -92,11 +100,21 @@ export default function NotificationsPage() {
   });
 
   const notifications = notificationsQuery.data?.data ?? [];
+  const selectedNotification =
+    notifications.find((notification) => notification.id === selectedNotificationId) ?? null;
 
   const unreadCount = useMemo(
     () => unreadCountQuery.data?.count ?? notifications.filter((item) => !item.isRead).length,
     [notifications, unreadCountQuery.data?.count],
   );
+
+  const openNotification = async (notification: NotificationItem) => {
+    setSelectedNotificationId(notification.id);
+
+    if (!notification.isRead) {
+      await markOneAsReadMutation.mutateAsync(notification.id);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -201,7 +219,18 @@ export default function NotificationsPage() {
                 return (
                   <div
                     key={notification.id}
-                    className={`flex gap-4 rounded-2xl border p-4 transition-colors ${
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      void openNotification(notification);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        void openNotification(notification);
+                      }
+                    }}
+                    className={`flex cursor-pointer gap-4 rounded-2xl border p-4 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40 ${
                       notification.isRead
                         ? "bg-background"
                         : "border-primary/20 bg-primary/[0.03]"
@@ -250,6 +279,63 @@ export default function NotificationsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog
+        open={selectedNotification !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedNotificationId(null);
+          }
+        }}
+      >
+        {selectedNotification ? (
+          <DialogContent className="max-w-xl gap-5 rounded-2xl p-0">
+            <div className="border-b px-5 pt-5 pb-4">
+              <DialogHeader className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    {(() => {
+                      const Icon = getNotificationIcon(selectedNotification.type);
+                      return <Icon className="size-5" />;
+                    })()}
+                  </div>
+                  <div>
+                    <DialogTitle className="text-xl font-semibold">
+                      {selectedNotification.title}
+                    </DialogTitle>
+                    <DialogDescription className="mt-1">
+                      {formatDate(selectedNotification.createdAt)}
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+            </div>
+
+            <div className="px-5 pb-5">
+              <div className="rounded-xl border bg-muted/30 p-4">
+                <p className="text-sm leading-7 text-foreground">
+                  {selectedNotification.message}
+                </p>
+              </div>
+
+              <div className="mt-5 flex items-center justify-end gap-3">
+                {!selectedNotification.isRead ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      void markOneAsReadMutation.mutateAsync(selectedNotification.id);
+                    }}
+                    disabled={markOneAsReadMutation.isPending}
+                  >
+                    Mark as read
+                  </Button>
+                ) : null}
+                <Button onClick={() => setSelectedNotificationId(null)}>Close</Button>
+              </div>
+            </div>
+          </DialogContent>
+        ) : null}
+      </Dialog>
     </div>
   );
 }
