@@ -3,15 +3,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
-import { Bath, BedDouble, Heart, MapPin } from "lucide-react";
+import { Bath, BedDouble, Heart, MapPin, Pencil } from "lucide-react";
 
 import type { ApiResponse } from "@/@types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetcher } from "@/lib/fetcher";
 import { cn } from "@/lib/utils";
-import { EditPropertyDialog } from "@/components/dashboard/properties/edit-property-dialog";
 import { DeletePropertyDialog } from "@/components/dashboard/properties/delete-property-dialog";
 
 export type ProductCardProps = {
@@ -74,10 +74,17 @@ export function ProductCard({
     <Card
       key={id}
       className={cn(
-        "group h-full w-full overflow-hidden border-border/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-foreground/5",
+        "group relative h-full w-full overflow-hidden border-border/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-foreground/5",
         className,
       )}
     >
+      {href && (
+        <Link
+          href={href}
+          aria-label={`View ${name}`}
+          className="absolute inset-0 z-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        />
+      )}
       <div className="relative aspect-16/10 w-full overflow-hidden">
         <Image
           src={imageSrc}
@@ -97,20 +104,17 @@ export function ProductCard({
           </Badge>
         )}
         {showManageActions ? (
-          <div className="absolute top-3 right-3 flex gap-1.5">
-            <EditPropertyDialog
-              house={{
-                id,
-                name,
-                location,
-                address: address ?? null,
-                price,
-                description,
-                propertyType,
-                bedrooms,
-                bathrooms,
-              }}
-            />
+          <div className="absolute top-3 right-3 z-10 flex gap-1.5">
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-8"
+              asChild
+            >
+              <Link href={`/dashboard/properties/new?houseId=${id}`}>
+                <Pencil className="size-4" />
+              </Link>
+            </Button>
             <DeletePropertyDialog houseId={id} houseName={name} />
           </div>
         ) : (
@@ -123,7 +127,7 @@ export function ProductCard({
               e.stopPropagation();
               favoriteMutation.mutate();
             }}
-            className="absolute top-3 right-3 inline-flex size-8 items-center justify-center rounded-full bg-white/90 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="absolute top-3 right-3 z-10 inline-flex size-8 items-center justify-center rounded-full bg-white/90 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Heart className={cn("size-4", favoriteState && "fill-red-500 text-red-500")} />
           </button>
@@ -156,16 +160,7 @@ export function ProductCard({
     </Card>
   );
 
-  if (!href) return card;
-
-  return (
-    <Link
-      href={href}
-      className="block h-full w-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-    >
-      {card}
-    </Link>
-  );
+  return card;
 }
 
 export function ProductCardSkeleton() {

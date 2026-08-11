@@ -1,10 +1,10 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { House } from "@indanga/db";
 import { Building2, Car, Home, Hotel, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -32,7 +32,9 @@ import { ImageDropzone } from "@/components/ui/image-dropzone";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { fetcher } from "@/lib/fetcher";
 import {
   createHouseSchema,
   propertyTypes,
@@ -43,16 +45,28 @@ import {
 
 const propertyTypeIcons: Record<PropertyType, React.ReactNode> = {
   House: <Home className="size-5" />,
-  Apartment: <Building2 className="size-5" />,
   Hotel: <Hotel className="size-5" />,
   Car: <Car className="size-5" />,
 };
 
-export function AddPropertyForm() {
+interface AddPropertyFormProps {
+  houseId?: string;
+}
+
+export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
   const session = useSession();
   const queryClient = useQueryClient();
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
+  const isEditMode = !!houseId;
+
+  const { data: houseResponse, isLoading: isLoadingHouse } = useQuery({
+    queryKey: ["houses", houseId],
+    queryFn: () => fetcher<ApiResponse<House>>(`/houses/${houseId}`),
+    enabled: isEditMode,
+  });
+
+  const house = houseResponse?.data;
 
   const form = useForm<CreateHouseValues>({
     resolver: zodResolver(createHouseSchema),
@@ -71,6 +85,26 @@ export function AddPropertyForm() {
       description: "",
     },
   });
+
+  useEffect(() => {
+    if (house) {
+      const locationParts = parseLocation(house.location);
+      form.reset({
+        name: house.name,
+        propertyType: house.propertyType as CreateHouseValues["propertyType"],
+        price: house.price,
+        bedrooms: house.bedrooms,
+        bathrooms: house.bathrooms,
+        province: locationParts.province,
+        district: locationParts.district,
+        sector: locationParts.sector,
+        cell: locationParts.cell,
+        village: locationParts.village,
+        address: house.address ?? "",
+        description: house.description,
+      });
+    }
+  }, [house, form]);
 
   const selectedType = form.watch("propertyType");
   const showRooms = typeHasRooms(selectedType);
@@ -123,16 +157,63 @@ export function AddPropertyForm() {
     },
   });
 
+  const updatePropertyMutation = useMutation({
+    mutationFn: (values: CreateHouseValues) =>
+      fetcher<ApiResponse<unknown>>(`/houses/${houseId}`, {
+        method: "PATCH",
+        body: JSON.stringify(values),
+      }),
+    onSuccess: () => {
+      toast.success("Property updated successfully");
+      void queryClient.invalidateQueries({ queryKey: ["houses"] });
+      void queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
+      router.push("/dashboard");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message ?? "Failed to update property");
+    },
+  });
+
+  const mutation = isEditMode ? updatePropertyMutation : addPropertyMutation;
+
   const onSubmit = (values: CreateHouseValues) => {
-    addPropertyMutation.mutate(values);
+    mutation.mutate(values);
   };
+
+  if (isEditMode && isLoadingHouse) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-7 w-48" />
+          <Skeleton className="h-4 w-72" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <div className="grid grid-cols-2 gap-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Skeleton className="h-20 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Property Details</CardTitle>
+        <CardTitle>{isEditMode ? "Edit Property" : "Property Details"}</CardTitle>
         <CardDescription>
-          Fill in the details of your property and add photos.
+          {isEditMode
+            ? "Update the details of your property."
+            : "Fill in the details of your property and add photos."}
         </CardDescription>
       </CardHeader>
 
@@ -341,10 +422,12 @@ export function AddPropertyForm() {
               )}
             />
 
-            <div className="space-y-2">
-              <Label>Photos</Label>
-              <ImageDropzone value={files} onChange={setFiles} />
-            </div>
+            {!isEditMode && (
+              <div className="space-y-2">
+                <Label>Photos</Label>
+                <ImageDropzone value={files} onChange={setFiles} />
+              </div>
+            )}
           </CardContent>
 
           <CardFooter className="flex justify-between">
@@ -355,15 +438,32 @@ export function AddPropertyForm() {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={addPropertyMutation.isPending}>
-              {addPropertyMutation.isPending && (
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending && (
                 <Loader2 className="animate-spin" />
               )}
-              {addPropertyMutation.isPending ? "Adding..." : "Add Property"}
+              {mutation.isPending
+                ? isEditMode
+                  ? "Saving..."
+                  : "Adding..."
+                : isEditMode
+                  ? "Save Changes"
+                  : "Add Property"}
             </Button>
           </CardFooter>
         </form>
       </Form>
     </Card>
   );
+}
+
+function parseLocation(location: string) {
+  const parts = location.split(",").map((s) => s.trim());
+  return {
+    province: parts[0] ?? "",
+    district: parts[1] ?? "",
+    sector: parts[2] ?? "",
+    cell: parts[3]?.split(" ")[0] ?? "",
+    village: parts[3]?.split(" ").slice(1).join(" ") ?? "",
+  };
 }

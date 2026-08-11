@@ -140,6 +140,7 @@ export class HousesService {
 
   async deleteHouse(id: string) {
     //check the agentid bypass for admins
+    //check if house is not booked
     await this.getHouseById(id);
     const house = await this.db.house.delete({ where: { id } });
     return house;
