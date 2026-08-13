@@ -22,7 +22,7 @@ export const authClient = createAuthClient({
           returned: false,
         },
         role: {
-          type: ["TENANT", "LANDLORD", "ADMIN"],
+          type: ["tenant", "landlord", "admin"],
           required: true,
           input: true,
         },

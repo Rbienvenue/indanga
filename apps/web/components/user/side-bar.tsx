@@ -72,9 +72,9 @@ export function AppSidebar() {
   const router = useRouter();
   const session = useSession();
   const items =
-    session?.user?.role === "ADMIN"
+    session?.user?.role === "admin"
       ? adminItems
-      : session?.user?.role === "LANDLORD"
+      : session?.user?.role === "landlord"
         ? agentItems
         : tenantItems;
 

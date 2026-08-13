@@ -9,7 +9,7 @@ export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
   @Post()
-  @Roles(["TENANT"])
+  @Roles(["tenant"])
   async createBooking(
     @Session() session: UserSession,
     @Body() data: CreateBookingDto,
@@ -22,7 +22,7 @@ export class BookingsController {
   }
 
   @Get()
-  @Roles(["TENANT", "LANDLORD", "ADMIN"])
+  @Roles(["tenant", "landlord", "admin"])
   async getBookingsByUser(
     @Session() session: UserSession,
     @Query() query: FilterBookingDto,
@@ -35,7 +35,7 @@ export class BookingsController {
   }
 
   @Get(":id")
-  @Roles(["TENANT", "LANDLORD", "ADMIN"])
+  @Roles(["tenant", "landlord", "admin"])
   async getBookingById(
     @Param("id") id: string,
     @Session() session: UserSession,
@@ -45,7 +45,7 @@ export class BookingsController {
   }
 
   @Patch(":id/status")
-  @Roles(["LANDLORD", "ADMIN"])
+  @Roles(["landlord", "admin"])
   async updateBookingStatus(
     @Param("id") id: string,
     @Session() session: UserSession,

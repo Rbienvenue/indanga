@@ -14,12 +14,12 @@ export default function NewPropertyPage() {
   const isEditMode = !!houseId;
 
   useEffect(() => {
-    if (session?.user?.role !== "LANDLORD") {
+    if (session?.user?.role !== "landlord") {
       router.replace("/dashboard");
     }
   }, [session?.user?.role, router]);
 
-  if (session?.user?.role !== "LANDLORD") {
+  if (session?.user?.role !== "landlord") {
     return null;
   }
 

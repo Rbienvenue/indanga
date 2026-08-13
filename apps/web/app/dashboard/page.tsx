@@ -24,7 +24,7 @@ export default function Page() {
     user?.email?.split("@")[0] ??
     "there";
 
-  if (user?.role === "LANDLORD") {
+  if (user?.role === "landlord") {
     return <AgentDashboard firstName={firstName} />;
   }
 

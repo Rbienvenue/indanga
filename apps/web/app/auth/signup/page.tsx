@@ -25,7 +25,7 @@ export default function SignupPage() {
     resolver: zodResolver(signupSchema),
     defaultValues: {
       name: "",
-      role: "TENANT",
+      role: "tenant",
       phoneNumber: "",
       nationalId: "",
       email: "",
@@ -135,7 +135,7 @@ export default function SignupPage() {
               control={form.control}
               name="email"
               render={({ field }) => (
-                <FormItem className={selectedRole === "TENANT" ? "sm:col-span-2" : undefined}>
+                <FormItem className={selectedRole === "tenant" ? "sm:col-span-2" : undefined}>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
@@ -151,7 +151,7 @@ export default function SignupPage() {
                 </FormItem>
               )}
             />
-            {selectedRole === "LANDLORD" ? (
+            {selectedRole === "landlord" ? (
               <FormField
                 control={form.control}
                 name="nationalId"

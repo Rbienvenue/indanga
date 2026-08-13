@@ -227,7 +227,7 @@ function Pagination({
 export default function BookingsPage() {
   const [page, setPage] = useState(1);
   const session = useSession();
-  const isAgent = session?.user?.role === "LANDLORD";
+  const isAgent = session?.user?.role === "landlord";
 
   const bookingsQuery = useQuery<PaginationResponse<BookingWithHouse>>({
     queryKey: ["bookings", page, PAGE_SIZE],

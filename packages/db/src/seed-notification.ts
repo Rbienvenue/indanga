@@ -6,7 +6,7 @@ const user = await prisma.user.upsert({
   where: { email },
   update: {
     name: "Bienvenue Rudasingwa",
-    role: "TENANT",
+    role: "tenant",
     emailVerified: true,
     status: "ACTIVE",
   },
@@ -16,7 +16,7 @@ const user = await prisma.user.upsert({
     email,
     phoneNumber: "+250788000099",
     nationalId: "1190000000000009",
-    role: "TENANT",
+    role: "tenant",
     emailVerified: true,
     image: "https://i.pravatar.cc/300?img=33",
     status: "ACTIVE",

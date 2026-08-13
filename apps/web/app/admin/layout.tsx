@@ -11,7 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const session = useSession();
   const router = useRouter();
 
-  if (session && session.user?.role !== "ADMIN") {
+  if (session && session.user?.role !== "admin") {
     router.replace("/dashboard");
     return null;
   }

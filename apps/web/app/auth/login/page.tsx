@@ -37,7 +37,7 @@ export default function LoginPage() {
     const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
     const user = data.user;
     const destination =
-      callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//") ? callbackUrl : user.role==="ADMIN" ? "/admin" : "/";
+      callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//") ? callbackUrl : user.role==="admin" ? "/admin" : "/";
 
     router.push(destination);
     router.refresh();

@@ -13,7 +13,7 @@ model User {
   email            String
   password         String?
   phoneNumber      String?
-  role             UserRole    @default(TENANT)
+  role             UserRole    @default(tenant)
   nationalId       String?
   emailVerified    Boolean     @default(false)
   image            String?
@@ -40,9 +40,9 @@ model User {
 }
 
 enum UserRole {
-  TENANT
-  LANDLORD
-  ADMIN
+  tenant
+  landlord
+  admin
 }
 
 enum Status {

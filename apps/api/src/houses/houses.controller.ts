@@ -56,7 +56,7 @@ export class HousesController {
   }
 
   @Get("favorites")
-  @Roles(["TENANT"])
+  @Roles(["tenant"])
   async getFavorites(
     @Session() session: UserSession,
     @Query() query: FavoriteFilterDto,
@@ -69,7 +69,7 @@ export class HousesController {
   }
 
   @Get("stats")
-  @Roles(["LANDLORD"])
+  @Roles(["landlord"])
   async getAgentStats(@Session() session: UserSession) {
     const stats = await this.houseService.getAgentStats(session.user.id);
     return new ApiResponse(stats, "agent stats fetched");
@@ -95,7 +95,7 @@ export class HousesController {
   }
 
   @Post(":id/favorites")
-  @Roles(["TENANT"])
+  @Roles(["tenant"])
   async toggleFavorite(
     @Param("id") id: string,
     @Session() session: UserSession,
@@ -108,7 +108,7 @@ export class HousesController {
   }
 
   @Post(":id/reviews")
-  @Roles(["TENANT"])
+  @Roles(["tenant"])
   async leaveReview(
     @Param("id") id: string,
     @Session() session: UserSession,

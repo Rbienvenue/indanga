@@ -15,13 +15,13 @@ type RoleOption = {
 
 const defaultRoles: RoleOption[] = [
   {
-    value: "TENANT",
+    value: "tenant",
     title: "Client",
     description: "Looking for a house to rent",
     icon: Home,
   },
   {
-    value: "LANDLORD",
+    value: "landlord",
     title: "Agent",
     description: "Want to list and manage properties",
     icon: Building2,
@@ -39,7 +39,7 @@ type RolePickerProps = {
 
 export function RolePicker({
   value,
-  defaultValue = "TENANT",
+  defaultValue = "tenant",
   onValueChange,
   options = defaultRoles,
   className,

@@ -50,9 +50,9 @@ type UserWithRole = {
 };
 
 const roleBadgeVariant: Record<string, string> = {
-  ADMIN: "bg-purple-100 text-purple-700",
-  LANDLORD: "bg-blue-100 text-blue-700",
-  TENANT: "bg-green-100 text-green-700",
+  admin: "bg-purple-100 text-purple-700",
+  landlord: "bg-blue-100 text-blue-700",
+  tenant: "bg-green-100 text-green-700",
 };
 
 function CreateUserDialog() {
@@ -124,11 +124,11 @@ function CreateUserDialog() {
               id="role"
               name="role"
               className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-              defaultValue="TENANT"
+              defaultValue="tenant"
             >
-              <option value="TENANT">Tenant</option>
-              <option value="LANDLORD">Landlord</option>
-              <option value="ADMIN">Admin</option>
+              <option value="tenant">Tenant</option>
+              <option value="landlord">Landlord</option>
+              <option value="admin">Admin</option>
             </select>
           </div>
           <Button type="submit" className="w-full" disabled={createMutation.isPending}>
@@ -261,19 +261,19 @@ function UserActions({ user }: { user: UserWithRole }) {
         <DropdownMenuContent align="end">
           <DropdownMenuItem
             disabled={setRoleMutation.isPending}
-            onSelect={() => setRoleMutation.mutate(user.role === "ADMIN" ? "TENANT" : "ADMIN")}
+            onSelect={() => setRoleMutation.mutate(user.role === "admin" ? "tenant" : "admin")}
           >
             <Shield className="mr-2 size-4" />
-            {user.role === "ADMIN" ? "Remove Admin" : "Make Admin"}
+            {user.role === "admin" ? "Remove Admin" : "Make Admin"}
           </DropdownMenuItem>
           <DropdownMenuItem
             disabled={setRoleMutation.isPending}
             onSelect={() =>
-              setRoleMutation.mutate(user.role === "LANDLORD" ? "TENANT" : "LANDLORD")
+              setRoleMutation.mutate(user.role === "landlord" ? "tenant" : "landlord")
             }
           >
             <Shield className="mr-2 size-4" />
-            {user.role === "LANDLORD" ? "Set as Tenant" : "Set as Landlord"}
+            {user.role === "landlord" ? "Set as Tenant" : "Set as Landlord"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <SetPasswordDialog userId={user.id} userName={user.name} />
@@ -440,9 +440,9 @@ export default function AdminUsersPage() {
               setPage(0);
             },
             options: [
-              { label: "Tenant", value: "TENANT" },
-              { label: "Landlord", value: "LANDLORD" },
-              { label: "Admin", value: "ADMIN" },
+              { label: "Tenant", value: "tenant" },
+              { label: "Landlord", value: "landlord" },
+              { label: "Admin", value: "admin" },
             ],
           },
         ]}

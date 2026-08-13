@@ -5,7 +5,7 @@ import { PropertyFeed } from "@/components/houses/property-feed";
 
 export default function PropertiesPage() {
   const session = useSession();
-  const isAgent = session?.user?.role === "LANDLORD";
+  const isAgent = session?.user?.role === "landlord";
 
   return (
     <div className="flex min-h-screen flex-col">

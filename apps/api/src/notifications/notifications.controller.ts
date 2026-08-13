@@ -19,7 +19,7 @@ export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get()
-  @Roles(["TENANT", "LANDLORD", "ADMIN"])
+  @Roles(["tenant", "landlord", "admin"])
   async getNotifications(
     @Session() session: UserSession,
     @Query() query: NotificationQueryDto,
@@ -32,21 +32,21 @@ export class NotificationsController {
   }
 
   @Get("unread-count")
-  @Roles(["TENANT", "LANDLORD", "ADMIN"])
+  @Roles(["tenant", "landlord", "admin"])
   async getUnreadCount(@Session() session: UserSession) {
     const count = await this.notificationsService.getUnreadCount(session.user.id);
     return { count };
   }
 
   @Patch("read-all")
-  @Roles(["TENANT", "LANDLORD", "ADMIN"])
+  @Roles(["tenant", "landlord", "admin"])
   async markAllAsRead(@Session() session: UserSession) {
     const result = await this.notificationsService.markAllAsRead(session.user.id);
     return { data: result, success: true, message: "notifications marked as read" };
   }
 
   @Patch(":id/read")
-  @Roles(["TENANT", "LANDLORD", "ADMIN"])
+  @Roles(["tenant", "landlord", "admin"])
   async markOneAsRead(
     @Session() session: UserSession,
     @Param("id") notificationId: string,

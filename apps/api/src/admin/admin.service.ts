@@ -23,8 +23,8 @@ export class AdminService {
       revenueResult,
     ] = await Promise.all([
       this.db.user.count(),
-      this.db.user.count({ where: { role: "TENANT" } }),
-      this.db.user.count({ where: { role: "LANDLORD" } }),
+      this.db.user.count({ where: { role: "tenant" } }),
+      this.db.user.count({ where: { role: "landlord" } }),
       this.db.house.count(),
       this.db.booking.count(),
       this.db.booking.count({ where: { status: "PENDING" } }),

@@ -16,8 +16,8 @@ export const auth = betterAuth({
   }),
   plugins: [
     admin({
-      defaultRole: "TENANT",
-      adminRoles: ["ADMIN"],
+      defaultRole: "tenant",
+      adminRoles: ["admin"],
     }),
   ],
   user: {
@@ -34,7 +34,7 @@ export const auth = betterAuth({
         returned: false,
       },
       role: {
-        type: ["TENANT", "LANDLORD", "ADMIN"],
+        type: ["tenant", "landlord", "admin"],
         required: true,
         input: true,
       },

@@ -9,7 +9,7 @@ import {
 } from "./dtos";
 
 @Controller("admin")
-@Roles(["ADMIN"])
+@Roles(["admin"])
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
