@@ -22,7 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <AppSidebar />
         <SidebarInset>
           <Topbar />
-          <div className="flex-1 bg-muted/20 px-4 py-6 lg:px-8">
+          <div className="min-w-0 flex-1 overflow-x-hidden bg-muted/20 px-4 py-6 lg:px-8">
             {children}
           </div>
         </SidebarInset>

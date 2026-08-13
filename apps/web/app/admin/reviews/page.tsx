@@ -2,18 +2,14 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Star, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import type { PaginationResponse } from "@/@types";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,8 +36,7 @@ function DeleteReviewButton({ reviewId }: { reviewId: string }) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: () =>
-      fetcher(`/admin/reviews/${reviewId}`, { method: "DELETE" }),
+    mutationFn: () => fetcher(`/admin/reviews/${reviewId}`, { method: "DELETE" }),
     onSuccess: () => {
       toast.success("Review deleted");
       void queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
@@ -98,6 +93,56 @@ function RatingStars({ rating }: { rating: number }) {
   );
 }
 
+const columns: ColumnDef<ReviewWithDetails>[] = [
+  {
+    id: "tenant",
+    header: "Tenant",
+    accessorFn: (row) => row.tenant.name,
+    cell: ({ row }) => (
+      <div>
+        <p className="font-medium">{row.original.tenant.name}</p>
+        <p className="text-xs text-muted-foreground">{row.original.tenant.email}</p>
+      </div>
+    ),
+  },
+  {
+    id: "property",
+    header: "Property",
+    accessorFn: (row) => row.house.name,
+  },
+  {
+    accessorKey: "rating",
+    header: "Rating",
+    cell: ({ row }) => <RatingStars rating={row.original.rating} />,
+  },
+  {
+    accessorKey: "comment",
+    header: "Comment",
+    enableSorting: false,
+    cell: ({ row }) => (
+      <p className="max-w-sm truncate text-muted-foreground whitespace-normal">
+        {row.original.comment}
+      </p>
+    ),
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Date",
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">
+        {new Date(row.original.createdAt).toLocaleDateString()}
+      </span>
+    ),
+  },
+  {
+    id: "actions",
+    header: "",
+    enableSorting: false,
+    size: 48,
+    cell: ({ row }) => <DeleteReviewButton reviewId={row.original.id} />,
+  },
+];
+
 export default function AdminReviewsPage() {
   const [page, setPage] = useState(1);
   const limit = 20;
@@ -112,73 +157,18 @@ export default function AdminReviewsPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <PageHeader
-        title="Reviews"
-        description={`${meta?.total ?? 0} total reviews`}
+      <PageHeader title="Reviews" description={`${meta?.total ?? 0} total reviews`} />
+
+      <DataTable
+        columns={columns}
+        data={reviews}
+        loading={query.isLoading}
+        pagination={{
+          page,
+          totalPages: meta?.totalPages ?? 1,
+          onPageChange: setPage,
+        }}
       />
-
-      <Card>
-        <CardHeader />
-        <CardContent>
-          {query.isLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="rounded-lg border p-3 space-y-2">
-                  <Skeleton className="h-4 w-48" />
-                  <Skeleton className="h-3 w-full" />
-                  <Skeleton className="h-3 w-3/4" />
-                </div>
-              ))}
-            </div>
-          ) : reviews.length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground py-8">
-              No reviews found.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {reviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="rounded-lg border border-border/50 p-3"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">{review.tenant.name}</p>
-                        <RatingStars rating={review.rating} />
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {review.house.name} &middot;{" "}
-                        {new Date(review.createdAt).toLocaleDateString()}
-                      </p>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {review.comment}
-                      </p>
-                    </div>
-                    <DeleteReviewButton reviewId={review.id} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {meta && meta.totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">
-                Page {meta.page} of {meta.totalPages}
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-                  Previous
-                </Button>
-                <Button variant="outline" size="sm" disabled={page >= meta.totalPages} onClick={() => setPage((p) => p + 1)}>
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

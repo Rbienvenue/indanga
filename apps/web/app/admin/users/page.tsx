@@ -2,29 +2,16 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  MoreHorizontal,
-  UserPlus,
-  Search,
-  Loader2,
-  Shield,
-  Ban,
-  KeyRound,
-  Trash2,
-} from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal, UserPlus, Loader2, Shield, Ban, KeyRound, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { authClient } from "@/lib/auth-client";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -39,13 +26,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,7 +46,7 @@ type UserWithRole = {
   role: string;
   banned: boolean | null;
   banReason: string | null;
-  createdAt: string;
+  createdAt: string | Date;
 };
 
 const roleBadgeVariant: Record<string, string> = {
@@ -161,13 +141,7 @@ function CreateUserDialog() {
   );
 }
 
-function SetPasswordDialog({
-  userId,
-  userName,
-}: {
-  userId: string;
-  userName: string;
-}) {
+function SetPasswordDialog({ userId, userName }: { userId: string; userName: string }) {
   const [open, setOpen] = useState(false);
 
   const mutation = useMutation({
@@ -287,9 +261,7 @@ function UserActions({ user }: { user: UserWithRole }) {
         <DropdownMenuContent align="end">
           <DropdownMenuItem
             disabled={setRoleMutation.isPending}
-            onSelect={() =>
-              setRoleMutation.mutate(user.role === "ADMIN" ? "TENANT" : "ADMIN")
-            }
+            onSelect={() => setRoleMutation.mutate(user.role === "ADMIN" ? "TENANT" : "ADMIN")}
           >
             <Shield className="mr-2 size-4" />
             {user.role === "ADMIN" ? "Remove Admin" : "Make Admin"}
@@ -297,9 +269,7 @@ function UserActions({ user }: { user: UserWithRole }) {
           <DropdownMenuItem
             disabled={setRoleMutation.isPending}
             onSelect={() =>
-              setRoleMutation.mutate(
-                user.role === "LANDLORD" ? "TENANT" : "LANDLORD"
-              )
+              setRoleMutation.mutate(user.role === "LANDLORD" ? "TENANT" : "LANDLORD")
             }
           >
             <Shield className="mr-2 size-4" />
@@ -308,18 +278,12 @@ function UserActions({ user }: { user: UserWithRole }) {
           <DropdownMenuSeparator />
           <SetPasswordDialog userId={user.id} userName={user.name} />
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            disabled={banMutation.isPending}
-            onSelect={() => banMutation.mutate()}
-          >
+          <DropdownMenuItem disabled={banMutation.isPending} onSelect={() => banMutation.mutate()}>
             <Ban className="mr-2 size-4" />
             {user.banned ? "Unban User" : "Ban User"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="text-destructive"
-            onSelect={() => setDeleteOpen(true)}
-          >
+          <DropdownMenuItem className="text-destructive" onSelect={() => setDeleteOpen(true)}>
             <Trash2 className="mr-2 size-4" />
             Delete User
           </DropdownMenuItem>
@@ -331,8 +295,8 @@ function UserActions({ user }: { user: UserWithRole }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {user.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the user and all their data. This action
-              cannot be undone.
+              This will permanently delete the user and all their data. This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -342,9 +306,7 @@ function UserActions({ user }: { user: UserWithRole }) {
               disabled={deleteMutation.isPending}
               onClick={() => deleteMutation.mutate()}
             >
-              {deleteMutation.isPending && (
-                <Loader2 className="mr-2 size-4 animate-spin" />
-              )}
+              {deleteMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -354,22 +316,62 @@ function UserActions({ user }: { user: UserWithRole }) {
   );
 }
 
-function UsersTableSkeleton() {
-  return (
-    <div className="space-y-3">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 rounded-lg border p-3">
-          <Skeleton className="size-10 rounded-full" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-3 w-56" />
-          </div>
-          <Skeleton className="h-6 w-16 rounded-full" />
+const columns: ColumnDef<UserWithRole>[] = [
+  {
+    accessorKey: "name",
+    header: "Name",
+    cell: ({ row }) => (
+      <div className="flex items-center gap-3">
+        <div className="flex size-8 items-center justify-center rounded-full bg-muted text-xs font-medium">
+          {row.original.name?.charAt(0)?.toUpperCase() ?? "?"}
         </div>
-      ))}
-    </div>
-  );
-}
+        <span className="font-medium">{row.original.name}</span>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+    cell: ({ row }) => <span className="text-muted-foreground">{row.original.email}</span>,
+  },
+  {
+    accessorKey: "role",
+    header: "Role",
+    cell: ({ row }) => (
+      <Badge variant="secondary" className={roleBadgeVariant[row.original.role] ?? ""}>
+        {row.original.role}
+      </Badge>
+    ),
+  },
+  {
+    id: "status",
+    header: "Status",
+    cell: ({ row }) =>
+      row.original.banned ? (
+        <Badge variant="destructive" className="text-xs">
+          Banned
+        </Badge>
+      ) : (
+        <span className="text-xs text-muted-foreground">Active</span>
+      ),
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Joined",
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">
+        {new Date(row.original.createdAt).toLocaleDateString()}
+      </span>
+    ),
+  },
+  {
+    id: "actions",
+    header: "",
+    enableSorting: false,
+    size: 48,
+    cell: ({ row }) => <UserActions user={row.original} />,
+  },
+];
 
 export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
@@ -404,117 +406,52 @@ export default function AdminUsersPage() {
     },
   });
 
-  const users = usersQuery.data?.users ?? [];
+  const users = (usersQuery.data?.users ?? []) as UserWithRole[];
   const total = usersQuery.data?.total ?? 0;
   const totalPages = Math.ceil(total / limit);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <PageHeader title="Users" description={`${total} total users`} actions={<CreateUserDialog />} />
+      <PageHeader
+        title="Users"
+        description={`${total} total users`}
+        actions={<CreateUserDialog />}
+      />
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search by email..."
-                className="pl-9"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(0);
-                }}
-              />
-            </div>
-            <Select
-              value={roleFilter}
-              onValueChange={(v) => {
-                setRoleFilter(v);
-                setPage(0);
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-40">
-                <SelectValue placeholder="Filter by role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="TENANT">Tenant</SelectItem>
-                <SelectItem value="LANDLORD">Landlord</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {usersQuery.isLoading ? (
-            <UsersTableSkeleton />
-          ) : users.length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground py-8">
-              No users found.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {users.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center gap-3 rounded-lg border border-border/50 p-3"
-                >
-                  <div className="flex size-10 items-center justify-center rounded-full bg-muted text-sm font-medium">
-                    {user.name?.charAt(0)?.toUpperCase() ?? "?"}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{user.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {user.email}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {user.banned && (
-                      <Badge variant="destructive" className="text-xs">
-                        Banned
-                      </Badge>
-                    )}
-                    <Badge
-                      variant="secondary"
-                      className={roleBadgeVariant[user.role] ?? ""}
-                    >
-                      {user.role}
-                    </Badge>
-                    <UserActions user={user} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">
-                Page {page + 1} of {totalPages}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page === 0}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page + 1 >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <DataTable
+        columns={columns}
+        data={users}
+        loading={usersQuery.isLoading}
+        search={{
+          placeholder: "Search by email...",
+          value: search,
+          onChange: (value) => {
+            setSearch(value);
+            setPage(0);
+          },
+        }}
+        filterBy={[
+          {
+            id: "role",
+            placeholder: "All Roles",
+            value: roleFilter,
+            onChange: (value) => {
+              setRoleFilter(value);
+              setPage(0);
+            },
+            options: [
+              { label: "Tenant", value: "TENANT" },
+              { label: "Landlord", value: "LANDLORD" },
+              { label: "Admin", value: "ADMIN" },
+            ],
+          },
+        ]}
+        pagination={{
+          page: page + 1,
+          totalPages,
+          onPageChange: (next) => setPage(next - 1),
+        }}
+      />
     </div>
   );
 }
