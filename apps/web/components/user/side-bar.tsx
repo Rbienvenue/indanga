@@ -25,6 +25,9 @@ import {
   PlusCircle,
   Search,
   Bell,
+  Users,
+  Star,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -55,11 +58,25 @@ const agentItems = [
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
 ];
 
+const adminItems = [
+  { title: "Overview", href: "/admin", icon: Shield },
+  { title: "Users", href: "/admin/users", icon: Users },
+  { title: "Properties", href: "/admin/properties", icon: House },
+  { title: "Bookings", href: "/admin/bookings", icon: Calendar },
+  { title: "Payments", href: "/admin/payments", icon: CreditCard },
+  { title: "Reviews", href: "/admin/reviews", icon: Star },
+];
+
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const session = useSession();
-  const items = session?.user?.role === "LANDLORD" ? agentItems : tenantItems;
+  const items =
+    session?.user?.role === "ADMIN"
+      ? adminItems
+      : session?.user?.role === "LANDLORD"
+        ? agentItems
+        : tenantItems;
 
   return (
     <Sidebar collapsible="icon">

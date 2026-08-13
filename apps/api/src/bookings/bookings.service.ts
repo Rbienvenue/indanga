@@ -121,7 +121,7 @@ export class BookingsService {
       throw new NotFoundException("Booking not found");
     }
 
-    if (booking.house.ownerId !== user.id) {
+    if (booking.house.ownerId !== user.id && user.role !== "ADMIN") {
       throw new ForbiddenException(
         "Only the property owner can update booking status",
       );

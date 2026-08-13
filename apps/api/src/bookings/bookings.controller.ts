@@ -45,7 +45,7 @@ export class BookingsController {
   }
 
   @Patch(":id/status")
-  @Roles(["LANDLORD"])
+  @Roles(["LANDLORD", "ADMIN"])
   async updateBookingStatus(
     @Param("id") id: string,
     @Session() session: UserSession,

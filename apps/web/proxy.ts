@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { getSession } from "@/lib/auth-client";
 
-const protectedPaths = ["/dashboard", "/bookings", "/settings"];
+const protectedPaths = ["/dashboard", "/bookings", "/settings", "/admin"];
 
 function getCallbackUrl(request: NextRequest) {
   const callbackUrl = request.nextUrl.searchParams.get("callbackUrl");
