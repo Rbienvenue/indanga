@@ -1,17 +1,43 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
-import {
-  AdminBookingsFilterDto,
-  AdminPaymentsFilterDto,
-  AdminReviewsFilterDto,
-} from "./dtos";
+import { AdminBookingsFilterDto, AdminPaymentsFilterDto, AdminReviewsFilterDto } from "./dtos";
+
+const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
+
+function bucketRevenueByMonth(payments: { amount: Prisma.Decimal; createdAt: Date }[]) {
+  const totals = Array.from({ length: 12 }, () => 0);
+
+  for (const payment of payments) {
+    totals[payment.createdAt.getMonth()] += payment.amount.toNumber();
+  }
+
+  return MONTH_LABELS.map((month, index) => ({
+    month,
+    revenue: totals[index] ?? 0,
+  }));
+}
 
 @Injectable()
 export class AdminService {
   constructor(private readonly db: PrismaService) {}
 
   async getStats() {
+    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+
     const [
       totalUsers,
       totalTenants,
@@ -21,6 +47,7 @@ export class AdminService {
       pendingBookings,
       approvedBookings,
       revenueResult,
+      yearPayments,
     ] = await Promise.all([
       this.db.user.count(),
       this.db.user.count({ where: { role: "tenant" } }),
@@ -33,6 +60,10 @@ export class AdminService {
         _sum: { amount: true },
         where: { status: "COMPLETED" },
       }),
+      this.db.payment.findMany({
+        where: { status: "COMPLETED", createdAt: { gte: startOfYear } },
+        select: { amount: true, createdAt: true },
+      }),
     ]);
 
     return {
@@ -44,6 +75,7 @@ export class AdminService {
       pendingBookings,
       approvedBookings,
       totalRevenue: revenueResult._sum.amount?.toNumber() ?? 0,
+      revenueByMonth: bucketRevenueByMonth(yearPayments),
     };
   }
 

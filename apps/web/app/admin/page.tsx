@@ -1,21 +1,18 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  Users,
-  House,
-  CalendarCheck,
-  CreditCard,
-  Clock,
-  CheckCircle,
-} from "lucide-react";
+import { Users, House, CalendarCheck, CreditCard, Clock, CheckCircle } from "lucide-react";
 
 import type { ApiResponse } from "@/@types";
-import { StatCard } from "@/components/dashboard/stat-card";
 import { PageHeader } from "@/components/dashboard/page-header";
-import { Skeleton } from "@/components/ui/skeleton";
+import { RecentPayments } from "@/components/dashboard/recent-payments";
+import { RecentProperties } from "@/components/dashboard/recent-properties";
+import { RevenueChart } from "@/components/dashboard/revenue-chart";
+import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
+import { formatPrice } from "@/lib/utils";
 
 type AdminStats = {
   totalUsers: number;
@@ -26,11 +23,8 @@ type AdminStats = {
   pendingBookings: number;
   approvedBookings: number;
   totalRevenue: number;
+  revenueByMonth: { month: string; revenue: number }[];
 };
-
-function formatRWF(amount: number) {
-  return `${amount.toLocaleString()} RWF`;
-}
 
 function StatsSkeleton() {
   return (
@@ -60,10 +54,7 @@ export default function AdminPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <PageHeader
-        title="Admin Dashboard"
-        description="Platform overview and management"
-      />
+      <PageHeader title="Admin Dashboard" description="Platform overview and management" />
 
       {statsQuery.isLoading ? (
         <StatsSkeleton />
@@ -110,12 +101,19 @@ export default function AdminPage() {
             />
             <StatCard
               title="Total Revenue"
-              value={formatRWF(stats?.totalRevenue ?? 0)}
+              value={formatPrice(stats?.totalRevenue ?? 0)}
               icon={<CreditCard className="size-5" />}
             />
           </section>
+
+          <RevenueChart data={stats?.revenueByMonth ?? []} />
         </>
       )}
+
+      <section className="grid gap-4 xl:grid-cols-2">
+        <RecentPayments />
+        <RecentProperties />
+      </section>
     </div>
   );
 }
