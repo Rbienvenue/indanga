@@ -83,7 +83,6 @@ export function RolePicker({
                 aria-label={option.title}
               />
 
-
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-semibold text-foreground">{option.title}</span>

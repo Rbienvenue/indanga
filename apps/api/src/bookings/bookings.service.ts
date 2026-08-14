@@ -107,11 +107,7 @@ export class BookingsService {
     return booking;
   }
 
-  async updateBookingStatus(
-    id: string,
-    status: BookingStatus,
-    user: UserSession["user"],
-  ) {
+  async updateBookingStatus(id: string, status: BookingStatus, user: UserSession["user"]) {
     const booking = await this.db.booking.findUnique({
       where: { id },
       include: { house: true },
@@ -122,9 +118,7 @@ export class BookingsService {
     }
 
     if (booking.house.ownerId !== user.id && user.role !== "admin") {
-      throw new ForbiddenException(
-        "Only the property owner can update booking status",
-      );
+      throw new ForbiddenException("Only the property owner can update booking status");
     }
 
     return this.db.$transaction(async (tx) => {

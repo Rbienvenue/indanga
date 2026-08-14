@@ -64,33 +64,23 @@ export function RecentActivity() {
                     const Icon = activity.icon;
 
                     return (
-                      <div
-                        key={activity.action}
-                        className="relative flex items-center gap-4"
-                      >
+                      <div key={activity.action} className="relative flex items-center gap-4">
                         {/* Timeline Node */}
                         <div
                           className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full ${activity.iconBg}`}
                         >
-                          <Icon
-                            size={18}
-                            className={activity.iconColor}
-                          />
+                          <Icon size={18} className={activity.iconColor} />
                         </div>
 
                         <div>
-                          <p className="font-medium">
-                            {activity.action}
-                          </p>
+                          <p className="font-medium">{activity.action}</p>
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {index < activities.length - 1 && (
-                  <Separator className="mt-6" />
-                )}
+                {index < activities.length - 1 && <Separator className="mt-6" />}
               </div>
             ))}
           </div>

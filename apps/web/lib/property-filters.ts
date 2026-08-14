@@ -1,4 +1,9 @@
-export function buildHousesUrl(page, filters) {
+type PropertyFilters = {
+  propertyType: string;
+  budget: string;
+};
+
+export function buildPropertiesUrl(page: number, filters: PropertyFilters) {
   const params = new URLSearchParams({
     page: String(page),
     limit: "20",
@@ -17,10 +22,10 @@ export function buildHousesUrl(page, filters) {
     if (maxPrice) params.set("maxPrice", maxPrice);
   }
 
-  return `/houses?${params.toString()}`;
+  return `/properties?${params.toString()}`;
 }
 
-function getBudgetRange(budget) {
+function getBudgetRange(budget: string) {
   const [minimum, maximum] = budget.split("-");
 
   return {
@@ -29,7 +34,7 @@ function getBudgetRange(budget) {
   };
 }
 
-function getPropertyTypeFilter(propertyType) {
+function getPropertyTypeFilter(propertyType: string) {
   const normalizedPropertyType = propertyType?.trim().toLowerCase();
 
   switch (normalizedPropertyType) {
@@ -38,6 +43,7 @@ function getPropertyTypeFilter(propertyType) {
     case undefined:
     case null:
       return null;
+    case "properties":
     case "houses":
     case "house":
     case "homes":

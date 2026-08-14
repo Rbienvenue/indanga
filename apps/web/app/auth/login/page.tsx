@@ -27,7 +27,7 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginValues) => {
     form.clearErrors("root");
-    const { error,data} = await signIn.email(values);
+    const { error, data } = await signIn.email(values);
 
     if (error) {
       form.setError("root", { message: error.message || "Unable to sign in. Try again." });
@@ -37,7 +37,11 @@ export default function LoginPage() {
     const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
     const user = data.user;
     const destination =
-      callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//") ? callbackUrl : user.role==="admin" ? "/admin" : "/";
+      callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//")
+        ? callbackUrl
+        : user.role === "admin"
+          ? "/admin"
+          : "/";
 
     router.push(destination);
     router.refresh();

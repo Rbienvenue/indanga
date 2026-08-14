@@ -35,7 +35,7 @@ const statusColors: Record<House["status"], string> = {
 export function RecentProperties() {
   const query = useQuery<PaginationResponse<House>>({
     queryKey: ["admin-dashboard-properties"],
-    queryFn: () => fetcher("/houses?page=1&limit=5"),
+    queryFn: () => fetcher("/properties?page=1&limit=5"),
   });
 
   const properties = query.data?.data ?? [];

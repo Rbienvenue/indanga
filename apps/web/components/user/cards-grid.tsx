@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, CheckCircle, BookOpen } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, CheckCircle, BookOpen } from "lucide-react";
 
 const stats = [
   {
@@ -29,13 +29,13 @@ const stats = [
     text: "text-green-700 dark:text-green-300",
     border: "border-green-500",
   },
-]
+];
 
 export default function StatsCards() {
   return (
     <div className="mt-7 grid gap-7 md:grid-cols-3">
       {stats.map((stat) => {
-        const Icon = stat.icon
+        const Icon = stat.icon;
 
         return (
           <Card
@@ -47,22 +47,18 @@ export default function StatsCards() {
                 {stat.title}
               </CardTitle>
 
-              <div
-                className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.bg}`}
-              >
+              <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.bg}`}>
                 <Icon className={`h-6 w-6 ${stat.text}`} />
               </div>
             </CardHeader>
 
             <CardContent>
               <h2 className="text-3xl font-bold">{stat.value}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {stat.description}
-              </p>
+              <p className="mt-1 text-sm text-muted-foreground">{stat.description}</p>
             </CardContent>
           </Card>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

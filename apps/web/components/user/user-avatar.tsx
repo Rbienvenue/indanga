@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronDown, LogOut} from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -29,9 +29,7 @@ interface UserAvatarProps {
   showDashboard?: boolean;
 }
 
-export function UserAvatar({
-  showDashboard = true,
-}: UserAvatarProps) {
+export function UserAvatar({ showDashboard = true }: UserAvatarProps) {
   const router = useRouter();
   const session = useSession();
   const user = session?.user;
@@ -41,55 +39,51 @@ export function UserAvatar({
   if (!session) return null;
   return (
     <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="lg" className="gap-2">
-                  <Avatar>
-                    <AvatarImage src={user?.image ?? undefined} />
-                    <AvatarFallback>{initials}</AvatarFallback>
-                  </Avatar>
-                  <span className="hidden text-sm font-medium sm:inline">
-                    {displayName.split(" ")[0]}
-                  </span>
-                  <ChevronDown className="size-4 text-muted-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel>
-                    <p>{displayName}</p>
-                    <p className="text-xs font-normal text-muted-foreground">
-                      {user?.email ?? ""}
-                    </p>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="lg" className="gap-2">
+          <Avatar>
+            <AvatarImage src={user?.image ?? undefined} />
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+          <span className="hidden text-sm font-medium sm:inline">{displayName.split(" ")[0]}</span>
+          <ChevronDown className="size-4 text-muted-foreground" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>
+            <p>{displayName}</p>
+            <p className="text-xs font-normal text-muted-foreground">{user?.email ?? ""}</p>
           </DropdownMenuLabel>
-          
+
           <DropdownMenuSeparator />
-                  {showDashboard && (
-                    <>
-                      <DropdownMenuItem onClick={() => router.push("/dashboard")}>
-                        Dashboard
-                      </DropdownMenuItem>
-                    </>
+          {showDashboard && (
+            <>
+              <DropdownMenuItem onClick={() => router.push("/dashboard")}>
+                Dashboard
+              </DropdownMenuItem>
+            </>
           )}
-          
-                  <DropdownMenuItem onClick={() => router.push("/dashboard/profile")}>
-                    Profile
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={async () =>
-                    signOut({
-                      fetchOptions: {
-                        onSuccess: () => router.replace("/auth/login"),
-                      },
-                    })
-                  }
-                >
-                  <LogOut className="size-4" />
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+
+          <DropdownMenuItem onClick={() => router.push("/dashboard/profile")}>
+            Profile
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={async () =>
+            signOut({
+              fetchOptions: {
+                onSuccess: () => router.replace("/auth/login"),
+              },
+            })
+          }
+        >
+          <LogOut className="size-4" />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

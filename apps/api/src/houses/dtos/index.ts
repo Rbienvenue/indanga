@@ -1,14 +1,13 @@
 import { HouseStatus } from "@indanga/db";
 import { PartialType } from "@nestjs/mapped-types";
-import { Type } from "class-transformer";
-import {
-  IsArray,
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsPositive,
-  IsString,
-} from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { IsArray, IsEnum, IsInt, IsOptional, IsPositive, IsString } from "class-validator";
+
+function toStringArray(value: unknown) {
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") return value ? [value] : [];
+  return value;
+}
 
 export class CreateHouseDto {
   @IsString()
@@ -39,12 +38,10 @@ export class CreateHouseDto {
   price: number;
 
   @IsOptional()
+  @Transform(({ value }) => toStringArray(value))
   @IsArray()
   @IsString({ each: true })
   media?: string[];
-
-  @IsString()
-  ownerId: string;
 
   @IsString()
   description: string;
@@ -61,7 +58,13 @@ export class CreateHouseDto {
   bathrooms: number;
 }
 
-export class UpdateHouseDto extends PartialType(CreateHouseDto) {}
+export class UpdateHouseDto extends PartialType(CreateHouseDto) {
+  @IsOptional()
+  @Transform(({ value }) => toStringArray(value))
+  @IsArray()
+  @IsString({ each: true })
+  existingMedia?: string[];
+}
 
 export class FilterDto {
   @IsOptional()

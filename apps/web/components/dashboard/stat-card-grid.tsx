@@ -30,12 +30,7 @@ export function StatisticsCards() {
   return (
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {stats.map((stat) => (
-        <StatCard
-          key={stat.title}
-          title={stat.title}
-          value={stat.value}
-          icon={stat.icon}
-        />
+        <StatCard key={stat.title} title={stat.title} value={stat.value} icon={stat.icon} />
       ))}
     </section>
   );

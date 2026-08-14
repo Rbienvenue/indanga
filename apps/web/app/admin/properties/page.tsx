@@ -69,7 +69,7 @@ const columns: ColumnDef<HouseWithOwner>[] = [
     size: 48,
     cell: ({ row }) => (
       <Button variant="ghost" size="icon" className="size-8" asChild>
-        <Link href={`/houses/${row.original.id}`}>
+        <Link href={`/properties/${row.original.id}`}>
           <ExternalLink className="size-4" />
         </Link>
       </Button>
@@ -91,7 +91,7 @@ export default function AdminPropertiesPage() {
       params.set("limit", String(limit));
       if (search) params.set("search", search);
       if (statusFilter !== "all") params.set("status", statusFilter);
-      return fetcher(`/houses?${params}`);
+      return fetcher(`/properties?${params}`);
     },
   });
 

@@ -19,10 +19,7 @@ export default function Page() {
   const session = useSession();
   const user = session?.user;
 
-  const firstName =
-    user?.name?.split(" ")[0] ??
-    user?.email?.split("@")[0] ??
-    "there";
+  const firstName = user?.name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "there";
 
   if (user?.role === "landlord") {
     return <AgentDashboard firstName={firstName} />;
@@ -34,9 +31,7 @@ export default function Page() {
         <h1 className="text-2xl font-semibold tracking-tight">
           {getGreeting()}, {firstName}!
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Ready to find your next home?
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Ready to find your next home?</p>
       </div>
 
       <StatisticsCards />

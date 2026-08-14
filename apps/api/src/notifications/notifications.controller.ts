@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Query,
-} from "@nestjs/common";
+import { Controller, Get, Param, Patch, Query } from "@nestjs/common";
 import { Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { PaginationResponse } from "src/@types";
 import { NotificationsService } from "./notifications.service";
@@ -20,14 +14,8 @@ export class NotificationsController {
 
   @Get()
   @Roles(["tenant", "landlord", "admin"])
-  async getNotifications(
-    @Session() session: UserSession,
-    @Query() query: NotificationQueryDto,
-  ) {
-    const result = await this.notificationsService.getNotifications(
-      session.user.id,
-      query,
-    );
+  async getNotifications(@Session() session: UserSession, @Query() query: NotificationQueryDto) {
+    const result = await this.notificationsService.getNotifications(session.user.id, query);
     return new PaginationResponse(result.data, result.meta);
   }
 
@@ -47,10 +35,7 @@ export class NotificationsController {
 
   @Patch(":id/read")
   @Roles(["tenant", "landlord", "admin"])
-  async markOneAsRead(
-    @Session() session: UserSession,
-    @Param("id") notificationId: string,
-  ) {
+  async markOneAsRead(@Session() session: UserSession, @Param("id") notificationId: string) {
     const notification = await this.notificationsService.markOneAsRead(
       session.user.id,
       notificationId,

@@ -33,7 +33,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
 import { cn, formatPrice } from "@/lib/utils";
 
-
 type Booking = {
   id: string;
   houseId: string;
@@ -129,19 +128,19 @@ export function HouseDetails({ houseId }: { houseId: string }) {
   const [notice, setNotice] = useState<string>();
 
   const houseQuery = useQuery<ApiResponse<House>>({
-    queryKey: ["houses", houseId],
-    queryFn: () => fetcher(`/houses/${houseId}`),
+    queryKey: ["properties", houseId],
+    queryFn: () => fetcher(`/properties/${houseId}`),
   });
 
   const favoriteMutation = useMutation({
     mutationFn: () =>
-      fetcher<ApiResponse<{ isFavorite: boolean }>>(`/houses/${houseId}/favorites`, {
+      fetcher<ApiResponse<{ isFavorite: boolean }>>(`/properties/${houseId}/favorites`, {
         method: "POST",
       }),
     onSuccess: ({ data }) => {
       setIsFavorite(data.isFavorite);
       setNotice(data.isFavorite ? "Saved to your favorites." : "Removed from your favorites.");
-      void queryClient.invalidateQueries({ queryKey: ["houses", "favorites"] });
+      void queryClient.invalidateQueries({ queryKey: ["properties", "favorites"] });
     },
     onError: (error: Error) => setNotice(error.message),
   });
@@ -154,7 +153,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
       }),
     onSuccess: () => {
       setNotice("Your booking is confirmed. You can view it from your dashboard.");
-      void queryClient.invalidateQueries({ queryKey: ["houses", houseId] });
+      void queryClient.invalidateQueries({ queryKey: ["properties", houseId] });
       void queryClient.invalidateQueries({ queryKey: ["bookings"] });
     },
     onError: (error: Error) => setNotice(error.message),
@@ -162,7 +161,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
 
   function requireAuthentication(action: () => void) {
     if (!session) {
-      const callbackUrl = `/houses/${houseId}`;
+      const callbackUrl = `/properties/${houseId}`;
       router.push(`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       return;
     }
@@ -231,12 +230,10 @@ export function HouseDetails({ houseId }: { houseId: string }) {
               onClick={() => requireAuthentication(() => favoriteMutation.mutate())}
             />
             {!session ? (
-              <Button
-                variant="outline"
-                asChild
-                className="ml-2 hidden h-10 px-5 md:inline-flex"
-              >
-                <Link href={`/auth/login?callbackUrl=${encodeURIComponent(`/houses/${houseId}`)}`}>
+              <Button variant="outline" asChild className="ml-2 hidden h-10 px-5 md:inline-flex">
+                <Link
+                  href={`/auth/login?callbackUrl=${encodeURIComponent(`/properties/${houseId}`)}`}
+                >
                   Sign in
                 </Link>
               </Button>

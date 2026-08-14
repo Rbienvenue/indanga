@@ -15,13 +15,7 @@ import { useMemo, useState } from "react";
 import type { PaginationResponse } from "@/@types";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -182,10 +176,7 @@ export default function NotificationsPage() {
           {notificationsQuery.isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-20 animate-pulse rounded-xl border bg-muted/40"
-                />
+                <div key={index} className="h-20 animate-pulse rounded-xl border bg-muted/40" />
               ))}
             </div>
           ) : notificationsQuery.isError ? (
@@ -231,9 +222,7 @@ export default function NotificationsPage() {
                       }
                     }}
                     className={`flex cursor-pointer gap-4 rounded-2xl border p-4 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40 ${
-                      notification.isRead
-                        ? "bg-background"
-                        : "border-primary/20 bg-primary/[0.03]"
+                      notification.isRead ? "bg-background" : "border-primary/20 bg-primary/[0.03]"
                     }`}
                   >
                     <div className="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -313,9 +302,7 @@ export default function NotificationsPage() {
 
             <div className="px-5 pb-5">
               <div className="rounded-xl border bg-muted/30 p-4">
-                <p className="text-sm leading-7 text-foreground">
-                  {selectedNotification.message}
-                </p>
+                <p className="text-sm leading-7 text-foreground">{selectedNotification.message}</p>
               </div>
 
               <div className="mt-5 flex items-center justify-end gap-3">

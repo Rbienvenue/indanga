@@ -10,8 +10,8 @@ export default function NewPropertyPage() {
   const session = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const houseId = searchParams.get("houseId") ?? undefined;
-  const isEditMode = !!houseId;
+  const propertyId = searchParams.get("propertyId") ?? searchParams.get("houseId") ?? undefined;
+  const isEditMode = !!propertyId;
 
   useEffect(() => {
     if (session?.user?.role !== "landlord") {
@@ -36,8 +36,7 @@ export default function NewPropertyPage() {
         </p>
       </div>
 
-      <AddPropertyForm houseId={houseId} />
+      <AddPropertyForm houseId={propertyId} />
     </div>
   );
 }
-

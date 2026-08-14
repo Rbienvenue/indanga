@@ -12,8 +12,8 @@ import Link from "next/link";
 
 export function Recommended() {
   const { data, isLoading, isError } = useQuery<PaginationResponse<House>>({
-    queryKey: ["houses", "recommended"],
-    queryFn: () => fetcher("/houses?limit=6&type=featured"),
+    queryKey: ["properties", "recommended"],
+    queryFn: () => fetcher("/properties?limit=6&type=featured"),
   });
 
   const houses = data?.data ?? [];
@@ -57,32 +57,30 @@ export function Recommended() {
           <p className="text-center text-sm text-muted-foreground">
             No recommended houses available right now.
           </p>
-            ) : (
-                <>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {houses.map((house) => (
-              <ProductCard
-                key={house.id}
-                id={house.id}
-                href={`/houses/${house.id}`}
-                name={house.name}
-                location={house.location}
-                price={house.price}
-                media={house.media}
-                bedrooms={house.bedrooms}
-                bathrooms={house.bathrooms}
-                badge="Featured"
-              />
-            ))}
-          </div>
-          <div className="flex justify-center items-center mt-5 ">
-            <Button size={"lg"} className="w-40" asChild>
-              <Link href="/properties?type=houses">
-                View All
-              </Link>
-            </Button>
-         </div>
-            </>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {houses.map((house) => (
+                <ProductCard
+                  key={house.id}
+                  id={house.id}
+                  href={`/properties/${house.id}`}
+                  name={house.name}
+                  location={house.location}
+                  price={house.price}
+                  media={house.media}
+                  bedrooms={house.bedrooms}
+                  bathrooms={house.bathrooms}
+                  badge="Featured"
+                />
+              ))}
+            </div>
+            <div className="flex justify-center items-center mt-5 ">
+              <Button size={"lg"} className="w-40" asChild>
+                <Link href="/properties?type=houses">View All</Link>
+              </Button>
+            </div>
+          </>
         )}
       </div>
     </section>

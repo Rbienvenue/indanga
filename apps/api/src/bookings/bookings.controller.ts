@@ -10,36 +10,21 @@ export class BookingsController {
 
   @Post()
   @Roles(["tenant"])
-  async createBooking(
-    @Session() session: UserSession,
-    @Body() data: CreateBookingDto,
-  ) {
-    const booking = await this.bookingsService.createBooking(
-      session.user.id,
-      data,
-    );
+  async createBooking(@Session() session: UserSession, @Body() data: CreateBookingDto) {
+    const booking = await this.bookingsService.createBooking(session.user.id, data);
     return new ApiResponse(booking, "booking created");
   }
 
   @Get()
   @Roles(["tenant", "landlord", "admin"])
-  async getBookingsByUser(
-    @Session() session: UserSession,
-    @Query() query: FilterBookingDto,
-  ) {
-    const result = await this.bookingsService.getBookingsByUser(
-      session.user,
-      query,
-    );
+  async getBookingsByUser(@Session() session: UserSession, @Query() query: FilterBookingDto) {
+    const result = await this.bookingsService.getBookingsByUser(session.user, query);
     return new PaginationResponse(result.data, result.meta);
   }
 
   @Get(":id")
   @Roles(["tenant", "landlord", "admin"])
-  async getBookingById(
-    @Param("id") id: string,
-    @Session() session: UserSession,
-  ) {
+  async getBookingById(@Param("id") id: string, @Session() session: UserSession) {
     const booking = await this.bookingsService.getBookingById(id, session.user);
     return new ApiResponse(booking, "booking fetched");
   }
@@ -51,11 +36,7 @@ export class BookingsController {
     @Session() session: UserSession,
     @Body() data: UpdateBookingStatusDto,
   ) {
-    const booking = await this.bookingsService.updateBookingStatus(
-      id,
-      data.status,
-      session.user,
-    );
+    const booking = await this.bookingsService.updateBookingStatus(id, data.status, session.user);
     return new ApiResponse(booking, "booking status updated");
   }
 }

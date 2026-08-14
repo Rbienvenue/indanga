@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { Prisma } from "@indanga/db";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { Prisma, type UserRole } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
 import {
   CreateHouseDto,
@@ -13,19 +13,23 @@ import {
 export class HousesService {
   constructor(private readonly db: PrismaService) {}
 
-  async createHouse(data: CreateHouseDto) {
+  async createHouse(ownerId: string, data: CreateHouseDto) {
     const {
       province,
       district,
       sector,
       cell,
       village,
+      ownerId: _ownerId,
       ...rest
-    } = data;
+    } = data as CreateHouseDto & {
+      ownerId?: string;
+    };
 
     const house = await this.db.house.create({
       data: {
         ...rest,
+        ownerId,
         location: `${province}, ${district}, ${sector}, ${cell} ${village}`,
       },
     });
@@ -102,24 +106,33 @@ export class HousesService {
   async getHouseById(id: string) {
     const house = await this.db.house.findUnique({ where: { id } });
     if (!house) {
-      throw new NotFoundException("House not found");
+      throw new NotFoundException("Property not found");
     }
     return house;
   }
 
-  async updateHouse(id: string, data: UpdateHouseDto) {
-    await this.getHouseById(id);
-   //check the agentid bypass for admins
+  async updateHouse(id: string, userId: string, role: UserRole, data: UpdateHouseDto) {
+    const house = await this.getHouseById(id);
+    this.isAllowed(house.ownerId, userId, role);
+
     const {
       province,
       district,
       sector,
       cell,
       village,
+      existingMedia,
+      ownerId: _ownerId,
       ...rest
-    } = data;
+    } = data as UpdateHouseDto & {
+      ownerId?: string;
+    };
 
     const updateData: Prisma.HouseUpdateInput = { ...rest };
+
+    if (existingMedia !== undefined || rest.media !== undefined) {
+      updateData.media = [...(existingMedia ?? house.media), ...(rest.media ?? [])];
+    }
 
     if (
       province !== undefined ||
@@ -131,27 +144,28 @@ export class HousesService {
       updateData.location = `${province}, ${district}, ${sector}, ${cell} ${village}`;
     }
 
-    const house = await this.db.house.update({
+    const updatedHouse = await this.db.house.update({
       where: { id },
       data: updateData,
     });
-    return house;
+    return updatedHouse;
   }
 
-  async deleteHouse(id: string) {
-    //check the agentid bypass for admins
-    //check if house is not booked
-    await this.getHouseById(id);
-    const house = await this.db.house.delete({ where: { id } });
-    return house;
+  async deleteHouse(id: string, userId: string, role: UserRole) {
+    // TODO: check if a house has a pending booking first.
+    const house = await this.getHouseById(id);
+    this.isAllowed(house.ownerId, userId, role);
+
+    const deletedHouse = await this.db.house.delete({ where: { id } });
+    return deletedHouse;
   }
 
   async toggleFavorite(userId: string, houseId: string) {
-    const house=await this.getHouseById(houseId);
+    const house = await this.getHouseById(houseId);
 
     const where = {
       houseId_userId: {
-        houseId:house.id,
+        houseId: house.id,
         userId,
       },
     };
@@ -217,7 +231,7 @@ export class HousesService {
 
     return this.db.review.create({
       data: {
-        houseId:house.id,
+        houseId: house.id,
         tenantId: userId,
         rating: data.rating,
         comment: data.comment,
@@ -230,35 +244,38 @@ export class HousesService {
   }
 
   async getAgentStats(ownerId: string) {
-    const [totalProperties, activeBookings, revenueResult, ratingResult] =
-      await Promise.all([
-        this.db.house.count({ where: { ownerId } }),
-        this.db.booking.count({
-          where: {
-            house: { ownerId },
-            status: "APPROVED",
-          },
-        }),
-        this.db.payment.aggregate({
-          _sum: { amount: true },
-          where: {
-            status: "COMPLETED",
-            booking: { house: { ownerId } },
-          },
-        }),
-        this.db.review.aggregate({
-          _avg: { rating: true },
-          where: { house: { ownerId } },
-        }),
-      ]);
+    const [totalProperties, activeBookings, revenueResult, ratingResult] = await Promise.all([
+      this.db.house.count({ where: { ownerId } }),
+      this.db.booking.count({
+        where: {
+          house: { ownerId },
+          status: "APPROVED",
+        },
+      }),
+      this.db.payment.aggregate({
+        _sum: { amount: true },
+        where: {
+          status: "COMPLETED",
+          booking: { house: { ownerId } },
+        },
+      }),
+      this.db.review.aggregate({
+        _avg: { rating: true },
+        where: { house: { ownerId } },
+      }),
+    ]);
 
     return {
       totalProperties,
       activeBookings,
       totalRevenue: revenueResult._sum.amount?.toNumber() ?? 0,
-      avgRating: ratingResult._avg.rating
-        ? Math.round(ratingResult._avg.rating * 10) / 10
-        : null,
+      avgRating: ratingResult._avg.rating ? Math.round(ratingResult._avg.rating * 10) / 10 : null,
     };
+  }
+
+  private isAllowed(ownerId: string, userId: string, role: UserRole) {
+    if (role === "admin" || ownerId === userId) return;
+
+    throw new ForbiddenException("You cannot manage this property");
   }
 }

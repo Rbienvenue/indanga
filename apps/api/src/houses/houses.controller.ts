@@ -23,7 +23,7 @@ import {
 } from "./dtos";
 import { HousesService } from "./houses.service";
 
-@Controller("houses")
+@Controller("properties")
 export class HousesController {
   constructor(
     private readonly houseService: HousesService,
@@ -31,21 +31,22 @@ export class HousesController {
   ) {}
 
   @Post()
+  @Roles(["landlord", "admin"])
   @UseInterceptors(FilesInterceptor("media", 10))
   async createHouse(
+    @Session() session: UserSession,
     @Body() data: CreateHouseDto,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-
     const mediaUrls = await this.storageService.uploadFiles(
-      files?.map((file) => file.buffer),
+      files?.map((file) => file.buffer) ?? [],
       { bucket: StorageBucket.HOUSE_MEDIA },
     );
-    const house = await this.houseService.createHouse({
+    const house = await this.houseService.createHouse(session.user.id, {
       ...data,
       media: mediaUrls.map((url) => url.url),
     });
-    return new ApiResponse(house, "house created");
+    return new ApiResponse(house, "property created");
   }
 
   @Get()
@@ -57,14 +58,8 @@ export class HousesController {
 
   @Get("favorites")
   @Roles(["tenant"])
-  async getFavorites(
-    @Session() session: UserSession,
-    @Query() query: FavoriteFilterDto,
-  ) {
-    const result = await this.houseService.getFavorites(
-      session.user.id,
-      query,
-    );
+  async getFavorites(@Session() session: UserSession, @Query() query: FavoriteFilterDto) {
+    const result = await this.houseService.getFavorites(session.user.id, query);
     return new PaginationResponse(result.data, result.meta);
   }
 
@@ -79,31 +74,40 @@ export class HousesController {
   @AllowAnonymous()
   async getHouseById(@Param("id") id: string) {
     const house = await this.houseService.getHouseById(id);
-    return new ApiResponse(house, "house fetched");
+    return new ApiResponse(house, "property fetched");
   }
 
   @Patch(":id")
-  async updateHouse(@Param("id") id: string, @Body() data: UpdateHouseDto) {
-    const house = await this.houseService.updateHouse(id, data);
-    return new ApiResponse(house, "house updated");
+  @Roles(["landlord", "admin"])
+  @UseInterceptors(FilesInterceptor("media", 10))
+  async updateHouse(
+    @Param("id") id: string,
+    @Session() session: UserSession,
+    @Body() data: UpdateHouseDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    const mediaUrls = await this.storageService.uploadFiles(
+      files?.map((file) => file.buffer) ?? [],
+      { bucket: StorageBucket.HOUSE_MEDIA },
+    );
+    const house = await this.houseService.updateHouse(id, session.user.id, session.user.role, {
+      ...data,
+      media: mediaUrls.map((url) => url.url),
+    });
+    return new ApiResponse(house, "property updated");
   }
 
   @Delete(":id")
-  async deleteHouse(@Param("id") id: string) {
-    const house = await this.houseService.deleteHouse(id);
-    return new ApiResponse(house, "house deleted");
+  @Roles(["landlord", "admin"])
+  async deleteHouse(@Param("id") id: string, @Session() session: UserSession) {
+    const house = await this.houseService.deleteHouse(id, session.user.id, session.user.role);
+    return new ApiResponse(house, "property deleted");
   }
 
   @Post(":id/favorites")
   @Roles(["tenant"])
-  async toggleFavorite(
-    @Param("id") id: string,
-    @Session() session: UserSession,
-  ) {
-    const favorite = await this.houseService.toggleFavorite(
-      session.user.id,
-      id,
-    );
+  async toggleFavorite(@Param("id") id: string, @Session() session: UserSession) {
+    const favorite = await this.houseService.toggleFavorite(session.user.id, id);
     return new ApiResponse(favorite, "favorite toggled");
   }
 
@@ -114,11 +118,7 @@ export class HousesController {
     @Session() session: UserSession,
     @Body() data: CreateReviewDto,
   ) {
-    const review = await this.houseService.leaveReview(
-      session.user.id,
-      id,
-      data,
-    );
+    const review = await this.houseService.leaveReview(session.user.id, id, data);
     return new ApiResponse(review, "review created");
   }
 }

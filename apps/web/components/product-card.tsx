@@ -60,12 +60,12 @@ export function ProductCard({
   const queryClient = useQueryClient();
   const favoriteMutation = useMutation({
     mutationFn: () =>
-      fetcher<ApiResponse<{ isFavorite: boolean }>>(`/houses/${id}/favorites`, {
+      fetcher<ApiResponse<{ isFavorite: boolean }>>(`/properties/${id}/favorites`, {
         method: "POST",
       }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["houses", "favorites"] });
-      void queryClient.invalidateQueries({ queryKey: ["houses", id] });
+      void queryClient.invalidateQueries({ queryKey: ["properties", "favorites"] });
+      void queryClient.invalidateQueries({ queryKey: ["properties", id] });
     },
   });
   const favoriteState = favoriteMutation.data?.data.isFavorite ?? isFavorite;
@@ -105,13 +105,8 @@ export function ProductCard({
         )}
         {showManageActions ? (
           <div className="absolute top-3 right-3 z-10 flex gap-1.5">
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8"
-              asChild
-            >
-              <Link href={`/dashboard/properties/new?houseId=${id}`}>
+            <Button variant="outline" size="icon" className="size-8" asChild>
+              <Link href={`/dashboard/properties/new?propertyId=${id}`}>
                 <Pencil className="size-4" />
               </Link>
             </Button>

@@ -1,15 +1,6 @@
-import {
-  BadgeCheck,
-  CalendarCheck,
-  Clock3,
-} from "lucide-react"
+import { BadgeCheck, CalendarCheck, Clock3 } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const activities = [
   {
@@ -42,7 +33,7 @@ const activities = [
     icon: Clock3,
     statusColor: "text-orange-500 dark:text-orange-400",
   },
-]
+];
 
 export function RecentActivity() {
   return (
@@ -50,17 +41,12 @@ export function RecentActivity() {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Recent Activity</CardTitle>
 
-        <button className="text-sm font-medium text-primary hover:underline">
-          View all
-        </button>
+        <button className="text-sm font-medium text-primary hover:underline">View all</button>
       </CardHeader>
 
       <CardContent className="space-y-6">
         {activities.map((activity) => (
-          <div
-            key={activity.id}
-            className="flex items-center justify-between"
-          >
+          <div key={activity.id} className="flex items-center justify-between">
             <div className="flex gap-4">
               <div
                 className={`flex h-12 w-12 items-center justify-center rounded-full ${activity.color}`}
@@ -69,28 +55,18 @@ export function RecentActivity() {
               </div>
 
               <div>
-                <h4 className="font-semibold">
-                  {activity.title}
-                </h4>
+                <h4 className="font-semibold">{activity.title}</h4>
 
-                <p className="text-sm text-muted-foreground">
-                  {activity.description}
-                </p>
+                <p className="text-sm text-muted-foreground">{activity.description}</p>
 
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {activity.date}
-                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{activity.date}</p>
               </div>
             </div>
 
-            <p
-              className={`font-semibold ${activity.statusColor}`}
-            >
-              {activity.amount}
-            </p>
+            <p className={`font-semibold ${activity.statusColor}`}>{activity.amount}</p>
           </div>
         ))}
       </CardContent>
     </Card>
-  )
+  );
 }

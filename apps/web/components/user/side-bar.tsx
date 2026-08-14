@@ -81,17 +81,8 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border p-2">
-        <Link
-          href="/dashboard"
-          className="flex h-12 items-center px-2"
-        >
-          <Image
-            src="/logo.png"
-            alt="Indanga"
-            className="rounded-xl"
-            width={54}
-            height={54}
-          />
+        <Link href="/dashboard" className="flex h-12 items-center px-2">
+          <Image src="/logo.png" alt="Indanga" className="rounded-xl" width={54} height={54} />
         </Link>
       </SidebarHeader>
       <SidebarContent>
@@ -102,16 +93,11 @@ export function AppSidebar() {
               {items.map((item) => {
                 const active =
                   pathname === item.href ||
-                  (item.href !== "/dashboard" &&
-                    pathname.startsWith(`${item.href}/`));
+                  (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
 
                 return (
                   <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={active}
-                      tooltip={item.title}
-                    >
+                    <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
                       <Link href={item.href}>
                         <item.icon />
                         <span>{item.title}</span>

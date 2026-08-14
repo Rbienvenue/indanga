@@ -2,11 +2,7 @@ import { Controller, Delete, Get, Param, Query } from "@nestjs/common";
 import { Roles } from "@thallesp/nestjs-better-auth";
 import { ApiResponse, PaginationResponse } from "src/@types";
 import { AdminService } from "./admin.service";
-import {
-  AdminBookingsFilterDto,
-  AdminPaymentsFilterDto,
-  AdminReviewsFilterDto,
-} from "./dtos";
+import { AdminBookingsFilterDto, AdminPaymentsFilterDto, AdminReviewsFilterDto } from "./dtos";
 
 @Controller("admin")
 @Roles(["admin"])

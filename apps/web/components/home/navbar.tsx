@@ -119,12 +119,7 @@ export function Navbar() {
                           <p className="text-xs text-white/60">{user?.email ?? ""}</p>
                         </div>
                       </div>
-                      <Button
-                        asChild
-                        size="lg"
-                        variant="outline"
-                        className="w-full font-semibold"
-                      >
+                      <Button asChild size="lg" variant="outline" className="w-full font-semibold">
                         <Link href="/dashboard">Dashboard</Link>
                       </Button>
                       <Button

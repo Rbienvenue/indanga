@@ -1,18 +1,18 @@
-import { File } from 'node:buffer';
-import path from 'node:path';
+import { File } from "node:buffer";
+import path from "node:path";
 
-import { Injectable } from '@nestjs/common';
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { fileTypeFromBuffer } from 'file-type';
-import { customAlphabet } from 'nanoid';
+import { Injectable } from "@nestjs/common";
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { fileTypeFromBuffer } from "file-type";
+import { customAlphabet } from "nanoid";
 
-import { env } from 'src/lib/env';
+import { env } from "src/lib/env";
 
 export enum StorageBucket {
-  HOUSE_MEDIA = 'houses',
-  PROFILE_PICTURES = 'profiles',
-  DOCUMENTS = 'documents',
-  PAYMENT_RECEIPTS = 'payments',
+  HOUSE_MEDIA = "houses",
+  PROFILE_PICTURES = "profiles",
+  DOCUMENTS = "documents",
+  PAYMENT_RECEIPTS = "payments",
 }
 
 export interface FileMetaData {
@@ -30,11 +30,11 @@ type FileUpload = {
 };
 
 type ErrorCode =
-  | 'FILE_NOT_FOUND'
-  | 'UPLOAD_FAILED'
-  | 'INVALID_FILE_TYPE'
-  | 'PERMISSION_DENIED'
-  | 'FILE_TOO_LARGE';
+  | "FILE_NOT_FOUND"
+  | "UPLOAD_FAILED"
+  | "INVALID_FILE_TYPE"
+  | "PERMISSION_DENIED"
+  | "FILE_TOO_LARGE";
 
 export class StorageError extends Error {
   constructor(
@@ -42,14 +42,15 @@ export class StorageError extends Error {
     public readonly code: ErrorCode,
   ) {
     super(message);
-    this.name = 'StorageError';
+    this.name = "StorageError";
   }
 }
 
 @Injectable()
 export class StorageService {
-  private readonly nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 10);
+  private readonly nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 10);
   private readonly s3Client: S3Client;
+  // 100 MB
   private readonly maxFileSize = 100 * 1024 * 1024;
 
   constructor() {
@@ -58,11 +59,14 @@ export class StorageService {
         accessKeyId: env.STORAGE_ACCESS_KEY_ID,
         secretAccessKey: env.STORAGE_SECRET_ACCESS_KEY,
       },
-      region: 'auto',
+      region: "auto",
       endpoint: env.S3_ENDPOINT,
     });
   }
-  async uploadFiles(files: (string | Buffer | File | ArrayBufferLike)[], options?: { bucket: StorageBucket; customName?: string; }): Promise<FileMetaData[]> {
+  async uploadFiles(
+    files: (string | Buffer | File | ArrayBufferLike)[],
+    options?: { bucket: StorageBucket; customName?: string },
+  ): Promise<FileMetaData[]> {
     const results: FileMetaData[] = [];
     for (const file of files) {
       results.push(await this.uploadFile(file, options));
@@ -102,7 +106,7 @@ export class StorageService {
       if (error instanceof StorageError) throw error;
       throw new StorageError(
         `Failed to upload file: ${error instanceof Error ? error.message : error}`,
-        'UPLOAD_FAILED',
+        "UPLOAD_FAILED",
       );
     }
   }
@@ -120,7 +124,7 @@ export class StorageService {
     file: string | Buffer | File | ArrayBufferLike,
     customName?: string,
   ): Promise<FileUpload> {
-    if (typeof file === 'string') {
+    if (typeof file === "string") {
       return this.prepareBase64File(file, customName);
     }
     if (file instanceof File) {
@@ -129,14 +133,14 @@ export class StorageService {
     if (file instanceof Buffer) {
       return this.prepareBufferFile(file, customName);
     }
-    throw new StorageError('Invalid file type', 'INVALID_FILE_TYPE');
+    throw new StorageError("Invalid file type", "INVALID_FILE_TYPE");
   }
 
   private async prepareBase64File(base64: string, customName?: string): Promise<FileUpload> {
-    const buffer = Buffer.from(base64, 'base64');
+    const buffer = Buffer.from(base64, "base64");
     this.validateSize(buffer.length);
     const fileType = await fileTypeFromBuffer(buffer);
-    if (!fileType) throw new StorageError('Invalid file type', 'INVALID_FILE_TYPE');
+    if (!fileType) throw new StorageError("Invalid file type", "INVALID_FILE_TYPE");
 
     return {
       buffer,
@@ -149,7 +153,7 @@ export class StorageService {
     this.validateSize(file.size);
     const extension = path.extname(file.name);
     const baseName = path.basename(file.name, extension);
-    const shortId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 4)();
+    const shortId = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 4)();
 
     return {
       buffer: Buffer.from(await file.arrayBuffer()),
@@ -161,7 +165,7 @@ export class StorageService {
   private async prepareBufferFile(buffer: Buffer, customName?: string): Promise<FileUpload> {
     this.validateSize(buffer.length);
     const fileType = await fileTypeFromBuffer(buffer);
-    if (!fileType) throw new StorageError('Invalid file type', 'INVALID_FILE_TYPE');
+    if (!fileType) throw new StorageError("Invalid file type", "INVALID_FILE_TYPE");
 
     return {
       buffer,
@@ -172,7 +176,7 @@ export class StorageService {
 
   private validateSize(size: number): void {
     if (size > this.maxFileSize) {
-      throw new StorageError('file too large', 'FILE_TOO_LARGE');
+      throw new StorageError("file too large", "FILE_TOO_LARGE");
     }
   }
 }

@@ -133,7 +133,7 @@ const agentColumns: ColumnDef<BookingWithHouse>[] = [
     accessorFn: (row) => row.house.name,
     cell: ({ row }) => (
       <div>
-        <Link href={`/houses/${row.original.house.id}`} className="font-medium hover:underline">
+        <Link href={`/properties/${row.original.house.id}`} className="font-medium hover:underline">
           {row.original.house.name}
         </Link>
         <p className="text-xs text-muted-foreground">{row.original.house.location}</p>
@@ -307,7 +307,7 @@ export default function BookingsPage() {
               <ProductCard
                 key={id}
                 id={house.id}
-                href={`/houses/${house.id}`}
+                href={`/properties/${house.id}`}
                 name={house.name}
                 location={house.location}
                 price={house.price}
