@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
-import { AdminBookingsFilterDto, AdminPaymentsFilterDto, AdminReviewsFilterDto } from "./dtos";
+import {
+  AdminBookingsFilterDto,
+  AdminPaymentsFilterDto,
+  AdminPropertiesFilterDto,
+  AdminReviewsFilterDto,
+} from "./dtos";
 
 const MONTH_LABELS = [
   "Jan",
@@ -155,11 +160,79 @@ export class AdminService {
     };
   }
 
+  async getProperties(data: AdminPropertiesFilterDto) {
+    const { page = 1, limit = 20, search, status } = data;
+    const where: Prisma.HouseWhereInput = {};
+
+    if (search) where.name = { startsWith: search, mode: "insensitive" };
+    if (status) where.status = status;
+
+    const [properties, total] = await Promise.all([
+      this.db.house.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          owner: {
+            select: { id: true, name: true, email: true },
+          },
+        },
+      }),
+      this.db.house.count({ where }),
+    ]);
+
+    return {
+      data: properties,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async publishProperty(id: string) {
+    const property = await this.getProperty(id);
+    if (property.status !== "PENDING") {
+      throw new BadRequestException("Only pending properties can be published");
+    }
+
+    return this.db.house.update({
+      where: { id },
+      data: { status: "AVAILABLE" },
+    });
+  }
+
+  async unpublishProperty(id: string) {
+    const property = await this.getProperty(id);
+    if (property.status === "BOOKED") {
+      throw new BadRequestException("Booked properties cannot be unpublished");
+    }
+    if (property.status !== "AVAILABLE") {
+      throw new BadRequestException("Only available properties can be unpublished");
+    }
+
+    return this.db.house.update({
+      where: { id },
+      data: { status: "PENDING" },
+    });
+  }
+
+  async deleteProperty(id: string) {
+    await this.getProperty(id);
+    return this.db.house.delete({ where: { id } });
+  }
+
   async deleteReview(id: string) {
     const review = await this.db.review.findUnique({ where: { id } });
     if (!review) {
       throw new NotFoundException("Review not found");
     }
     return this.db.review.delete({ where: { id } });
+  }
+
+  private async getProperty(id: string) {
+    const property = await this.db.house.findUnique({ where: { id } });
+    if (!property) {
+      throw new NotFoundException("Property not found");
+    }
+    return property;
   }
 }

@@ -52,7 +52,11 @@ export class HousesService {
 
     if (search) where.name = { startsWith: search, mode: "insensitive" };
     if (ownerId) where.ownerId = ownerId;
-    if (status) where.status = status;
+    if (status) {
+      where.status = status;
+    } else if (!ownerId) {
+      where.status = "AVAILABLE";
+    }
     if (location) {
       where.location = { contains: location, mode: "insensitive" };
     }

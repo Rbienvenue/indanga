@@ -51,8 +51,9 @@ enum Status {
 }
 
 enum HouseStatus {
-  BOOKED
+  PENDING
   AVAILABLE
+  BOOKED
 }
 
 enum PaymentStatus {
@@ -82,7 +83,7 @@ enum BookingStatus {
   REJECTED
   CANCELLED
 }
-
+// Alias Property
 model House {
   id           String      @id @default(cuid())
   name         String
@@ -97,7 +98,7 @@ model House {
   bathrooms    Int
   // features     String[]
   // isFeatured   Boolean  @default(false)
-  status       HouseStatus @default(AVAILABLE)
+  status       HouseStatus @default(PENDING)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   owner        User        @relation("HouseOwner", fields: [ownerId], references: [id], onDelete: Cascade)

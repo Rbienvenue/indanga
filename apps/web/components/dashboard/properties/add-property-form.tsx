@@ -33,6 +33,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { useSession } from "@/components/providers/session-provider";
 import { fetcher } from "@/lib/fetcher";
 import {
   createHouseSchema,
@@ -55,6 +56,7 @@ interface AddPropertyFormProps {
 export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const session = useSession();
   const [files, setFiles] = useState<File[]>([]);
   const [existingMedia, setExistingMedia] = useState<string[]>([]);
   const isEditMode = !!houseId;
@@ -155,7 +157,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
       toast.success("Property updated successfully");
       void queryClient.invalidateQueries({ queryKey: ["properties"] });
       void queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
-      router.push("/dashboard");
+      router.push(session?.user.role === "admin" ? "/admin/properties" : "/dashboard");
     },
     onError: (error: Error) => {
       toast.error(error.message ?? "Failed to update property");

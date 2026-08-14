@@ -17,11 +17,12 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
   const [budget] = useQueryState("budget", parseAsString.withDefault("any"));
 
   const filters = { propertyType, budget };
+  const status = ownerId ? null : "AVAILABLE";
 
   const housesQuery = useInfiniteQuery({
-    queryKey: ["properties", "feed", filters, ownerId],
+    queryKey: ["properties", "feed", filters, ownerId, status],
     queryFn: ({ pageParam }) => {
-      const url = buildPropertiesUrl(pageParam, filters);
+      const url = buildPropertiesUrl(pageParam, filters, { status });
       const separator = url.includes("?") ? "&" : "?";
       const ownerParam = ownerId ? `${separator}ownerId=${ownerId}` : "";
       return fetcher<PaginationResponse<House>>(`${url}${ownerParam}`);
@@ -81,6 +82,7 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
                 propertyType={house.propertyType}
                 badge={house.propertyType}
                 showManageActions={!!ownerId}
+                status={ownerId ? house.status : undefined}
               />
             ))}
           </section>

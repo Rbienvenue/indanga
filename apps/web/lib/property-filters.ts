@@ -3,12 +3,23 @@ type PropertyFilters = {
   budget: string;
 };
 
-export function buildPropertiesUrl(page: number, filters: PropertyFilters) {
+type BuildPropertiesUrlOptions = {
+  status?: "AVAILABLE" | null;
+};
+
+export function buildPropertiesUrl(
+  page: number,
+  filters: PropertyFilters,
+  options: BuildPropertiesUrlOptions = { status: "AVAILABLE" },
+) {
   const params = new URLSearchParams({
     page: String(page),
     limit: "20",
-    status: "AVAILABLE",
   });
+
+  if (options.status) {
+    params.set("status", options.status);
+  }
 
   const propertyTypeFilter = getPropertyTypeFilter(filters.propertyType);
 
