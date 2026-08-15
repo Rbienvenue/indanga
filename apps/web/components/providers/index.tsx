@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 import type { Session } from "@/lib/auth-client";
 import { SessionProvider } from "./session-provider";
+import { SocketIoProvider } from "./socket-io-provider";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
@@ -21,7 +22,9 @@ export default function Providers({
       <ThemeProvider attribute={"class"} defaultTheme="system" disableTransitionOnChange>
         <Suspense>
           <NuqsAdapter>
-            <SessionProvider session={session}>{children}</SessionProvider>
+            <SessionProvider session={session}>
+              <SocketIoProvider>{children}</SocketIoProvider>
+            </SessionProvider>
           </NuqsAdapter>
         </Suspense>
       </ThemeProvider>

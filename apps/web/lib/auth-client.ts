@@ -21,10 +21,11 @@ export const authClient = createAuthClient({
           input: true,
           returned: false,
         },
-        role: {
-          type: ["tenant", "landlord", "admin"],
+        accountType: {
+          type: ["tenant", "landlord"],
           required: true,
           input: true,
+          returned: false,
         },
       },
     }),

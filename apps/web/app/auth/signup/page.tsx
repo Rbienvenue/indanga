@@ -36,10 +36,11 @@ export default function SignupPage() {
 
   const selectedRole = form.watch("role");
 
-  const onSubmit = async ({ confirmPassword: _, nationalId, ...values }: SignupValues) => {
+  const onSubmit = async ({ confirmPassword: _, nationalId, role, ...values }: SignupValues) => {
     form.clearErrors("root");
     const payload = {
       ...values,
+      accountType: role,
       nationalId: nationalId?.trim() ? nationalId.trim() : undefined,
     };
     const { error } = await signUp.email(payload);

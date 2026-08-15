@@ -1,5 +1,6 @@
 "use client";
 
+import { NotificationsDrawer } from "@/components/notifications/notifications-drawer";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import ThemeToggle from "@/components/providers/theme-toggle";
 import { UserAvatar } from "../user/user-avatar";
@@ -10,6 +11,7 @@ export function Topbar() {
       <SidebarTrigger className="text-muted-foreground" />
       <div className="flex items-center gap-1">
         <ThemeToggle />
+        <NotificationsDrawer />
         <UserAvatar showDashboard={false} />
       </div>
     </header>

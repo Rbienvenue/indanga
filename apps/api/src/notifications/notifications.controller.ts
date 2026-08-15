@@ -1,10 +1,19 @@
 import { Controller, Get, Param, Patch, Query } from "@nestjs/common";
+import { Type } from "class-transformer";
+import { IsInt, IsOptional } from "class-validator";
 import { Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { PaginationResponse } from "src/@types";
 import { NotificationsService } from "./notifications.service";
 
 class NotificationQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
   page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
   limit?: number;
 }
 

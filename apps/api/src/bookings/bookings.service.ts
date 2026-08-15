@@ -6,15 +6,44 @@ import {
 } from "@nestjs/common";
 import { BookingStatus, HouseStatus, Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
+import { NotificationsService } from "src/notifications/notifications.service";
 import { FilterBookingDto, CreateBookingDto } from "./dtos";
 import { type UserSession } from "@thallesp/nestjs-better-auth";
 
+function getBookingStatusNotification(status: BookingStatus, houseName: string) {
+  switch (status) {
+    case BookingStatus.APPROVED:
+      return {
+        type: "BOOKING_CONFIRMED" as const,
+        title: "Booking approved",
+        message: `Your booking for ${houseName} was approved.`,
+      };
+    case BookingStatus.REJECTED:
+      return {
+        type: "BOOKING_CANCELLED" as const,
+        title: "Booking rejected",
+        message: `Your booking for ${houseName} was rejected.`,
+      };
+    case BookingStatus.CANCELLED:
+      return {
+        type: "BOOKING_CANCELLED" as const,
+        title: "Booking cancelled",
+        message: `Your booking for ${houseName} was cancelled.`,
+      };
+    default:
+      return null;
+  }
+}
+
 @Injectable()
 export class BookingsService {
-  constructor(private readonly db: PrismaService) {}
+  constructor(
+    private readonly db: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async createBooking(clientId: string, data: CreateBookingDto) {
-    return this.db.$transaction(async (tx) => {
+    const booking = await this.db.$transaction(async (tx) => {
       const house = await tx.house.findUnique({ where: { id: data.houseId } });
 
       if (!house) {
@@ -32,6 +61,7 @@ export class BookingsService {
         },
         include: {
           house: true,
+          client: true,
         },
       });
 
@@ -42,6 +72,16 @@ export class BookingsService {
 
       return booking;
     });
+
+    await this.notifications.create({
+      userId: booking.house.ownerId,
+      type: "BOOKING_CREATED",
+      title: "New booking request",
+      message: `${booking.client.name} requested to book ${booking.house.name}.`,
+      bookingId: booking.id,
+    });
+
+    return booking;
   }
 
   async getBookingsByUser(user: UserSession["user"], data: FilterBookingDto) {
@@ -121,7 +161,7 @@ export class BookingsService {
       throw new ForbiddenException("Only the property owner can update booking status");
     }
 
-    return this.db.$transaction(async (tx) => {
+    const updated = await this.db.$transaction(async (tx) => {
       const updated = await tx.booking.update({
         where: { id },
         data: { status },
@@ -137,5 +177,16 @@ export class BookingsService {
 
       return updated;
     });
+
+    const notification = getBookingStatusNotification(status, updated.house.name);
+    if (notification) {
+      await this.notifications.create({
+        ...notification,
+        userId: updated.clientId,
+        bookingId: updated.id,
+      });
+    }
+
+    return updated;
   }
 }

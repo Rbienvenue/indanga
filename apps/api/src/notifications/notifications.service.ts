@@ -1,10 +1,21 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
+import { WsGateway } from "src/ws/ws.gateway";
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly db: PrismaService) {}
+  constructor(
+    private readonly db: PrismaService,
+    private readonly ws: WsGateway,
+  ) {}
+
+  async create(data: Prisma.NotificationUncheckedCreateInput) {
+    const notification = await this.db.notification.create({ data });
+    this.ws.emitToUser(notification.userId, notification);
+
+    return notification;
+  }
 
   async getNotifications(userId: string, data: { page?: number; limit?: number } = {}) {
     const { page = 1, limit = 20 } = data;

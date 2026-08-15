@@ -41,7 +41,7 @@ export default function LoginPage() {
         ? callbackUrl
         : user.role === "admin"
           ? "/admin"
-          : "/";
+          : "/dashboard";
 
     router.push(destination);
     router.refresh();
