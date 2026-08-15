@@ -1,9 +1,10 @@
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth-client";
+import { getSession, type User } from "@/lib/auth-client";
 
-const protectedPaths = ["/dashboard", "/bookings", "/settings"];
+const protectedPaths = ["/dashboard", "/bookings", "/settings", "/admin"];
+const adminPaths = ["/admin"];
 
 function getCallbackUrl(request: NextRequest) {
   const callbackUrl = request.nextUrl.searchParams.get("callbackUrl");
@@ -16,10 +17,15 @@ function getCallbackUrl(request: NextRequest) {
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  const session = await getSession({
-    fetchOptions: { headers: await headers() },
-  });
-  const user = session.data?.user;
+  let user: User | undefined;
+  try {
+    const session = await getSession({
+      fetchOptions: { headers: await headers() },
+    });
+    user = session.data?.user;
+  } catch {
+    user = undefined;
+  }
 
   const isAuthenticated = !!user;
 
@@ -28,6 +34,15 @@ export async function proxy(request: NextRequest) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("callbackUrl", `${pathname}${search}`);
     return NextResponse.redirect(loginUrl);
+  }
+
+  const isAdminRoute = adminPaths.some((path) => pathname.startsWith(path));
+  if (isAdminRoute && user?.role !== "admin") {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  if (pathname === "/dashboard" && user?.role === "admin") {
+    return NextResponse.redirect(new URL("/admin", request.url));
   }
 
   const isAuthRoute = pathname.startsWith("/auth");

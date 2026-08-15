@@ -8,12 +8,12 @@ export const loginSchema = z.object({
 export const signupSchema = z
   .object({
     name: z.string().trim().min(2, "Enter your full name"),
-    role: z.enum(["TENANT", "LANDLORD"], { message: "Select a role" }),
+    role: z.enum(["tenant", "landlord"], { message: "Select a role" }),
     phoneNumber: z
       .string()
       .trim()
       .regex(/^\+?[0-9]{9,15}$/, "Enter a valid phone number"),
-    // Rwanda national ID is 16 digits; optional for TENANT, required for LANDLORD.
+    // Rwanda national ID is 16 digits; optional for tenant, required for landlord.
     nationalId: z.string().trim().optional(),
     email: z.email("Enter a valid email address"),
     password: z.string().min(5, "Password must be at least 5 characters"),
@@ -29,7 +29,7 @@ export const signupSchema = z
     }
 
     const nationalIdTrimmed = values.nationalId?.trim() ?? "";
-    if (values.role === "LANDLORD") {
+    if (values.role === "landlord") {
       if (!nationalIdTrimmed || nationalIdTrimmed.length < 9) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

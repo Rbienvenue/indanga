@@ -18,12 +18,7 @@ import { toast } from "sonner";
 
 import type { ApiResponse, PaginationResponse } from "@/@types";
 import { StatCard } from "./stat-card";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -68,7 +63,7 @@ function formatRWF(amount: number) {
 function AgentStatCards() {
   const statsQuery = useQuery<ApiResponse<AgentStats>>({
     queryKey: ["agent-stats"],
-    queryFn: () => fetcher("/houses/stats"),
+    queryFn: () => fetcher("/properties/stats"),
   });
 
   const stats = statsQuery.data?.data;
@@ -226,8 +221,7 @@ function RecentBookingRequests() {
           </div>
         ) : bookings.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No booking requests yet. They will appear here once tenants book
-            your properties.
+            No booking requests yet. They will appear here once tenants book your properties.
           </p>
         ) : (
           <div className="space-y-4">
@@ -241,26 +235,17 @@ function RecentBookingRequests() {
                     <User className="size-4 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">
-                      {booking.client.name}
-                    </p>
+                    <p className="text-sm font-medium">{booking.client.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {booking.house.name} •{" "}
-                      {new Date(booking.createdAt).toLocaleDateString()}
+                      {booking.house.name} • {new Date(booking.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge
-                    variant="secondary"
-                    className={statusColors[booking.status]}
-                  >
-                    {booking.status.charAt(0) +
-                      booking.status.slice(1).toLowerCase()}
+                  <Badge variant="secondary" className={statusColors[booking.status]}>
+                    {booking.status.charAt(0) + booking.status.slice(1).toLowerCase()}
                   </Badge>
-                  {booking.status === "PENDING" && (
-                    <BookingActionButtons bookingId={booking.id} />
-                  )}
+                  {booking.status === "PENDING" && <BookingActionButtons bookingId={booking.id} />}
                 </div>
               </div>
             ))}
@@ -273,8 +258,7 @@ function RecentBookingRequests() {
 
 export function AgentDashboard({ firstName }: { firstName: string }) {
   const hour = new Date().getHours();
-  const greeting =
-    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -282,9 +266,7 @@ export function AgentDashboard({ firstName }: { firstName: string }) {
         <h1 className="text-2xl font-semibold tracking-tight">
           {greeting}, {firstName}!
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage your properties and bookings
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Manage your properties and bookings</p>
       </div>
 
       <AgentStatCards />

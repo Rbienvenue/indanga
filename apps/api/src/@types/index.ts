@@ -5,7 +5,7 @@ export class ApiResponse<T> {
 
   public message?: string;
 
-  constructor(data: T, message = 'success', success = true) {
+  constructor(data: T, message = "success", success = true) {
     this.data = data;
     this.success = success;
     this.message = message;

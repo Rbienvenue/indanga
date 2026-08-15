@@ -10,33 +10,26 @@ import { SearchBar } from "@/components/home/search-bar";
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { fetcher } from "@/lib/fetcher";
-import { buildHousesUrl } from "@/lib/property-filters";
+import { buildPropertiesUrl } from "@/lib/property-filters";
 
 export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
-  const [propertyType] = useQueryState(
-    "type",
-    parseAsString.withDefault("all"),
-  );
-  const [budget] = useQueryState(
-    "budget",
-    parseAsString.withDefault("any"),
-  );
+  const [propertyType] = useQueryState("type", parseAsString.withDefault("all"));
+  const [budget] = useQueryState("budget", parseAsString.withDefault("any"));
 
   const filters = { propertyType, budget };
+  const status = ownerId ? null : "AVAILABLE";
 
   const housesQuery = useInfiniteQuery({
-    queryKey: ["houses", "feed", filters, ownerId],
+    queryKey: ["properties", "feed", filters, ownerId, status],
     queryFn: ({ pageParam }) => {
-      const url = buildHousesUrl(pageParam, filters);
+      const url = buildPropertiesUrl(pageParam, filters, { status });
       const separator = url.includes("?") ? "&" : "?";
       const ownerParam = ownerId ? `${separator}ownerId=${ownerId}` : "";
       return fetcher<PaginationResponse<House>>(`${url}${ownerParam}`);
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
-      lastPage.meta.page < lastPage.meta.totalPages
-        ? lastPage.meta.page + 1
-        : undefined,
+      lastPage.meta.page < lastPage.meta.totalPages ? lastPage.meta.page + 1 : undefined,
   });
 
   const houses = housesQuery.data?.pages.flatMap((page) => page.data) ?? [];
@@ -56,11 +49,7 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
           <p className="text-sm text-muted-foreground">
             Could not load properties. Please try again.
           </p>
-          <Button
-            variant="outline"
-            className="mt-5"
-            onClick={() => void housesQuery.refetch()}
-          >
+          <Button variant="outline" className="mt-5" onClick={() => void housesQuery.refetch()}>
             Try again
           </Button>
         </div>
@@ -81,7 +70,7 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
               <ProductCard
                 key={house.id}
                 id={house.id}
-                href={`/houses/${house.id}`}
+                href={`/properties/${house.id}`}
                 name={house.name}
                 location={house.location}
                 price={house.price}
@@ -93,6 +82,7 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
                 propertyType={house.propertyType}
                 badge={house.propertyType}
                 showManageActions={!!ownerId}
+                status={ownerId ? house.status : undefined}
               />
             ))}
           </section>
@@ -105,9 +95,7 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
                 disabled={housesQuery.isFetchingNextPage}
                 onClick={() => void housesQuery.fetchNextPage()}
               >
-                {housesQuery.isFetchingNextPage
-                  ? "Loading properties..."
-                  : "Load more properties"}
+                {housesQuery.isFetchingNextPage ? "Loading properties..." : "Load more properties"}
               </Button>
             </div>
           ) : null}

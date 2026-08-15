@@ -26,11 +26,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { fetcher } from "@/lib/fetcher";
-import {
-  createHouseSchema,
-  type CreateHouseValues,
-} from "@/lib/validations/house";
+import { createHouseSchema, type CreateHouseValues } from "@/lib/validations/house";
 
 type HouseData = {
   id: string;
@@ -43,6 +39,26 @@ type HouseData = {
   bedrooms: number;
   bathrooms: number;
 };
+
+function buildPropertyFormData(values: CreateHouseValues) {
+  const formData = new FormData();
+
+  formData.append("name", values.name);
+  formData.append("propertyType", values.propertyType);
+  formData.append("price", String(values.price));
+  formData.append("province", values.province ?? "");
+  formData.append("district", values.district);
+  formData.append("sector", values.sector);
+  formData.append("cell", values.cell);
+  formData.append("village", values.village);
+  formData.append("address", values.address ?? "");
+  formData.append("description", values.description);
+
+  if (values.bedrooms != null) formData.append("bedrooms", String(values.bedrooms));
+  if (values.bathrooms != null) formData.append("bathrooms", String(values.bathrooms));
+
+  return formData;
+}
 
 function parseLocation(location: string) {
   const parts = location.split(",").map((s) => s.trim());
@@ -79,14 +95,23 @@ export function EditPropertyDialog({ house }: { house: HouseData }) {
   });
 
   const editMutation = useMutation({
-    mutationFn: (values: CreateHouseValues) =>
-      fetcher<ApiResponse<unknown>>(`/houses/${house.id}`, {
+    mutationFn: async (values: CreateHouseValues) => {
+      const response = await fetch(`/api/properties/${house.id}`, {
         method: "PATCH",
-        body: JSON.stringify(values),
-      }),
+        credentials: "include",
+        body: buildPropertyFormData(values),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.message || "Request failed");
+      }
+
+      return response.json() as Promise<ApiResponse<unknown>>;
+    },
     onSuccess: () => {
       toast.success("Property updated successfully");
-      void queryClient.invalidateQueries({ queryKey: ["houses"] });
+      void queryClient.invalidateQueries({ queryKey: ["properties"] });
       void queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
       setOpen(false);
     },
@@ -102,11 +127,7 @@ export function EditPropertyDialog({ house }: { house: HouseData }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className="size-8"
-        >
+        <Button variant="outline" size="icon" className="size-8">
           <Pencil className="size-4" />
         </Button>
       </DialogTrigger>
@@ -269,17 +290,11 @@ export function EditPropertyDialog({ house }: { house: HouseData }) {
             />
 
             <div className="flex justify-end gap-2 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={editMutation.isPending}>
-                {editMutation.isPending && (
-                  <Loader2 className="animate-spin" />
-                )}
+                {editMutation.isPending && <Loader2 className="animate-spin" />}
                 {editMutation.isPending ? "Saving..." : "Save Changes"}
               </Button>
             </div>

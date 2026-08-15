@@ -1,9 +1,25 @@
-export function buildHousesUrl(page, filters) {
+type PropertyFilters = {
+  propertyType: string;
+  budget: string;
+};
+
+type BuildPropertiesUrlOptions = {
+  status?: "AVAILABLE" | null;
+};
+
+export function buildPropertiesUrl(
+  page: number,
+  filters: PropertyFilters,
+  options: BuildPropertiesUrlOptions = { status: "AVAILABLE" },
+) {
   const params = new URLSearchParams({
     page: String(page),
     limit: "20",
-    status: "AVAILABLE",
   });
+
+  if (options.status) {
+    params.set("status", options.status);
+  }
 
   const propertyTypeFilter = getPropertyTypeFilter(filters.propertyType);
 
@@ -17,10 +33,10 @@ export function buildHousesUrl(page, filters) {
     if (maxPrice) params.set("maxPrice", maxPrice);
   }
 
-  return `/houses?${params.toString()}`;
+  return `/properties?${params.toString()}`;
 }
 
-function getBudgetRange(budget) {
+function getBudgetRange(budget: string) {
   const [minimum, maximum] = budget.split("-");
 
   return {
@@ -29,7 +45,7 @@ function getBudgetRange(budget) {
   };
 }
 
-function getPropertyTypeFilter(propertyType) {
+function getPropertyTypeFilter(propertyType: string) {
   const normalizedPropertyType = propertyType?.trim().toLowerCase();
 
   switch (normalizedPropertyType) {
@@ -38,6 +54,7 @@ function getPropertyTypeFilter(propertyType) {
     case undefined:
     case null:
       return null;
+    case "properties":
     case "houses":
     case "house":
     case "homes":

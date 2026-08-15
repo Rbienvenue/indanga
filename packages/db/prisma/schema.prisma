@@ -13,11 +13,14 @@ model User {
   email            String
   password         String?
   phoneNumber      String?
-  role             UserRole    @default(TENANT)
+  role             UserRole    @default(tenant)
   nationalId       String?
   emailVerified    Boolean     @default(false)
   image            String?
   status           Status      @default(ACTIVE)
+  banned           Boolean     @default(false)
+  banReason        String?
+  banExpires       DateTime?
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   twoFactorEnabled Boolean?    @default(false)
@@ -37,9 +40,9 @@ model User {
 }
 
 enum UserRole {
-  TENANT
-  LANDLORD
-  ADMIN
+  tenant
+  landlord
+  admin
 }
 
 enum Status {
@@ -48,8 +51,9 @@ enum Status {
 }
 
 enum HouseStatus {
-  BOOKED
+  PENDING
   AVAILABLE
+  BOOKED
 }
 
 enum PaymentStatus {
@@ -79,7 +83,7 @@ enum BookingStatus {
   REJECTED
   CANCELLED
 }
-
+// Alias Property
 model House {
   id           String      @id @default(cuid())
   name         String
@@ -94,7 +98,7 @@ model House {
   bathrooms    Int
   // features     String[]
   // isFeatured   Boolean  @default(false)
-  status       HouseStatus @default(AVAILABLE)
+  status       HouseStatus @default(PENDING)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   owner        User        @relation("HouseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
@@ -190,15 +194,16 @@ model Notification {
 }
 
 model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id
+  expiresAt      DateTime
+  token          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  impersonatedBy String?
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
   @@index([userId])

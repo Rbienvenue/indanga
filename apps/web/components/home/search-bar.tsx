@@ -16,7 +16,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 const propertyTypes = [
-  { value: "houses", label: "Homes", icon: Home },
+  { value: "properties", label: "Homes", icon: Home },
   { value: "hotels", label: "Hotels", icon: Building2 },
   { value: "cars", label: "Cars", icon: Car },
 ] as const;

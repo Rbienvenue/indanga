@@ -15,12 +15,7 @@ interface ImageDropzoneProps {
   className?: string;
 }
 
-export function ImageDropzone({
-  value,
-  onChange,
-  maxFiles = 10,
-  className,
-}: ImageDropzoneProps) {
+export function ImageDropzone({ value, onChange, maxFiles = 10, className }: ImageDropzoneProps) {
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -93,7 +88,10 @@ export function ImageDropzone({
       {value.length > 0 && (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {value.map((file, i) => (
-            <div key={`${file.name}-${file.lastModified}`} className="group relative aspect-square overflow-hidden rounded-md border">
+            <div
+              key={`${file.name}-${file.lastModified}`}
+              className="group relative aspect-square overflow-hidden rounded-md border"
+            >
               <img
                 src={URL.createObjectURL(file)}
                 alt={file.name}

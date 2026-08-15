@@ -2,15 +2,8 @@
 
 import type { House } from "@indanga/db";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Calendar,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  User,
-  X,
-} from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { Calendar, Check, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,7 +13,7 @@ import { useSession } from "@/components/providers/session-provider";
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { DataTable } from "@/components/ui/data-table";
 import { fetcher } from "@/lib/fetcher";
 
 const PAGE_SIZE = 6;
@@ -68,11 +61,7 @@ function EmptyBookings({ isAgent }: { isAgent: boolean }) {
   );
 }
 
-function BookingStatusAction({
-  bookingId,
-}: {
-  bookingId: string;
-}) {
+function BookingStatusAction({ bookingId }: { bookingId: string }) {
   const queryClient = useQueryClient();
 
   const statusMutation = useMutation({
@@ -126,56 +115,69 @@ function BookingStatusAction({
   );
 }
 
-function AgentBookingCard({ booking }: { booking: BookingWithHouse }) {
-  return (
-    <Card>
-      <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
-            <User className="size-4 text-muted-foreground" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">
-              {booking.client.name}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {booking.client.email}
-            </p>
-          </div>
-        </div>
-
-        <div className="text-sm">
-          <Link
-            href={`/houses/${booking.house.id}`}
-            className="font-medium hover:underline"
-          >
-            {booking.house.name}
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            {booking.house.location}
-          </p>
-        </div>
-
-        <div className="text-sm text-muted-foreground">
-          ${booking.house.price.toLocaleString()}/mo
-        </div>
-
-        <div className="text-xs text-muted-foreground">
-          {new Date(booking.createdAt).toLocaleDateString()}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className={statusColors[booking.status]}>
-            {booking.status.charAt(0) + booking.status.slice(1).toLowerCase()}
-          </Badge>
-          {booking.status === "PENDING" && (
-            <BookingStatusAction bookingId={booking.id} />
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+const agentColumns: ColumnDef<BookingWithHouse>[] = [
+  {
+    id: "client",
+    header: "Client",
+    accessorFn: (row) => row.client.name,
+    cell: ({ row }) => (
+      <div>
+        <p className="font-medium">{row.original.client.name}</p>
+        <p className="text-xs text-muted-foreground">{row.original.client.email}</p>
+      </div>
+    ),
+  },
+  {
+    id: "property",
+    header: "Property",
+    accessorFn: (row) => row.house.name,
+    cell: ({ row }) => (
+      <div>
+        <Link href={`/properties/${row.original.house.id}`} className="font-medium hover:underline">
+          {row.original.house.name}
+        </Link>
+        <p className="text-xs text-muted-foreground">{row.original.house.location}</p>
+      </div>
+    ),
+  },
+  {
+    id: "price",
+    header: "Price",
+    accessorFn: (row) => row.house.price,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">
+        {row.original.house.price.toLocaleString()} RWF/mo
+      </span>
+    ),
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Date",
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">
+        {new Date(row.original.createdAt).toLocaleDateString()}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <Badge variant="secondary" className={statusColors[row.original.status]}>
+        {row.original.status.charAt(0) + row.original.status.slice(1).toLowerCase()}
+      </Badge>
+    ),
+  },
+  {
+    id: "actions",
+    header: "",
+    enableSorting: false,
+    cell: ({ row }) =>
+      row.original.status === "PENDING" ? (
+        <BookingStatusAction bookingId={row.original.id} />
+      ) : null,
+  },
+];
 
 function Pagination({
   page,
@@ -225,7 +227,7 @@ function Pagination({
 export default function BookingsPage() {
   const [page, setPage] = useState(1);
   const session = useSession();
-  const isAgent = session?.user?.role === "LANDLORD";
+  const isAgent = session?.user?.role === "landlord";
 
   const bookingsQuery = useQuery<PaginationResponse<BookingWithHouse>>({
     queryKey: ["bookings", page, PAGE_SIZE],
@@ -247,9 +249,7 @@ export default function BookingsPage() {
               {isAgent ? "Booking Requests" : "My Bookings"}
             </h1>
             <p className="text-muted-foreground">
-              {isAgent
-                ? "Manage booking requests from tenants."
-                : "Houses you have booked."}
+              {isAgent ? "Manage booking requests from tenants." : "Houses you have booked."}
             </p>
           </div>
         </div>
@@ -263,18 +263,8 @@ export default function BookingsPage() {
 
       {bookingsQuery.isLoading ? (
         isAgent ? (
-          <section className="mt-6 space-y-4">
-            {Array.from({ length: PAGE_SIZE }).map((_, index) => (
-              <Card key={index} className="animate-pulse">
-                <CardContent className="flex items-center gap-4 p-4">
-                  <div className="size-10 rounded-full bg-muted" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 w-1/3 rounded bg-muted" />
-                    <div className="h-3 w-1/4 rounded bg-muted" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <section className="mt-6">
+            <DataTable columns={agentColumns} data={[]} loading />
           </section>
         ) : (
           <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -288,32 +278,28 @@ export default function BookingsPage() {
           <p className="text-sm text-muted-foreground">
             Could not load your bookings. Please try again.
           </p>
-          <Button
-            variant="outline"
-            className="mt-5"
-            onClick={() => void bookingsQuery.refetch()}
-          >
+          <Button variant="outline" className="mt-5" onClick={() => void bookingsQuery.refetch()}>
             Try again
           </Button>
         </div>
       ) : bookings.length === 0 ? (
         <EmptyBookings isAgent={isAgent} />
       ) : isAgent ? (
-        <>
-          <section className="mt-6 space-y-4">
-            {bookings.map((booking) => (
-              <AgentBookingCard key={booking.id} booking={booking} />
-            ))}
-          </section>
-          {meta && (
-            <Pagination
-              page={meta.page}
-              totalPages={meta.totalPages}
-              isFetching={bookingsQuery.isFetching}
-              onPageChange={setPage}
-            />
-          )}
-        </>
+        <section className="mt-6">
+          <DataTable
+            columns={agentColumns}
+            data={bookings}
+            pagination={
+              meta
+                ? {
+                    page: meta.page,
+                    totalPages: meta.totalPages,
+                    onPageChange: setPage,
+                  }
+                : undefined
+            }
+          />
+        </section>
       ) : (
         <>
           <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -321,7 +307,7 @@ export default function BookingsPage() {
               <ProductCard
                 key={id}
                 id={house.id}
-                href={`/houses/${house.id}`}
+                href={`/properties/${house.id}`}
                 name={house.name}
                 location={house.location}
                 price={house.price}

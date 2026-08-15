@@ -14,20 +14,13 @@ import {
 
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const supportAreas = [
   {
     icon: House,
     title: "Booking & stay help",
-    description:
-      "Need help with a reservation, property access, or arranging your next stay?",
+    description: "Need help with a reservation, property access, or arranging your next stay?",
     items: [
       "Check reservation details and check-in instructions",
       "Update guest or stay details",
@@ -48,8 +41,7 @@ const supportAreas = [
   {
     icon: CreditCard,
     title: "Payments & refunds",
-    description:
-      "Questions about pricing, payment confirmations, refunds, or invoice requests.",
+    description: "Questions about pricing, payment confirmations, refunds, or invoice requests.",
     items: [
       "Confirm payment status or receipt details",
       "Request refund information or billing support",
@@ -197,19 +189,14 @@ export default function SupportPage() {
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
               {supportAreas.map(({ icon: Icon, title, description, items }) => (
-                <div
-                  key={title}
-                  className="rounded-2xl border bg-muted/30 p-4 shadow-sm"
-                >
+                <div key={title} className="rounded-2xl border bg-muted/30 p-4 shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="rounded-lg bg-primary/10 p-2 text-primary">
                       <Icon className="size-4" />
                     </div>
                     <h3 className="font-semibold">{title}</h3>
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                    {description}
-                  </p>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
                   <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
                     {items.map((item) => (
                       <li key={item} className="flex gap-2">
@@ -234,9 +221,7 @@ export default function SupportPage() {
               {faqItems.map(({ question, answer }) => (
                 <div key={question} className="rounded-xl border bg-background p-4">
                   <h3 className="font-medium">{question}</h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {answer}
-                  </p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{answer}</p>
                 </div>
               ))}
             </CardContent>
@@ -278,7 +263,10 @@ export default function SupportPage() {
             <CardContent>
               <ul className="space-y-3">
                 {quickResources.map((resource) => (
-                  <li key={resource} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <li
+                    key={resource}
+                    className="flex items-center gap-2 text-sm text-muted-foreground"
+                  >
                     <span className="size-2 rounded-full bg-primary" />
                     <span>{resource}</span>
                   </li>

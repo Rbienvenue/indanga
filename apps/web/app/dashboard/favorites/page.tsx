@@ -13,8 +13,8 @@ export default function Page() {
   const [sort, setSort] = useState("recent");
 
   const favoritesQuery = useQuery<PaginationResponse<FavoriteWithHouse>>({
-    queryKey: ["houses", "favorites"],
-    queryFn: () => fetcher("/houses/favorites"),
+    queryKey: ["properties", "favorites"],
+    queryFn: () => fetcher("/properties/favorites"),
   });
 
   const favorites = useMemo(() => {

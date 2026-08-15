@@ -3,14 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { House } from "@indanga/db";
-import { Building2, Car, Home, Hotel, Loader2 } from "lucide-react";
+import { Car, Home, Hotel, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
-import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,6 +33,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { useSession } from "@/components/providers/session-provider";
 import { fetcher } from "@/lib/fetcher";
 import {
   createHouseSchema,
@@ -54,15 +54,16 @@ interface AddPropertyFormProps {
 }
 
 export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
-  const session = useSession();
   const queryClient = useQueryClient();
   const router = useRouter();
+  const session = useSession();
   const [files, setFiles] = useState<File[]>([]);
+  const [existingMedia, setExistingMedia] = useState<string[]>([]);
   const isEditMode = !!houseId;
 
   const { data: houseResponse, isLoading: isLoadingHouse } = useQuery({
-    queryKey: ["houses", houseId],
-    queryFn: () => fetcher<ApiResponse<House>>(`/houses/${houseId}`),
+    queryKey: ["properties", houseId],
+    queryFn: () => fetcher<ApiResponse<House>>(`/properties/${houseId}`),
     enabled: isEditMode,
   });
 
@@ -103,6 +104,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
         address: house.address ?? "",
         description: house.description,
       });
+      setExistingMedia(house.media);
     }
   }, [house, form]);
 
@@ -111,31 +113,10 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
 
   const addPropertyMutation = useMutation({
     mutationFn: async (values: CreateHouseValues) => {
-      const formData = new FormData();
-
-      formData.append("name", values.name);
-      formData.append("propertyType", values.propertyType);
-      formData.append("price", String(values.price));
-      formData.append("province", values.province ?? "");
-      formData.append("district", values.district);
-      formData.append("sector", values.sector);
-      formData.append("cell", values.cell);
-      formData.append("village", values.village);
-      formData.append("address", values.address ?? "");
-      formData.append("description", values.description);
-      formData.append("ownerId", session?.user?.id ?? "");
-
-      if (values.bedrooms != null) formData.append("bedrooms", String(values.bedrooms));
-      if (values.bathrooms != null) formData.append("bathrooms", String(values.bathrooms));
-
-      for (const file of files) {
-        formData.append("media", file);
-      }
-
-      const response = await fetch("/api/houses", {
+      const response = await fetch("/api/properties", {
         method: "POST",
         credentials: "include",
-        body: formData,
+        body: buildPropertyFormData(values, files),
       });
 
       if (!response.ok) {
@@ -147,7 +128,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
     },
     onSuccess: () => {
       toast.success("Property added successfully");
-      void queryClient.invalidateQueries({ queryKey: ["houses"] });
+      void queryClient.invalidateQueries({ queryKey: ["properties"] });
       form.reset();
       setFiles([]);
       router.push("/dashboard");
@@ -158,16 +139,25 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
   });
 
   const updatePropertyMutation = useMutation({
-    mutationFn: (values: CreateHouseValues) =>
-      fetcher<ApiResponse<unknown>>(`/houses/${houseId}`, {
+    mutationFn: async (values: CreateHouseValues) => {
+      const response = await fetch(`/api/properties/${houseId}`, {
         method: "PATCH",
-        body: JSON.stringify(values),
-      }),
+        credentials: "include",
+        body: buildPropertyFormData(values, files, existingMedia),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.message || "Request failed");
+      }
+
+      return response.json() as Promise<ApiResponse<unknown>>;
+    },
     onSuccess: () => {
       toast.success("Property updated successfully");
-      void queryClient.invalidateQueries({ queryKey: ["houses"] });
+      void queryClient.invalidateQueries({ queryKey: ["properties"] });
       void queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
-      router.push("/dashboard");
+      router.push(session?.user.role === "admin" ? "/admin/properties" : "/dashboard");
     },
     onError: (error: Error) => {
       toast.error(error.message ?? "Failed to update property");
@@ -221,7 +211,6 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <CardContent className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
-              
               <FormField
                 control={form.control}
                 name="propertyType"
@@ -270,7 +259,6 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
                 )}
               />
 
-
               <FormField
                 control={form.control}
                 name="price"
@@ -278,12 +266,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
                   <FormItem>
                     <FormLabel>Price (RWF)</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        min={0}
-                        placeholder="e.g. 150000"
-                        {...field}
-                      />
+                      <Input type="number" min={0} placeholder="e.g. 150000" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -422,26 +405,39 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
               )}
             />
 
-            {!isEditMode && (
-              <div className="space-y-2">
-                <Label>Photos</Label>
-                <ImageDropzone value={files} onChange={setFiles} />
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label>Photos</Label>
+              {existingMedia.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {existingMedia.map((src) => (
+                    <div
+                      key={src}
+                      className="group relative aspect-square overflow-hidden rounded-md border"
+                    >
+                      <img src={src} alt="Property photo" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExistingMedia((media) => media.filter((url) => url !== src))
+                        }
+                        className="absolute right-1 top-1 rounded-full bg-black/60 p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <ImageDropzone value={files} onChange={setFiles} />
+            </div>
           </CardContent>
 
           <CardFooter className="flex justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push("/dashboard")}
-            >
+            <Button type="button" variant="outline" onClick={() => router.push("/dashboard")}>
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending && (
-                <Loader2 className="animate-spin" />
-              )}
+              {mutation.isPending && <Loader2 className="animate-spin" />}
               {mutation.isPending
                 ? isEditMode
                   ? "Saving..."
@@ -455,6 +451,34 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
       </Form>
     </Card>
   );
+}
+
+function buildPropertyFormData(values: CreateHouseValues, files: File[], existingMedia?: string[]) {
+  const formData = new FormData();
+
+  formData.append("name", values.name);
+  formData.append("propertyType", values.propertyType);
+  formData.append("price", String(values.price));
+  formData.append("province", values.province ?? "");
+  formData.append("district", values.district);
+  formData.append("sector", values.sector);
+  formData.append("cell", values.cell);
+  formData.append("village", values.village);
+  formData.append("address", values.address ?? "");
+  formData.append("description", values.description);
+
+  if (values.bedrooms != null) formData.append("bedrooms", String(values.bedrooms));
+  if (values.bathrooms != null) formData.append("bathrooms", String(values.bathrooms));
+
+  for (const url of existingMedia ?? []) {
+    formData.append("existingMedia", url);
+  }
+
+  for (const file of files) {
+    formData.append("media", file);
+  }
+
+  return formData;
 }
 
 function parseLocation(location: string) {

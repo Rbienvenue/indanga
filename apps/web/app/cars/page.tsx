@@ -49,7 +49,8 @@ export default function CarsPage() {
               Find a comfortable car for city travel, airport pickups, or weekend getaways.
             </h1>
             <p className="mt-3 text-sm leading-7 text-muted-foreground sm:text-base">
-              Choose from compact, family, and premium vehicles with easy pickup options and transparent daily pricing.
+              Choose from compact, family, and premium vehicles with easy pickup options and
+              transparent daily pricing.
             </p>
           </div>
 
@@ -96,7 +97,9 @@ export default function CarsPage() {
               <div className="mt-5 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">From</p>
-                  <p className="text-xl font-semibold text-foreground">RWF {car.price.toLocaleString()}</p>
+                  <p className="text-xl font-semibold text-foreground">
+                    RWF {car.price.toLocaleString()}
+                  </p>
                 </div>
                 <Button asChild size="sm">
                   <Link href="#">Reserve now</Link>

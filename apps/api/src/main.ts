@@ -9,12 +9,12 @@ async function main() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
   });
-  app.use(morgan("dev"))
+  app.use(morgan("dev"));
   app.enableCors({
-    origin:[env.FRONTEND_URL],
+    origin: [env.FRONTEND_URL],
     credentials: true,
-  })
-  app.setGlobalPrefix("/v1")
+  });
+  app.setGlobalPrefix("/v1");
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

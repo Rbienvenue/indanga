@@ -73,9 +73,7 @@ export function QuickActions() {
               />
             </div>
 
-            <h3 className="relative z-10 text-base font-semibold drop-shadow-sm">
-              {action.title}
-            </h3>
+            <h3 className="relative z-10 text-base font-semibold drop-shadow-sm">{action.title}</h3>
             <p className="relative z-10 mt-0.5 text-sm opacity-80 drop-shadow-sm">
               {action.subtitle}
             </p>

@@ -65,7 +65,7 @@ export default function ProfilePage() {
     return null;
   }
 
-  const role = user.role === "TENANT" ? "Client" : (user.role ?? "Client");
+  const role = user.role === "tenant" ? "Client" : (user.role ?? "Client");
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -75,7 +75,8 @@ export default function ProfilePage() {
             <p className="text-sm font-medium text-muted-foreground">Profile Settings</p>
             <h1 className="text-3xl font-semibold tracking-tight">Manage your account details</h1>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Update your personal information, review account data, and manage how you sign in to Indanga.
+              Update your personal information, review account data, and manage how you sign in to
+              Indanga.
             </p>
           </div>
           <Button asChild>
@@ -103,11 +104,7 @@ export default function ProfilePage() {
                           Full name
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Enter your full name"
-                            className="h-10"
-                            {...field}
-                          />
+                          <Input placeholder="Enter your full name" className="h-10" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -118,12 +115,7 @@ export default function ProfilePage() {
                       <Mail className="h-4 w-4" />
                       Email
                     </Label>
-                    <Input
-                      type="email"
-                      value={user.email ?? ""}
-                      disabled
-                      className="h-10"
-                    />
+                    <Input type="email" value={user.email ?? ""} disabled className="h-10" />
                   </div>
                   <FormField
                     control={form.control}
@@ -151,21 +143,13 @@ export default function ProfilePage() {
                       <ShieldCheck className="h-4 w-4" />
                       Account role
                     </Label>
-                    <Input
-                      value={role.toLowerCase()}
-                      disabled
-                      className="h-10 capitalize"
-                    />
+                    <Input value={role.toLowerCase()} disabled className="h-10 capitalize" />
                   </div>
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-3">
                 <div className="flex w-full gap-3 sm:w-auto">
-                  
-                  <Button
-                    type="submit"
-                    disabled={updateUserMutation.isPending}
-                  >
+                  <Button type="submit" disabled={updateUserMutation.isPending}>
                     {updateUserMutation.isPending ? "Saving..." : "Save changes"}
                   </Button>
                 </div>
@@ -185,12 +169,13 @@ export default function ProfilePage() {
                 <p className="text-sm font-medium">Account security</p>
               </div>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Keep your account safe by using a strong password and updating your details regularly. For email or password changes, please reach out to support.
+                Keep your account safe by using a strong password and updating your details
+                regularly. For email or password changes, please reach out to support.
               </p>
             </div>
             <div className="space-y-3">
               <Button asChild variant="outline" className="w-full">
-                <Link href="mailto:support@indanga.com">Request  update</Link>
+                <Link href="mailto:support@indanga.com">Request update</Link>
               </Button>
             </div>
           </CardContent>

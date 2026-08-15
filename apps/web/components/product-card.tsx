@@ -6,13 +6,17 @@ import Link from "next/link";
 import { Bath, BedDouble, Heart, MapPin, Pencil } from "lucide-react";
 
 import type { ApiResponse } from "@/@types";
+import { DeletePropertyDialog } from "@/components/dashboard/properties/delete-property-dialog";
+import {
+  PropertyStatusBadge,
+  type PropertyStatus,
+} from "@/components/properties/property-status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetcher } from "@/lib/fetcher";
 import { cn } from "@/lib/utils";
-import { DeletePropertyDialog } from "@/components/dashboard/properties/delete-property-dialog";
 
 export type ProductCardProps = {
   id: string;
@@ -32,6 +36,7 @@ export type ProductCardProps = {
   className?: string;
   isFavorite?: boolean;
   showManageActions?: boolean;
+  status?: PropertyStatus;
 };
 
 function formatPrice(price: number) {
@@ -56,16 +61,17 @@ export function ProductCard({
   className,
   isFavorite = false,
   showManageActions = false,
+  status,
 }: ProductCardProps) {
   const queryClient = useQueryClient();
   const favoriteMutation = useMutation({
     mutationFn: () =>
-      fetcher<ApiResponse<{ isFavorite: boolean }>>(`/houses/${id}/favorites`, {
+      fetcher<ApiResponse<{ isFavorite: boolean }>>(`/properties/${id}/favorites`, {
         method: "POST",
       }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["houses", "favorites"] });
-      void queryClient.invalidateQueries({ queryKey: ["houses", id] });
+      void queryClient.invalidateQueries({ queryKey: ["properties", "favorites"] });
+      void queryClient.invalidateQueries({ queryKey: ["properties", id] });
     },
   });
   const favoriteState = favoriteMutation.data?.data.isFavorite ?? isFavorite;
@@ -105,13 +111,8 @@ export function ProductCard({
         )}
         {showManageActions ? (
           <div className="absolute top-3 right-3 z-10 flex gap-1.5">
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8"
-              asChild
-            >
-              <Link href={`/dashboard/properties/new?houseId=${id}`}>
+            <Button variant="outline" size="icon" className="size-8" asChild>
+              <Link href={`/dashboard/properties/new?propertyId=${id}`}>
                 <Pencil className="size-4" />
               </Link>
             </Button>
@@ -141,9 +142,12 @@ export function ProductCard({
           <span className="truncate">{location}</span>
         </div>
 
-        <div className="mt-3 flex items-baseline gap-1">
-          <span className="text-lg font-bold text-primary">{formatPrice(price)}</span>
-          <span className="text-sm text-muted-foreground">{priceUnit}</span>
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <div className="flex items-baseline gap-1">
+            <span className="text-lg font-bold text-primary">{formatPrice(price)}</span>
+            <span className="text-sm text-muted-foreground">{priceUnit}</span>
+          </div>
+          {status && <PropertyStatusBadge status={status} />}
         </div>
 
         <div className="mt-3 flex items-center gap-3 border-t border-border/50 pt-3">

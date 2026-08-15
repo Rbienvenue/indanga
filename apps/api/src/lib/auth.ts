@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { admin } from "better-auth/plugins";
 import { prisma } from "@indanga/db";
 import { env } from "./env";
 
@@ -13,6 +14,12 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  plugins: [
+    admin({
+      defaultRole: "tenant",
+      adminRoles: ["admin"],
+    }),
+  ],
   user: {
     additionalFields: {
       phoneNumber: {
@@ -27,7 +34,7 @@ export const auth = betterAuth({
         returned: false,
       },
       role: {
-        type: ["TENANT", "LANDLORD"],
+        type: ["tenant", "landlord", "admin"],
         required: true,
         input: true,
       },

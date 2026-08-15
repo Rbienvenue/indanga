@@ -20,10 +20,7 @@ function getBudgetRange(budget: string) {
   };
 }
 
-function buildHotelsUrl(
-  page: number,
-  filters: { propertyType: string; budget: string },
-) {
+function buildHotelsUrl(page: number, filters: { propertyType: string; budget: string }) {
   const params = new URLSearchParams({
     page: String(page),
     limit: "20",
@@ -40,18 +37,12 @@ function buildHotelsUrl(
     if (maxPrice) params.set("maxPrice", maxPrice);
   }
 
-  return `/houses?${params.toString()}`;
+  return `/properties?${params.toString()}`;
 }
 
 export default function HotelsPage() {
-  const [propertyType] = useQueryState(
-    "type",
-    parseAsString.withDefault("all"),
-  );
-  const [budget] = useQueryState(
-    "budget",
-    parseAsString.withDefault("any"),
-  );
+  const [propertyType] = useQueryState("type", parseAsString.withDefault("all"));
+  const [budget] = useQueryState("budget", parseAsString.withDefault("any"));
 
   const filters = { propertyType, budget };
 
@@ -61,9 +52,7 @@ export default function HotelsPage() {
       fetcher<PaginationResponse<House>>(buildHotelsUrl(pageParam, filters)),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
-      lastPage.meta.page < lastPage.meta.totalPages
-        ? lastPage.meta.page + 1
-        : undefined,
+      lastPage.meta.page < lastPage.meta.totalPages ? lastPage.meta.page + 1 : undefined,
   });
 
   const hotels = hotelsQuery.data?.pages.flatMap((page) => page.data) ?? [];
@@ -81,7 +70,8 @@ export default function HotelsPage() {
               Discover comfortable rooms and book your next stay in minutes.
             </h1>
             <p className="mt-3 text-sm leading-7 text-muted-foreground sm:text-base">
-              Browse premium hotel rooms, compare amenities, and reserve the perfect stay for business trips, weekend escapes, or family visits.
+              Browse premium hotel rooms, compare amenities, and reserve the perfect stay for
+              business trips, weekend escapes, or family visits.
             </p>
           </div>
 
@@ -91,7 +81,8 @@ export default function HotelsPage() {
               Instant booking-ready listings
             </div>
             <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-              Every room card opens a full details page so guests can review space, amenities, and make a reservation.
+              Every room card opens a full details page so guests can review space, amenities, and
+              make a reservation.
             </p>
           </div>
         </div>

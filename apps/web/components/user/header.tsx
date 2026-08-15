@@ -23,9 +23,7 @@ export default function UserHeader() {
       <div className="flex items-center gap-4">
         <Avatar size="lg" className="cursor-pointer">
           {user?.image ? <AvatarImage src={user.image} alt={displayName} /> : null}
-          <AvatarFallback className="text-lg">
-            {getInitials(displayName) || "G"}
-          </AvatarFallback>
+          <AvatarFallback className="text-lg">{getInitials(displayName) || "G"}</AvatarFallback>
         </Avatar>
 
         <div>

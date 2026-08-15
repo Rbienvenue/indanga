@@ -30,12 +30,12 @@ export function DeletePropertyDialog({
 
   const deleteMutation = useMutation({
     mutationFn: () =>
-      fetcher<ApiResponse<unknown>>(`/houses/${houseId}`, {
+      fetcher<ApiResponse<unknown>>(`/properties/${houseId}`, {
         method: "DELETE",
       }),
     onSuccess: () => {
       toast.success("Property deleted successfully");
-      void queryClient.invalidateQueries({ queryKey: ["houses"] });
+      void queryClient.invalidateQueries({ queryKey: ["properties"] });
       void queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
     },
     onError: (error: Error) => {
@@ -58,9 +58,8 @@ export function DeletePropertyDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete property</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete &quot;{houseName}&quot;? This action
-            cannot be undone and will also remove all associated bookings and
-            reviews.
+            Are you sure you want to delete &quot;{houseName}&quot;? This action cannot be undone
+            and will also remove all associated bookings and reviews.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -73,9 +72,7 @@ export function DeletePropertyDialog({
               deleteMutation.mutate();
             }}
           >
-            {deleteMutation.isPending && (
-              <Loader2 className="size-4 animate-spin" />
-            )}
+            {deleteMutation.isPending && <Loader2 className="size-4 animate-spin" />}
             {deleteMutation.isPending ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>

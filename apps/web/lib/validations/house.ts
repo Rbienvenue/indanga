@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-export const propertyTypes = [
-  "House",
-  "Hotel",
-  "Car",
-] as const;
+export const propertyTypes = ["House", "Hotel", "Car"] as const;
 
 export type PropertyType = (typeof propertyTypes)[number];
 
@@ -14,8 +10,7 @@ export function typeHasRooms(type: PropertyType): boolean {
   return typesWithRooms.includes(type);
 }
 
-export const createHouseSchema = z
-  .object({
+export const createHouseSchema = z.object({
   name: z.string().trim().min(2, "Property name must be at least 2 characters"),
   propertyType: z.enum(propertyTypes, { message: "Select a property type" }),
   price: z.coerce.number<number>().positive("Enter a valid price"),
@@ -27,10 +22,7 @@ export const createHouseSchema = z
   cell: z.string().trim().min(1, "Cell is required"),
   village: z.string().trim().min(1, "Village is required"),
   address: z.string().trim().optional(),
-  description: z
-    .string()
-    .trim()
-    .min(10, "Description must be at least 10 characters"),
+  description: z.string().trim().min(10, "Description must be at least 10 characters"),
 });
 
 export type CreateHouseValues = z.infer<typeof createHouseSchema>;

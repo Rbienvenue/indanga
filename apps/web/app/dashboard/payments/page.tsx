@@ -65,7 +65,9 @@ export default function PaymentsPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Payments</h1>
-            <p className="text-muted-foreground">Manage your payment overview and upcoming charges.</p>
+            <p className="text-muted-foreground">
+              Manage your payment overview and upcoming charges.
+            </p>
           </div>
         </div>
 
@@ -89,7 +91,9 @@ export default function PaymentsPage() {
         </div>
       ) : paymentsQuery.isError ? (
         <div className="mt-6 rounded-2xl border border-dashed border-border/70 bg-muted/30 px-6 py-16 text-center">
-          <p className="text-sm text-muted-foreground">Could not load payment details. Please try again.</p>
+          <p className="text-sm text-muted-foreground">
+            Could not load payment details. Please try again.
+          </p>
           <Button variant="outline" className="mt-5" onClick={() => void paymentsQuery.refetch()}>
             Retry
           </Button>
@@ -118,14 +122,16 @@ export default function PaymentsPage() {
                 </div>
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>Booking date</span>
-                  <time dateTime={booking.createdAt}>{new Date(booking.createdAt).toLocaleDateString()}</time>
+                  <time dateTime={booking.createdAt}>
+                    {new Date(booking.createdAt).toLocaleDateString()}
+                  </time>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock4 className="size-4" />
                   <span>Payment will be processed after booking confirmation.</span>
                 </div>
                 <Button asChild size="sm">
-                  <Link href={`/houses/${booking.house.id}`}>View house</Link>
+                  <Link href={`/properties/${booking.house.id}`}>View house</Link>
                 </Button>
               </CardContent>
             </Card>

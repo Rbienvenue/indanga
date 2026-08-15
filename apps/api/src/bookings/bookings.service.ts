@@ -47,10 +47,10 @@ export class BookingsService {
   async getBookingsByUser(user: UserSession["user"], data: FilterBookingDto) {
     const { page = 1, limit = 20 } = data;
     const where: Prisma.BookingWhereInput = {};
-    if (user.role === "TENANT") {
+    if (user.role === "tenant") {
       where.clientId = user.id;
     }
-    if (user.role === "LANDLORD") {
+    if (user.role === "landlord") {
       where.house = { ownerId: user.id };
     }
 
@@ -96,9 +96,9 @@ export class BookingsService {
     }
 
     const canAccessBooking =
-      user.role === "ADMIN" ||
-      (user.role === "TENANT" && booking.clientId === user.id) ||
-      (user.role === "LANDLORD" && booking.house.ownerId === user.id);
+      user.role === "admin" ||
+      (user.role === "tenant" && booking.clientId === user.id) ||
+      (user.role === "landlord" && booking.house.ownerId === user.id);
 
     if (!canAccessBooking) {
       throw new ForbiddenException("You do not have access to this booking");
@@ -107,11 +107,7 @@ export class BookingsService {
     return booking;
   }
 
-  async updateBookingStatus(
-    id: string,
-    status: BookingStatus,
-    user: UserSession["user"],
-  ) {
+  async updateBookingStatus(id: string, status: BookingStatus, user: UserSession["user"]) {
     const booking = await this.db.booking.findUnique({
       where: { id },
       include: { house: true },
@@ -121,10 +117,8 @@ export class BookingsService {
       throw new NotFoundException("Booking not found");
     }
 
-    if (booking.house.ownerId !== user.id) {
-      throw new ForbiddenException(
-        "Only the property owner can update booking status",
-      );
+    if (booking.house.ownerId !== user.id && user.role !== "admin") {
+      throw new ForbiddenException("Only the property owner can update booking status");
     }
 
     return this.db.$transaction(async (tx) => {

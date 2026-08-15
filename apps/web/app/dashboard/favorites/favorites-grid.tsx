@@ -67,7 +67,7 @@ export function FavoritesGrid({ favorites, isLoading, isError }: FavoritesGridPr
         <ProductCard
           key={id}
           id={house.id}
-          href={`/houses/${house.id}`}
+          href={`/properties/${house.id}`}
           name={house.name}
           location={house.location}
           price={house.price}

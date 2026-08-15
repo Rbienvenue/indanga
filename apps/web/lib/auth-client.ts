@@ -1,5 +1,6 @@
 import { createAuthClient } from "better-auth/react";
 import { inferAdditionalFields } from "better-auth/client/plugins";
+import { adminClient } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
   ...(typeof window === "undefined" && {
@@ -21,12 +22,13 @@ export const authClient = createAuthClient({
           returned: false,
         },
         role: {
-          type: ["TENANT", "LANDLORD"],
+          type: ["tenant", "landlord", "admin"],
           required: true,
           input: true,
         },
       },
     }),
+    adminClient(),
   ],
 });
 
