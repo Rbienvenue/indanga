@@ -30,6 +30,8 @@ export class HousesService {
       data: {
         ...rest,
         ownerId,
+        bedrooms: data.bedrooms ?? 0,
+        bathrooms: data.bathrooms ?? 0,
         location: `${province}, ${district}, ${sector}, ${cell} ${village}`,
       },
     });

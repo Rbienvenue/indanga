@@ -11,7 +11,7 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FilesInterceptor } from "@nestjs/platform-express";
-import { AllowAnonymous, Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
+import { AllowAnonymous, Roles, Session } from "@thallesp/nestjs-better-auth";
 import { ApiResponse, PaginationResponse } from "src/@types";
 import { StorageBucket, StorageService } from "src/storage/storage.service";
 import {
@@ -22,6 +22,8 @@ import {
   UpdateHouseDto,
 } from "./dtos";
 import { HousesService } from "./houses.service";
+import { type Session as UserSession } from "src/lib/auth";
+import { UserRole } from "@indanga/db";
 
 @Controller("properties")
 export class HousesController {
@@ -90,7 +92,7 @@ export class HousesController {
       files?.map((file) => file.buffer) ?? [],
       { bucket: StorageBucket.HOUSE_MEDIA },
     );
-    const house = await this.houseService.updateHouse(id, session.user.id, session.user.role, {
+    const house = await this.houseService.updateHouse(id, session.user.id, session?.user?.role as UserRole, {
       ...data,
       media: mediaUrls.map((url) => url.url),
     });
@@ -100,7 +102,7 @@ export class HousesController {
   @Delete(":id")
   @Roles(["landlord", "admin"])
   async deleteHouse(@Param("id") id: string, @Session() session: UserSession) {
-    const house = await this.houseService.deleteHouse(id, session.user.id, session.user.role);
+    const house = await this.houseService.deleteHouse(id, session.user.id, session?.user?.role as UserRole);
     return new ApiResponse(house, "property deleted");
   }
 

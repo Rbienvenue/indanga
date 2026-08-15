@@ -165,8 +165,8 @@ function SetPasswordDialog({ userId, userName }: { userId: string; userName: str
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-          <KeyRound className="mr-2 size-4" />
+        <DropdownMenuItem className="px-0" onSelect={(e) => e.preventDefault()}>
+          <KeyRound className="mr-1 size-4" />
           Set Password
         </DropdownMenuItem>
       </DialogTrigger>
@@ -183,7 +183,7 @@ function SetPasswordDialog({ userId, userName }: { userId: string; userName: str
         >
           <div className="space-y-2">
             <Label htmlFor="password">New Password</Label>
-            <Input id="password" name="password" type="password" required minLength={5} />
+            <Input id="password" name="password" type="password" placeholder="Enter new password" required minLength={5} />
           </div>
           <Button type="submit" className="w-full" disabled={mutation.isPending}>
             {mutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
@@ -258,12 +258,13 @@ function UserActions({ user }: { user: UserWithRole }) {
             <MoreHorizontal className="size-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="w-40">
           <DropdownMenuItem
             disabled={setRoleMutation.isPending}
             onSelect={() => setRoleMutation.mutate(user.role === "admin" ? "tenant" : "admin")}
+            className="px-1 py-2"
           >
-            <Shield className="mr-2 size-4" />
+            <Shield className="mr-1 size-4" />
             {user.role === "admin" ? "Remove Admin" : "Make Admin"}
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -271,8 +272,9 @@ function UserActions({ user }: { user: UserWithRole }) {
             onSelect={() =>
               setRoleMutation.mutate(user.role === "landlord" ? "tenant" : "landlord")
             }
+            className="px-0 py-1"
           >
-            <Shield className="mr-2 size-4" />
+            <Shield className="size-4" />
             {user.role === "landlord" ? "Set as Tenant" : "Set as Landlord"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />

@@ -8,7 +8,7 @@ const categories = [
     subtitle: "Find your next home",
     count: "1200+ Listings",
     image: "/image2.jpeg",
-    link: "/properties?type=houses",
+    link: "/properties?type=homes",
   },
   {
     title: "Hotel Rooms",
@@ -33,7 +33,7 @@ export function Categories() {
         {/* Section Heading */}
         <div className="mb-10 flex items-end justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-2xl">
               Popular Categories
             </h2>
           </div>

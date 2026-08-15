@@ -1,10 +1,8 @@
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Play } from "lucide-react";
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen w-full overflow-hidden">
+    <section className="relative w-full overflow-hidden pt-18 pb-14">
       {/* Background Cover Image */}
       <Image
         src="/hero.jpg"
@@ -17,34 +15,19 @@ export function Hero() {
       />
 
       {/* Dark gradient overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/30" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/40" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
 
-      {/* Content */}
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col justify-center px-4 pt-18 sm:px-6 lg:px-8">
-        <div className="flex max-w-2xl flex-col items-start">
-          <h1 className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[4rem] lg:leading-[1.1]">
-            One Platform.
-            <br />
-            Endless Possibilities.
-            <br />
-            Your Journey, <span className="italic text-primary">Simplified.</span>
-          </h1>
-
-          <p className="mt-6 max-w-lg text-base leading-relaxed text-white/65 sm:text-lg md:text-xl">
-            Find your next home, book the perfect hotel, or rent a car — all in one place.
-          </p>
-
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Button size="lg" variant="default" className="px-6 font-semibold">
-              Explore Now
-            </Button>
-            <Button variant="outline" size="lg" className="px-6 font-semibold">
-              <Play className="mr-1.5 size-4 fill-current" />
-              How It Works
-            </Button>
-          </div>
-        </div>
+      {/* Content – centered heading */}
+      <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-center px-4 py-8 text-center sm:px-6 sm:py-10 lg:px-8">
+        <h1 className="text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
+          Find Your Perfect
+          <br />
+          Stay, Home or Ride
+        </h1>
+        <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/70 sm:text-base">
+          Search verified homes, hotels, and cars  all in one place.
+        </p>
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { Building2, Car, Home, MapPin, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { parseAsString, useQueryState } from "nuqs";
 import { useState } from "react";
 
@@ -16,13 +17,20 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 const propertyTypes = [
-  { value: "properties", label: "Homes", icon: Home },
+  { value: "homes", label: "Homes", icon: Home },
   { value: "hotels", label: "Hotels", icon: Building2 },
   { value: "cars", label: "Cars", icon: Car },
 ] as const;
 
+const typeOptions = [
+  { value: "all", label: "All Type" },
+  { value: "apartment", label: "Apartment" },
+  { value: "house", label: "House" },
+  { value: "villa", label: "Villa" },
+] as const;
+
 const budgetOptions = [
-  { value: "any", label: "Any budget" },
+  { value: "any", label: "Any Budget" },
   { value: "0-350000", label: "Under RWF 350K" },
   { value: "350000-500000", label: "RWF 350K – 500K" },
   { value: "500000-", label: "RWF 500K+" },
@@ -30,29 +38,67 @@ const budgetOptions = [
 
 type SearchBarProps = {
   className?: string;
+  /** When set, Search navigates here with the selected filters instead of writing the current URL. */
+  redirectTo?: string;
 };
 
-export function SearchBar({ className }: SearchBarProps) {
+function buildSearchHref(pathname: string, filters: { type: string; budget: string }) {
+  const params = new URLSearchParams();
+  if (filters.type !== "all") params.set("type", filters.type);
+  if (filters.budget !== "any") params.set("budget", filters.budget);
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
+
+export function SearchBar({ className, redirectTo }: SearchBarProps) {
+  const router = useRouter();
   const [location, setLocation] = useState("all");
-  const [propertyType, setPropertyType] = useQueryState(
+  const [typeQuery, setTypeQuery] = useQueryState(
     "type",
     parseAsString.withDefault("all").withOptions({ shallow: false }),
   );
-  const [budget, setBudget] = useQueryState(
+  const [budgetQuery, setBudgetQuery] = useQueryState(
     "budget",
     parseAsString.withDefault("any").withOptions({ shallow: false }),
   );
+  const [draftType, setDraftType] = useState("all");
+  const [draftBudget, setDraftBudget] = useState("any");
+  const [draftSubType, setDraftSubType] = useState("all");
+
+  const propertyType = redirectTo ? draftType : typeQuery;
+  const budget = redirectTo ? draftBudget : budgetQuery;
+
+  function handleTypeChange(value: string) {
+    if (redirectTo) {
+      setDraftType(value);
+      return;
+    }
+    void setTypeQuery(value === "all" ? null : value);
+  }
+
+  function handleBudgetChange(value: string) {
+    if (redirectTo) {
+      setDraftBudget(value);
+      return;
+    }
+    void setBudgetQuery(value === "any" ? null : value);
+  }
+
+  function handleSearch() {
+    if (redirectTo) {
+      router.push(buildSearchHref(redirectTo, { type: propertyType, budget }));
+      return;
+    }
+    void setTypeQuery(propertyType === "all" ? null : propertyType);
+    void setBudgetQuery(budget === "any" ? null : budget);
+  }
 
   return (
-    <section className={cn("relative z-20 -mt-6 px-4 sm:px-6 lg:px-8", className)}>
-      <div className="mx-auto max-w-4xl rounded-xl border border-border/60 bg-card/95 p-5 shadow-xl shadow-black/10 backdrop-blur-sm sm:p-6">
-        <div className="flex flex-col gap-5">
-          <Tabs
-            value={propertyType}
-            onValueChange={(value) => void setPropertyType(value === "all" ? null : value)}
-          >
+    <section className={cn("relative z-20 -mt-10 px-4 sm:px-6 lg:px-8", className)}>
+      <div className="mx-auto max-w-4xl rounded-xl border border-border/60 bg-card/95 px-5 py-4 shadow-xl shadow-black/10 backdrop-blur-sm sm:px-6">
+        <div className="flex flex-col gap-3">
+          <Tabs value={propertyType} onValueChange={handleTypeChange}>
             <TabsList className="mx-auto w-fit bg-muted p-1">
-              <TabsTrigger value="all">All</TabsTrigger>
               {propertyTypes.map(({ value, label, icon: Icon }) => (
                 <TabsTrigger key={value} value={value}>
                   <Icon className="mr-1.5 size-4" />
@@ -62,27 +108,32 @@ export function SearchBar({ className }: SearchBarProps) {
             </TabsList>
           </Tabs>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-muted-foreground">Location</label>
-              <Select value={location} onValueChange={setLocation}>
-                <SelectTrigger className="w-full">
-                  <MapPin className="size-4 text-muted-foreground" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All locations</SelectItem>
-                  <SelectItem value="Kigali">Kigali, Rwanda</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto]">
+            <Select value={location} onValueChange={setLocation}>
+              <SelectTrigger className="w-full">
+                <MapPin className="size-4 text-muted-foreground" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All locations</SelectItem>
+                <SelectItem value="Kigali">Kigali, Rwanda</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-muted-foreground">Budget</label>
-              <Select
-                value={budget}
-                onValueChange={(value) => void setBudget(value === "any" ? null : value)}
-              >
+            <Select value={draftSubType} onValueChange={setDraftSubType}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {typeOptions.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={budget} onValueChange={handleBudgetChange}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -94,20 +145,11 @@ export function SearchBar({ className }: SearchBarProps) {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
 
-            <div className="flex flex-col justify-end lg:col-start-4">
-              <Button
-                className="w-full font-semibold"
-                onClick={() => {
-                  void setPropertyType(propertyType === "all" ? null : propertyType);
-                  void setBudget(budget === "any" ? null : budget);
-                }}
-              >
-                <Search className="size-4" />
-                Search
-              </Button>
-            </div>
+            <Button className="w-full font-semibold" onClick={handleSearch}>
+              <Search className="size-4" />
+              Search
+            </Button>
           </div>
         </div>
       </div>

@@ -7,7 +7,6 @@ import {
   Bath,
   BedDouble,
   Building2,
-  CalendarCheck,
   Check,
   ChevronRight,
   Heart,
@@ -287,16 +286,8 @@ export function HouseDetails({ houseId }: { houseId: string }) {
             </div>
 
             <div className="grid grid-cols-3 divide-x divide-slate-900/10 border-b border-slate-900/10 py-7">
-              <PropertyFact
-                icon={BedDouble}
-                value={house.bedrooms}
-                label={house.bedrooms === 1 ? "bedroom" : "bedrooms"}
-              />
-              <PropertyFact
-                icon={Bath}
-                value={house.bathrooms}
-                label={house.bathrooms === 1 ? "bathroom" : "bathrooms"}
-              />
+              {house.bathrooms > 0 ? <PropertyFact icon={Bath} value={house.bathrooms} label={house.bathrooms === 1 ? "bathroom" : "bathrooms"} /> : null}
+              {house.bedrooms > 0 ? <PropertyFact icon={BedDouble} value={house.bedrooms} label={house.bedrooms === 1 ? "bedroom" : "bedrooms"} /> : null}
               <PropertyFact icon={Building2} value={house.propertyType} label="property type" />
             </div>
 
@@ -441,20 +432,6 @@ function BookingCard({
         <div>
           <p className="text-2xl font-black tracking-tight">{formatPrice(house.price)}</p>
           <p className="text-sm text-slate-500">per month</p>
-        </div>
-      </div>
-
-      <div className="my-6 rounded-xl border border-slate-900/10">
-        <div className="flex items-center gap-3 p-4">
-          <CalendarCheck className="size-5 text-primary" />
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Availability
-            </p>
-            <p className="mt-0.5 text-sm font-semibold">
-              {isAvailable ? "Ready to book now" : "Currently booked"}
-            </p>
-          </div>
         </div>
       </div>
 

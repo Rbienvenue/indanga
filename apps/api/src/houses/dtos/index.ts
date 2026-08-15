@@ -51,11 +51,13 @@ export class CreateHouseDto {
 
   @Type(() => Number)
   @IsInt()
-  bedrooms: number;
+  @IsOptional()
+  bedrooms?: number;
 
   @Type(() => Number)
   @IsInt()
-  bathrooms: number;
+  @IsOptional()
+  bathrooms?: number;
 }
 
 export class UpdateHouseDto extends PartialType(CreateHouseDto) {

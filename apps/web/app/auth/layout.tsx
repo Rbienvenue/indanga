@@ -26,10 +26,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </Link>
 
         <div className="relative z-10 max-w-xl text-white">
-          <p className="mb-5 text-sm font-semibold tracking-[0.22em] text-primary uppercase">
-            Find your place
-          </p>
-          <h2 className="text-4xl leading-[1.08] font-semibold tracking-tight text-balance xl:text-6xl">
+          <h2 className="text-3xl leading-[1.08] font-semibold tracking-tight text-balance xl:text-5xl">
             A simpler way to find a space that feels like yours.
           </h2>
           <ul className="mt-9 grid gap-3 text-sm text-white/75 sm:grid-cols-3">
@@ -43,19 +40,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <p className="relative z-10 text-xs tracking-wide text-white/45">
-          Homes, hotels, and more — all in one place.
+          Homes, hotels, and more all in one place.
         </p>
       </section>
 
       <section className="flex min-h-screen flex-col px-5 py-6 sm:px-10 lg:px-16 xl:px-24">
         <div className="flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-          >
-            <ArrowLeft className="size-4" />
-            Back home
-          </Link>
           <Link href="/" className="font-bold tracking-[0.14em] text-[#090a2d] lg:hidden">
             INDANGA
           </Link>

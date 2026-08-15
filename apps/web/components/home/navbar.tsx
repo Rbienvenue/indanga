@@ -13,7 +13,7 @@ import { UserAvatar } from "@/components/user/user-avatar";
 
 const navLinks = [
   { label: "Home", href: "#" },
-  { label: "Explore", href: "#explore" },
+  { label: "Explore", href: "/properties" },
   { label: "About Us", href: "#about" },
   { label: "How It Works", href: "#how-it-works" },
   { label: "Contact", href: "#contact" },
@@ -28,8 +28,8 @@ function getInitials(name: string) {
     .join("");
 }
 
-export function Navbar() {
-  const [scrolled, setScrolled] = React.useState(false);
+export function Navbar({ solid = false }: { solid?: boolean } = {}) {
+  const [scrolled, setScrolled] = React.useState(solid);
   const router = useRouter();
   const session = useSession();
   const user = session?.user;
@@ -45,7 +45,9 @@ export function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${
-        scrolled ? "bg-[#0A0A2C]/95 shadow-lg shadow-black/20 backdrop-blur-xl" : "bg-transparent"
+        scrolled || solid
+          ? "bg-[#0A0A2C]/95 shadow-lg shadow-black/20 backdrop-blur-xl"
+          : "bg-transparent"
       }`}
     >
       <nav className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">

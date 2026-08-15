@@ -14,7 +14,7 @@ export default function Home() {
       <Navbar />
       <main className="flex-1">
         <Hero />
-        <SearchBar />
+        <SearchBar redirectTo="/properties" />
         <Categories />
         <Recommended />
         <HowItWorks />

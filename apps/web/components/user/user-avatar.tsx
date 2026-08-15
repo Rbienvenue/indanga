@@ -45,14 +45,14 @@ export function UserAvatar({ showDashboard = true }: UserAvatarProps) {
             <AvatarImage src={user?.image ?? undefined} />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
-          <span className="hidden text-sm font-medium sm:inline">{displayName.split(" ")[0]}</span>
+          <span className="hidden text-gray-900 text-sm font-medium sm:inline">{displayName.split(" ")[0]}</span>
           <ChevronDown className="size-4 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuGroup>
           <DropdownMenuLabel>
-            <p>{displayName}</p>
+            <p >{displayName}</p>
             <p className="text-xs font-normal text-muted-foreground">{user?.email ?? ""}</p>
           </DropdownMenuLabel>
 

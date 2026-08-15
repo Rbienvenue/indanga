@@ -23,7 +23,7 @@ export function Recommended() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 flex items-end justify-between">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-2xl">
               Recommended For You
             </h2>
           </div>
