@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ExternalLink, Loader2, Pencil, Trash2 } from "lucide-react";
+import { ExternalLink, Loader2, Pencil, PlusCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -185,11 +185,6 @@ const columns: ColumnDef<HouseWithOwner>[] = [
     ),
   },
   {
-    accessorKey: "location",
-    header: "Location",
-    cell: ({ row }) => <span className="text-muted-foreground">{row.original.location}</span>,
-  },
-  {
     accessorKey: "propertyType",
     header: "Type",
   },
@@ -235,7 +230,18 @@ export default function AdminPropertiesPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <PageHeader title="Properties" description={`${meta?.total ?? 0} properties`} />
+      <PageHeader
+        title="Properties"
+        description={`${meta?.total ?? 0} properties`}
+        actions={
+          <Button asChild className="gap-2">
+            <Link href="/admin/properties/new">
+              <PlusCircle className="size-4" />
+              Add Property
+            </Link>
+          </Button>
+        }
+      />
 
       <DataTable
         columns={columns}

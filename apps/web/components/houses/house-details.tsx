@@ -218,6 +218,13 @@ export function HouseDetails({ houseId }: { houseId: string }) {
       <header className="sticky top-0 z-40 border-b border-slate-900/8 bg-[#f7f5f0]/90 backdrop-blur-xl">
         <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3" aria-label="INDANGA home">
+            <Image
+              src="/logo.png"
+              alt="INDANGA"
+              width={32}
+              height={32}
+              className="size-8 rounded-lg bg-white object-contain shadow-xs"
+            />
             <span className="text-lg font-black tracking-[0.12em] text-[#17174a]">INDANGA</span>
           </Link>
           <div className="flex items-center gap-1">
@@ -426,6 +433,11 @@ function BookingCard({
   notice?: string;
   onBook: () => void;
 }) {
+  function label() {
+    if(house.propertyType.toLowerCase() ==="hotel") return "Book this hotel";
+    if(house.propertyType.toLowerCase() ==="car") return "Book this car";
+    return "Bok this house";
+  }
   return (
     <div className="rounded-2xl border border-slate-900/10 bg-white p-6 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.35)]">
       <div className="flex items-end justify-between gap-4">
@@ -440,7 +452,7 @@ function BookingCard({
         disabled={!isAvailable || isPending}
         onClick={onBook}
       >
-        {isPending ? "Confirming..." : isAvailable ? "Book this home" : "Not available"}
+        {isPending ? "Confirming..." : isAvailable ? label() : "Not available"}
       </Button>
 
       {notice ? (

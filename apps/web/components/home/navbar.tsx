@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, LogOut } from "lucide-react";
@@ -53,6 +54,14 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
       <nav className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5">
+          <Image
+            src="/logo.png"
+            alt="INDANGA"
+            width={36}
+            height={36}
+            className="size-9 rounded-lg object-contain bg-white shadow-xs"
+            priority
+          />
           <span className="text-xl font-bold tracking-tight text-white">INDANGA</span>
         </Link>
 
@@ -95,7 +104,16 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-72 bg-[#0A0A2C]">
-              <SheetTitle className="text-primary">INDANGA</SheetTitle>
+              <SheetTitle className="flex items-center gap-2.5 text-primary">
+                <Image
+                  src="/logo.png"
+                  alt="INDANGA"
+                  width={28}
+                  height={28}
+                  className="size-7 rounded-md object-contain bg-white shadow-xs"
+                />
+                <span className="text-white">INDANGA</span>
+              </SheetTitle>
               <div className="flex flex-col gap-1 pt-4">
                 {navLinks.map((link) => (
                   <Link

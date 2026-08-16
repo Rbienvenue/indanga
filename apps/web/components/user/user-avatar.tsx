@@ -45,7 +45,7 @@ export function UserAvatar({ showDashboard = true }: UserAvatarProps) {
             <AvatarImage src={user?.image ?? undefined} />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
-          <span className="hidden text-gray-900 text-sm font-medium sm:inline">{displayName.split(" ")[0]}</span>
+          <span className="hidden text-gray-900 dark:text-white text-sm font-medium sm:inline">{displayName.split(" ")[0]}</span>
           <ChevronDown className="size-4 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>

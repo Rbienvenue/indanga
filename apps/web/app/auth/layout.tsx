@@ -20,9 +20,17 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <Link
           href="/"
-          className="relative z-10 w-fit text-xl font-bold tracking-[0.16em] text-white transition-colors hover:text-primary"
+          className="relative z-10 flex w-fit items-center gap-3 text-xl font-bold tracking-[0.16em] text-white transition-colors hover:text-primary"
         >
-          INDANGA
+          <Image
+            src="/logo.png"
+            alt="INDANGA"
+            width={38}
+            height={38}
+            className="size-9.5 rounded-lg bg-white object-contain shadow-xs"
+            priority
+          />
+          <span>INDANGA</span>
         </Link>
 
         <div className="relative z-10 max-w-xl text-white">
@@ -46,8 +54,18 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       <section className="flex min-h-screen flex-col px-5 py-6 sm:px-10 lg:px-16 xl:px-24">
         <div className="flex items-center justify-between">
-          <Link href="/" className="font-bold tracking-[0.14em] text-[#090a2d] lg:hidden">
-            INDANGA
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 font-bold tracking-[0.14em] text-[#090a2d] lg:hidden"
+          >
+            <Image
+              src="/logo.png"
+              alt="INDANGA"
+              width={32}
+              height={32}
+              className="size-8 rounded-lg bg-white object-contain shadow-xs"
+            />
+            <span>INDANGA</span>
           </Link>
         </div>
 

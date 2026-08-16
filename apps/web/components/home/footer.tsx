@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import ThemeToggle from "@/components/providers/theme-toggle";
@@ -31,7 +32,16 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <span className="text-xl font-bold text-primary">INDANGA</span>
+            <Link href="/" className="inline-flex items-center gap-2.5">
+              <Image
+                src="/logo.png"
+                alt="INDANGA"
+                width={36}
+                height={36}
+                className="size-9 rounded-lg object-contain bg-white shadow-xs"
+              />
+              <span className="text-xl font-bold text-primary">INDANGA</span>
+            </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-background/50">
               Your all-in-one platform for homes, hotels, and car rentals in Rwanda.
             </p>

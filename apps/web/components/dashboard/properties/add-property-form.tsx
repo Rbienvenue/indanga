@@ -129,9 +129,11 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
     onSuccess: () => {
       toast.success("Property added successfully");
       void queryClient.invalidateQueries({ queryKey: ["properties"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      void queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
       form.reset();
       setFiles([]);
-      router.push("/dashboard");
+      router.push(session?.user?.role === "admin" ? "/admin/properties" : "/dashboard");
     },
     onError: (error: Error) => {
       toast.error(error.message ?? "Failed to add property");
@@ -156,8 +158,9 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
     onSuccess: () => {
       toast.success("Property updated successfully");
       void queryClient.invalidateQueries({ queryKey: ["properties"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       void queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
-      router.push(session?.user.role === "admin" ? "/admin/properties" : "/dashboard");
+      router.push(session?.user?.role === "admin" ? "/admin/properties" : "/dashboard");
     },
     onError: (error: Error) => {
       toast.error(error.message ?? "Failed to update property");
@@ -433,7 +436,13 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
           </CardContent>
 
           <CardFooter className="flex justify-between">
-            <Button type="button" variant="outline" onClick={() => router.push("/dashboard")}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                router.push(session?.user?.role === "admin" ? "/admin/properties" : "/dashboard")
+              }
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>

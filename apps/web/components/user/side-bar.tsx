@@ -81,8 +81,8 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border p-2">
-        <Link href="/dashboard" className="flex h-12 items-center px-2">
-          <Image src="/logo.png" alt="Indanga" className="rounded-xl" width={54} height={54} />
+        <Link href="/dashboard" className="flex h-12 items-center justify-center px-2 group-data-[collapsible=icon]:px-0">
+          <Image src="/logo.png" alt="Indanga" className="rounded-xl group-data-[collapsible=icon]:size-8 size-[54px]" width={54} height={54} />
         </Link>
       </SidebarHeader>
       <SidebarContent>
