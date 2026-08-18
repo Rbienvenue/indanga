@@ -1,5 +1,5 @@
 import {
-  ConflictException,
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -7,33 +7,8 @@ import {
 import { BookingStatus, HouseStatus, Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
 import { NotificationsService } from "src/notifications/notifications.service";
-import { FilterBookingDto, CreateBookingDto } from "./dtos";
+import { FilterBookingDto } from "./dtos";
 import { type UserSession } from "@thallesp/nestjs-better-auth";
-
-function getBookingStatusNotification(status: BookingStatus, houseName: string) {
-  switch (status) {
-    case BookingStatus.APPROVED:
-      return {
-        type: "BOOKING_CONFIRMED" as const,
-        title: "Booking approved",
-        message: `Your booking for ${houseName} was approved.`,
-      };
-    case BookingStatus.REJECTED:
-      return {
-        type: "BOOKING_CANCELLED" as const,
-        title: "Booking rejected",
-        message: `Your booking for ${houseName} was rejected.`,
-      };
-    case BookingStatus.CANCELLED:
-      return {
-        type: "BOOKING_CANCELLED" as const,
-        title: "Booking cancelled",
-        message: `Your booking for ${houseName} was cancelled.`,
-      };
-    default:
-      return null;
-  }
-}
 
 @Injectable()
 export class BookingsService {
@@ -41,48 +16,6 @@ export class BookingsService {
     private readonly db: PrismaService,
     private readonly notifications: NotificationsService,
   ) {}
-
-  async createBooking(clientId: string, data: CreateBookingDto) {
-    const booking = await this.db.$transaction(async (tx) => {
-      const house = await tx.house.findUnique({ where: { id: data.houseId } });
-
-      if (!house) {
-        throw new NotFoundException("House not found");
-      }
-
-      if (house.status !== HouseStatus.AVAILABLE) {
-        throw new ConflictException("House is already booked");
-      }
-
-      const booking = await tx.booking.create({
-        data: {
-          clientId,
-          houseId: data.houseId,
-        },
-        include: {
-          house: true,
-          client: true,
-        },
-      });
-
-      await tx.house.update({
-        where: { id: data.houseId },
-        data: { status: HouseStatus.BOOKED },
-      });
-
-      return booking;
-    });
-
-    await this.notifications.create({
-      userId: booking.house.ownerId,
-      type: "BOOKING_CREATED",
-      title: "New booking request",
-      message: `${booking.client.name} requested to book ${booking.house.name}.`,
-      bookingId: booking.id,
-    });
-
-    return booking;
-  }
 
   async getBookingsByUser(user: UserSession["user"], data: FilterBookingDto) {
     const { page = 1, limit = 20 } = data;
@@ -148,6 +81,10 @@ export class BookingsService {
   }
 
   async updateBookingStatus(id: string, status: BookingStatus, user: UserSession["user"]) {
+    if (status !== BookingStatus.CANCELLED) {
+      throw new BadRequestException("Only cancellation is allowed");
+    }
+
     const booking = await this.db.booking.findUnique({
       where: { id },
       include: { house: true },
@@ -168,24 +105,21 @@ export class BookingsService {
         include: { house: true, client: true },
       });
 
-      if (status === BookingStatus.REJECTED || status === BookingStatus.CANCELLED) {
-        await tx.house.update({
-          where: { id: booking.houseId },
-          data: { status: HouseStatus.AVAILABLE },
-        });
-      }
+      await tx.house.update({
+        where: { id: booking.houseId },
+        data: { status: HouseStatus.AVAILABLE },
+      });
 
       return updated;
     });
 
-    const notification = getBookingStatusNotification(status, updated.house.name);
-    if (notification) {
-      await this.notifications.create({
-        ...notification,
-        userId: updated.clientId,
-        bookingId: updated.id,
-      });
-    }
+    await this.notifications.create({
+      type: "BOOKING_CANCELLED",
+      title: "Booking cancelled",
+      message: `Your booking for ${updated.house.name} was cancelled.`,
+      userId: updated.clientId,
+      bookingId: updated.id,
+    });
 
     return updated;
   }

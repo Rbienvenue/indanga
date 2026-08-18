@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
+import { LocationSelector } from "@/components/location-selector";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -309,86 +310,40 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
               )}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="province"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Province</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Kigali City" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="district"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>District</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Gasabo" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="sector"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sector</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Kimironko" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="cell"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cell</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Bibare" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="village"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Village</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Kagugu" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Street address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Optional" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <LocationSelector
+              styles="w-full"
+              province={form.watch("province") ?? ""}
+              district={form.watch("district")}
+              sector={form.watch("sector")}
+              cell={form.watch("cell")}
+              village={form.watch("village")}
+              onProvinceChange={(v) => form.setValue("province", v, { shouldValidate: true })}
+              onDistrictChange={(v) => form.setValue("district", v, { shouldValidate: true })}
+              onSectorChange={(v) => form.setValue("sector", v, { shouldValidate: true })}
+              onCellChange={(v) => form.setValue("cell", v, { shouldValidate: true })}
+              onVillageChange={(v) => form.setValue("village", v, { shouldValidate: true })}
+              errors={{
+                province: form.formState.errors.province?.message,
+                district: form.formState.errors.district?.message,
+                sector: form.formState.errors.sector?.message,
+                cell: form.formState.errors.cell?.message,
+                village: form.formState.errors.village?.message,
+              }}
+            />
+
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Street address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Optional" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

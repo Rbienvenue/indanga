@@ -40,9 +40,9 @@ const tenantItems = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "My Bookings", href: "/dashboard/bookings", icon: Calendar },
   { title: "My Favorites", href: "/dashboard/favorites", icon: Heart },
-  { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { title: "Search", href: "/dashboard/search", icon: Search },
-  { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
+  { title: "Payments", href: "/dashboard/payments", icon: CreditCard }, 
+  { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { title: "Profile Settings", href: "/dashboard/profile", icon: User },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
 ];
@@ -51,10 +51,10 @@ const agentItems = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "My Properties", href: "/dashboard/search", icon: House },
   { title: "Add Property", href: "/dashboard/properties/new", icon: PlusCircle },
-  { title: "Booking Requests", href: "/dashboard/bookings", icon: Calendar },
-  { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
+  { title: "Bookings", href: "/dashboard/bookings", icon: Calendar },
   { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
-  { title: "Profile Settings", href: "/dashboard/profile", icon: User },
+  { title: "Profile Settings", href: "/dashboard/profile", icon: User }, 
+  { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
 ];
 

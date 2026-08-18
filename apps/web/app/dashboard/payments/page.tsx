@@ -1,35 +1,91 @@
 "use client";
 
-import { CreditCard, Clock4 } from "lucide-react";
+import { useState } from "react";
+import { CreditCard } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
+import type { PaginationResponse } from "@/@types";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { DataTable } from "@/components/ui/data-table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetcher } from "@/lib/fetcher";
+import type { ColumnDef } from "@tanstack/react-table";
 
-type BookingWithHouse = {
+type PaymentWithBooking = {
   id: string;
-  house: {
-    id: string;
-    name: string;
-    location: string;
-    price: number;
-    propertyType?: string;
-    media?: string[];
-  };
+  amount: string;
+  status: "PENDING" | "COMPLETED" | "FAILED";
+  method: string;
+  transactionReference: string;
   createdAt: string;
+  booking: {
+    id: string;
+    house: { name: string; location: string };
+    client: { name: string; email: string };
+  };
 };
 
-type BookingPaginationResponse = {
-  data: BookingWithHouse[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+const statusColors: Record<string, string> = {
+  PENDING: "bg-amber-100 text-amber-700",
+  COMPLETED: "bg-green-100 text-green-700",
+  FAILED: "bg-red-100 text-red-700",
 };
+
+function formatRWF(amount: string | number) {
+  return `${Number(amount).toLocaleString()} RWF`;
+}
+
+const columns: ColumnDef<PaymentWithBooking>[] = [
+  {
+    accessorKey: "amount",
+    header: "Amount",
+    cell: ({ row }) => <span className="font-medium">{formatRWF(row.original.amount)}</span>,
+  },
+  {
+    id: "property",
+    header: "Property",
+    accessorFn: (row) => row.booking.house.name,
+    cell: ({ row }) => (
+      <div>
+        <p>{row.original.booking.house.name}</p>
+        <p className="text-xs text-muted-foreground">{row.original.booking.house.location}</p>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "method",
+    header: "Method",
+  },
+  // {
+  //   accessorKey: "transactionReference",
+  //   header: "Reference",
+  //   cell: ({ row }) => (
+  //     <span className="font-mono text-xs text-muted-foreground">
+  //       {row.original.transactionReference}
+  //     </span>
+  //   ),
+  // },
+  {
+    accessorKey: "createdAt",
+    header: "Date",
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">
+        {new Date(row.original.createdAt).toLocaleDateString()}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <Badge variant="secondary" className={statusColors[row.original.status]}>
+        {row.original.status.charAt(0) + row.original.status.slice(1).toLowerCase()}
+      </Badge>
+    ),
+  },
+];
 
 function EmptyPayments() {
   return (
@@ -37,107 +93,74 @@ function EmptyPayments() {
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
         <CreditCard className="size-8" />
       </div>
-      <h2 className="mt-6 text-xl font-semibold">No payments found</h2>
+      <h2 className="mt-6 text-xl font-semibold">No payments yet</h2>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        Your upcoming payments will appear here once you book a house.
+        Payments will appear here once you book a property.
       </p>
       <Button asChild className="mt-6">
-        <Link href="/dashboard/bookings">View Bookings</Link>
+        <Link href="/dashboard/search">Explore Listings</Link>
       </Button>
     </div>
   );
 }
 
 export default function PaymentsPage() {
-  const paymentsQuery = useQuery<BookingPaginationResponse>({
-    queryKey: ["dashboard-payments"],
-    queryFn: () => fetcher("/bookings?page=1&limit=6"),
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [page, setPage] = useState(1);
+  const limit = 20;
+
+  const query = useQuery<PaginationResponse<PaymentWithBooking>>({
+    queryKey: ["dashboard-payments", statusFilter, page],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      params.set("page", String(page));
+      params.set("limit", String(limit));
+      if (statusFilter !== "all") params.set("status", statusFilter);
+      return fetcher(`/payments?${params}`);
+    },
   });
 
-  const bookings = paymentsQuery.data?.data ?? [];
+  const payments = query.data?.data ?? [];
+  const meta = query.data?.meta;
+
+  if (!query.isLoading && payments.length === 0 && statusFilter === "all") {
+    return (
+      <main>
+        <PageHeader title="Payments" description="Your payment history" />
+        <EmptyPayments />
+      </main>
+    );
+  }
 
   return (
     <main>
-      <section className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <CreditCard className="size-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Payments</h1>
-            <p className="text-muted-foreground">
-              Manage your payment overview and upcoming charges.
-            </p>
-          </div>
-        </div>
-
-        <Button asChild>
-          <Link href="/dashboard/bookings">View Bookings</Link>
-        </Button>
-      </section>
-
-      {paymentsQuery.isLoading ? (
-        <div className="mt-6 space-y-4">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <Card key={index} className="animate-pulse">
-              <CardHeader>
-                <CardTitle className="h-5 rounded-md bg-slate-200 dark:bg-slate-700" />
-              </CardHeader>
-              <CardContent>
-                <div className="h-4 rounded-md bg-slate-200 dark:bg-slate-700" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : paymentsQuery.isError ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-border/70 bg-muted/30 px-6 py-16 text-center">
-          <p className="text-sm text-muted-foreground">
-            Could not load payment details. Please try again.
-          </p>
-          <Button variant="outline" className="mt-5" onClick={() => void paymentsQuery.refetch()}>
-            Retry
-          </Button>
-        </div>
-      ) : bookings.length === 0 ? (
-        <EmptyPayments />
-      ) : (
-        <section className="mt-6 grid gap-6 xl:grid-cols-2">
-          {bookings.map((booking) => (
-            <Card key={booking.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <CardTitle className="text-lg">{booking.house.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{booking.house.location}</p>
-                  </div>
-                  <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                    Pending
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent className="grid gap-4">
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>Amount due</span>
-                  <strong>${booking.house.price.toFixed(2)}</strong>
-                </div>
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>Booking date</span>
-                  <time dateTime={booking.createdAt}>
-                    {new Date(booking.createdAt).toLocaleDateString()}
-                  </time>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock4 className="size-4" />
-                  <span>Payment will be processed after booking confirmation.</span>
-                </div>
-                <Button asChild size="sm">
-                  <Link href={`/properties/${booking.house.id}`}>View house</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </section>
-      )}
+      <PageHeader title="Payments" description={`${meta?.total ?? 0} total payments`} />
+      <DataTable
+        columns={columns}
+        data={payments}
+        loading={query.isLoading}
+        filterBy={[
+          {
+            id: "status",
+            placeholder: "All Status",
+            value: statusFilter,
+            onChange: (value) => {
+              setStatusFilter(value);
+              setPage(1);
+            },
+            options: [
+              { label: "Pending", value: "PENDING" },
+              { label: "Completed", value: "COMPLETED" },
+              { label: "Failed", value: "FAILED" },
+            ],
+          },
+        ]}
+        pagination={{
+          page,
+          totalPages: meta?.totalPages ?? 1,
+          onPageChange: setPage,
+        }}
+      />
     </main>
   );
 }

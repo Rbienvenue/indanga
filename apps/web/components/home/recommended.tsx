@@ -9,8 +9,12 @@ import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 import { fetcher } from "@/lib/fetcher";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-export function Recommended() {
+interface Props {
+  className?: string;
+}
+export function Recommended({ className }: Props) {
   const { data, isLoading, isError } = useQuery<PaginationResponse<House>>({
     queryKey: ["properties", "recommended"],
     queryFn: () => fetcher("/properties?limit=6&type=featured"),
@@ -59,7 +63,7 @@ export function Recommended() {
           </p>
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className={cn("grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4", className)}>
               {houses.map((house) => (
                 <ProductCard
                   key={house.id}

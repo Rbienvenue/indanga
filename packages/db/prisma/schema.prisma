@@ -94,6 +94,7 @@ model House {
   ownerId      String
   description  String
   propertyType String
+  subType      String?
   bedrooms     Int
   bathrooms    Int
   // features     String[]

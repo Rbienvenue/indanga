@@ -4,6 +4,7 @@ import { AuthModule } from "@thallesp/nestjs-better-auth";
 import { auth } from "./lib/auth";
 import { HousesModule } from "./houses/houses.module";
 import { BookingsModule } from "./bookings/bookings.module";
+import { PaymentsModule } from "./payments/payments.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { AdminModule } from "./admin/admin.module";
 
@@ -15,6 +16,7 @@ import { AdminModule } from "./admin/admin.module";
     UserModule,
     HousesModule,
     BookingsModule,
+    PaymentsModule,
     NotificationsModule,
     AdminModule,
   ],

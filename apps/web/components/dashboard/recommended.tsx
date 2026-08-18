@@ -2,8 +2,10 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Recommended } from "../home/recommended";
-
-export function RecommendedHouses() {
+interface Props{
+  className?: string;
+}
+export function RecommendedHouses({ className }: Props) {
   return (
     <section className="space-y-5">
       <div className="flex justify-end">
@@ -15,7 +17,7 @@ export function RecommendedHouses() {
         </Button>
       </div>
 
-      <Recommended />
+      <Recommended className={className} />
     </section>
   );
 }

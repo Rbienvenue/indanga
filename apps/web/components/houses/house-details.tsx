@@ -146,7 +146,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
 
   const bookingMutation = useMutation({
     mutationFn: () =>
-      fetcher<ApiResponse<Booking>>("/bookings", {
+      fetcher<ApiResponse<Booking>>("/payments", {
         method: "POST",
         body: JSON.stringify({ houseId }),
       }),

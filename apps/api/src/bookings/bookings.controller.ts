@@ -1,19 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Query } from "@nestjs/common";
 import { Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { ApiResponse, PaginationResponse } from "src/@types";
 import { BookingsService } from "./bookings.service";
-import { CreateBookingDto, FilterBookingDto, UpdateBookingStatusDto } from "./dtos";
+import { FilterBookingDto, UpdateBookingStatusDto } from "./dtos";
 
 @Controller("bookings")
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
-
-  @Post()
-  @Roles(["tenant"])
-  async createBooking(@Session() session: UserSession, @Body() data: CreateBookingDto) {
-    const booking = await this.bookingsService.createBooking(session.user.id, data);
-    return new ApiResponse(booking, "booking created");
-  }
 
   @Get()
   @Roles(["tenant", "landlord", "admin"])

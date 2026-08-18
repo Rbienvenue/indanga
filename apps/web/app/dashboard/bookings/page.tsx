@@ -1,14 +1,13 @@
 "use client";
 
 import type { House } from "@indanga/db";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Calendar, Check, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "sonner";
 
-import type { ApiResponse, PaginationResponse } from "@/@types";
+import type { PaginationResponse } from "@/@types";
 import { useSession } from "@/components/providers/session-provider";
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 import { Badge } from "@/components/ui/badge";
@@ -57,60 +56,6 @@ function EmptyBookings({ isAgent }: { isAgent: boolean }) {
           <Link href="/">Explore listings</Link>
         </Button>
       )}
-    </div>
-  );
-}
-
-function BookingStatusAction({ bookingId }: { bookingId: string }) {
-  const queryClient = useQueryClient();
-
-  const statusMutation = useMutation({
-    mutationFn: (status: string) =>
-      fetcher<ApiResponse<unknown>>(`/bookings/${bookingId}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status }),
-      }),
-    onSuccess: () => {
-      toast.success("Booking status updated");
-      void queryClient.invalidateQueries({ queryKey: ["bookings"] });
-      void queryClient.invalidateQueries({ queryKey: ["recent-bookings"] });
-      void queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message ?? "Failed to update booking");
-    },
-  });
-
-  return (
-    <div className="flex gap-2">
-      <Button
-        size="sm"
-        variant="outline"
-        className="gap-1.5 text-green-600 hover:bg-green-50 hover:text-green-700"
-        disabled={statusMutation.isPending}
-        onClick={() => statusMutation.mutate("APPROVED")}
-      >
-        {statusMutation.isPending ? (
-          <Loader2 className="size-3.5 animate-spin" />
-        ) : (
-          <Check className="size-3.5" />
-        )}
-        Approve
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        className="gap-1.5 text-red-600 hover:bg-red-50 hover:text-red-700"
-        disabled={statusMutation.isPending}
-        onClick={() => statusMutation.mutate("REJECTED")}
-      >
-        {statusMutation.isPending ? (
-          <Loader2 className="size-3.5 animate-spin" />
-        ) : (
-          <X className="size-3.5" />
-        )}
-        Reject
-      </Button>
     </div>
   );
 }
@@ -167,15 +112,6 @@ const agentColumns: ColumnDef<BookingWithHouse>[] = [
         {row.original.status.charAt(0) + row.original.status.slice(1).toLowerCase()}
       </Badge>
     ),
-  },
-  {
-    id: "actions",
-    header: "",
-    enableSorting: false,
-    cell: ({ row }) =>
-      row.original.status === "PENDING" ? (
-        <BookingStatusAction bookingId={row.original.id} />
-      ) : null,
   },
 ];
 
@@ -246,10 +182,10 @@ export default function BookingsPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              {isAgent ? "Booking Requests" : "My Bookings"}
+              {isAgent ? "Bookings" : "My Bookings"}
             </h1>
             <p className="text-muted-foreground">
-              {isAgent ? "Manage booking requests from tenants." : "Houses you have booked."}
+              {isAgent ? "Bookings from tenants." : "Properties you have booked."}
             </p>
           </div>
         </div>

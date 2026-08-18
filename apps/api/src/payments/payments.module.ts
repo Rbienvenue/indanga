@@ -1,0 +1,12 @@
+import { Module } from "@nestjs/common";
+import { PrismaModule } from "src/prisma/prisma.module";
+import { PaymentsController } from "./payments.controller";
+import { PaymentsService } from "./payments.service";
+import { NotificationsModule } from "src/notifications/notifications.module";
+
+@Module({
+  imports: [PrismaModule,NotificationsModule],
+  controllers: [PaymentsController],
+  providers: [PaymentsService],
+})
+export class PaymentsModule {}

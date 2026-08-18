@@ -37,7 +37,7 @@ export default function Page() {
       <StatisticsCards />
 
       <QuickActions />
-      <RecommendedHouses />
+      <RecommendedHouses className="lg:grid-cols-3" />
       <SearchBar />
       <ContinueBrowsing />
     </div>

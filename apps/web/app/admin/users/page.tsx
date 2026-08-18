@@ -104,19 +104,19 @@ function CreateUserDialog() {
         >
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" required />
+            <Input id="name" name="name" required placeholder="Enter names" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" required />
+            <Input id="email" name="email" type="email" required placeholder="Enter email" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phoneNumber">Phone Number</Label>
-            <Input id="phoneNumber" name="phoneNumber" required />
+            <Input id="phoneNumber" name="phoneNumber" required placeholder="Enter phone number" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" type="password" required />
+            <Input id="password" name="password" type="password" required placeholder="Enter temporary password"/>
           </div>
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>

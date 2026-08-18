@@ -1,15 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Check, X, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 
 import type { PaginationResponse } from "@/@types";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { DataTable } from "@/components/ui/data-table";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { fetcher } from "@/lib/fetcher";
 
@@ -27,60 +24,6 @@ const statusColors: Record<string, string> = {
   REJECTED: "bg-red-100 text-red-700",
   CANCELLED: "bg-gray-100 text-gray-700",
 };
-
-function BookingActions({ booking }: { booking: BookingWithDetails }) {
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: (status: string) =>
-      fetcher(`/bookings/${booking.id}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status }),
-      }),
-    onSuccess: () => {
-      toast.success("Booking status updated");
-      void queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message ?? "Failed to update booking");
-    },
-  });
-
-  if (booking.status !== "PENDING") return null;
-
-  return (
-    <div className="flex gap-1">
-      <Button
-        size="sm"
-        variant="outline"
-        className="gap-1 text-green-600 hover:bg-green-50 hover:text-green-700"
-        disabled={mutation.isPending}
-        onClick={() => mutation.mutate("APPROVED")}
-      >
-        {mutation.isPending ? (
-          <Loader2 className="size-3.5 animate-spin" />
-        ) : (
-          <Check className="size-3.5" />
-        )}
-        Approve
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        className="gap-1 text-red-600 hover:bg-red-50 hover:text-red-700"
-        disabled={mutation.isPending}
-        onClick={() => mutation.mutate("REJECTED")}
-      >
-        {mutation.isPending ? (
-          <Loader2 className="size-3.5 animate-spin" />
-        ) : (
-          <X className="size-3.5" />
-        )}
-        Reject
-      </Button>
-    </div>
-  );
-}
 
 const columns: ColumnDef<BookingWithDetails>[] = [
   {
@@ -122,12 +65,6 @@ const columns: ColumnDef<BookingWithDetails>[] = [
         {row.original.status.charAt(0) + row.original.status.slice(1).toLowerCase()}
       </Badge>
     ),
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    enableSorting: false,
-    cell: ({ row }) => <BookingActions booking={row.original} />,
   },
 ];
 
