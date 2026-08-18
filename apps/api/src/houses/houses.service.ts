@@ -45,6 +45,7 @@ export class HousesService {
       status,
       location,
       propertyType,
+      subType,
       minPrice,
       maxPrice,
       page = 1,
@@ -54,6 +55,9 @@ export class HousesService {
 
     if (search) where.name = { startsWith: search, mode: "insensitive" };
     if (ownerId) where.ownerId = ownerId;
+    if (subType) {
+      where.subType = { equals: subType, mode: "insensitive" };
+    }
     if (status) {
       where.status = status;
     } else if (!ownerId) {

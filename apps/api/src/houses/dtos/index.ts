@@ -49,6 +49,10 @@ export class CreateHouseDto {
   @IsString()
   propertyType: string;
 
+  @IsOptional()
+  @IsString()
+  subType?: string;
+
   @Type(() => Number)
   @IsInt()
   @IsOptional()
@@ -98,6 +102,10 @@ export class FilterDto {
   @IsOptional()
   @IsString()
   propertyType?: string;
+
+  @IsOptional()
+  @IsString()
+  subType?: string;
 
   @IsOptional()
   @Type(() => Number)

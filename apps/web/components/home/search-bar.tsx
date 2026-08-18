@@ -22,12 +22,27 @@ const propertyTypes = [
   { value: "cars", label: "Cars", icon: Car },
 ] as const;
 
-const typeOptions = [
-  { value: "all", label: "All Type" },
-  { value: "apartment", label: "Apartment" },
-  { value: "house", label: "House" },
-  { value: "villa", label: "Villa" },
-] as const;
+const subTypeOptions: Record<string, readonly { value: string; label: string }[]> = {
+  homes: [
+    { value: "all", label: "All Type" },
+    { value: "apartment", label: "Apartment" },
+    { value: "house", label: "House" },
+    { value: "villa", label: "Villa" },
+    { value: "studio", label: "Studio" },
+  ],
+  hotels: [
+    { value: "all", label: "All Type" },
+    { value: "hotel", label: "Hotel" },
+    { value: "lodge", label: "Lodge" },
+    { value: "guesthouse", label: "Guesthouse" },
+  ],
+  cars: [
+    { value: "all", label: "All Type" },
+    { value: "sedan", label: "Sedan" },
+    { value: "suv", label: "SUV" },
+    { value: "pickup", label: "Pickup" },
+  ],
+};
 
 const budgetOptions = [
   { value: "any", label: "Any Budget" },
@@ -42,9 +57,13 @@ type SearchBarProps = {
   redirectTo?: string;
 };
 
-function buildSearchHref(pathname: string, filters: { type: string; budget: string }) {
+function buildSearchHref(
+  pathname: string,
+  filters: { type: string; budget: string; subType: string },
+) {
   const params = new URLSearchParams();
   if (filters.type !== "all") params.set("type", filters.type);
+  if (filters.subType !== "all") params.set("subType", filters.subType);
   if (filters.budget !== "any") params.set("budget", filters.budget);
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
@@ -57,6 +76,10 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
     "type",
     parseAsString.withDefault("all").withOptions({ shallow: false }),
   );
+  const [subTypeQuery, setSubTypeQuery] = useQueryState(
+    "subType",
+    parseAsString.withDefault("all").withOptions({ shallow: false }),
+  );
   const [budgetQuery, setBudgetQuery] = useQueryState(
     "budget",
     parseAsString.withDefault("any").withOptions({ shallow: false }),
@@ -67,13 +90,24 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
 
   const propertyType = redirectTo ? draftType : typeQuery;
   const budget = redirectTo ? draftBudget : budgetQuery;
+  const subType = redirectTo ? draftSubType : subTypeQuery;
 
   function handleTypeChange(value: string) {
+    setDraftSubType("all");
     if (redirectTo) {
       setDraftType(value);
       return;
     }
     void setTypeQuery(value === "all" ? null : value);
+    void setSubTypeQuery(null);
+  }
+
+  function handleSubTypeChange(value: string) {
+    if (redirectTo) {
+      setDraftSubType(value);
+      return;
+    }
+    void setSubTypeQuery(value === "all" ? null : value);
   }
 
   function handleBudgetChange(value: string) {
@@ -86,10 +120,11 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
 
   function handleSearch() {
     if (redirectTo) {
-      router.push(buildSearchHref(redirectTo, { type: propertyType, budget }));
+      router.push(buildSearchHref(redirectTo, { type: propertyType, budget, subType }));
       return;
     }
     void setTypeQuery(propertyType === "all" ? null : propertyType);
+    void setSubTypeQuery(subType === "all" ? null : subType);
     void setBudgetQuery(budget === "any" ? null : budget);
   }
 
@@ -120,12 +155,12 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
               </SelectContent>
             </Select>
 
-            <Select value={draftSubType} onValueChange={setDraftSubType}>
+            <Select value={subType} onValueChange={handleSubTypeChange}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {typeOptions.map(({ value, label }) => (
+                {(subTypeOptions[propertyType] ?? subTypeOptions.homes).map(({ value, label }) => (
                   <SelectItem key={value} value={value}>
                     {label}
                   </SelectItem>
@@ -134,17 +169,17 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
             </Select>
 
             <Select value={budget} onValueChange={handleBudgetChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {budgetOptions.map(({ value, label }) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {budgetOptions.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             <Button className="w-full font-semibold" onClick={handleSearch}>
               <Search className="size-4" />

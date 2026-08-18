@@ -14,9 +14,10 @@ import { buildPropertiesUrl } from "@/lib/property-filters";
 
 export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
   const [propertyType] = useQueryState("type", parseAsString.withDefault("all"));
+  const [subType] = useQueryState("subType", parseAsString.withDefault("all"));
   const [budget] = useQueryState("budget", parseAsString.withDefault("any"));
 
-  const filters = { propertyType, budget };
+  const filters = { propertyType, subType, budget };
   const status = ownerId ? null : "AVAILABLE";
 
   const housesQuery = useInfiniteQuery({

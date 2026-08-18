@@ -32,6 +32,13 @@ import { ImageDropzone } from "@/components/ui/image-dropzone";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/components/providers/session-provider";
@@ -39,6 +46,7 @@ import { fetcher } from "@/lib/fetcher";
 import {
   createHouseSchema,
   propertyTypes,
+  subTypesByPropertyType,
   typeHasRooms,
   type CreateHouseValues,
   type PropertyType,
@@ -75,6 +83,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
     defaultValues: {
       name: "",
       propertyType: "House",
+      subType: undefined,
       price: undefined,
       bedrooms: 0,
       bathrooms: 0,
@@ -94,6 +103,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
       form.reset({
         name: house.name,
         propertyType: house.propertyType as CreateHouseValues["propertyType"],
+        subType: house.subType ?? undefined,
         price: house.price,
         bedrooms: house.bedrooms,
         bathrooms: house.bathrooms,
@@ -225,6 +235,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
                         value={field.value}
                         onValueChange={(value) => {
                           field.onChange(value);
+                          form.setValue("subType", undefined);
                           if (!typeHasRooms(value as PropertyType)) {
                             form.setValue("bedrooms", undefined);
                             form.setValue("bathrooms", undefined);
@@ -244,6 +255,36 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
                           </Label>
                         ))}
                       </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="subType"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-2">
+                    <FormLabel>Sub type</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value ?? ""}
+                        onValueChange={(value) =>
+                          field.onChange(value === "none" ? undefined : value)
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a sub type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Not specified</SelectItem>
+                          {subTypesByPropertyType[selectedType].map((subType) => (
+                            <SelectItem key={subType} value={subType}>
+                              {subType}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -422,6 +463,7 @@ function buildPropertyFormData(values: CreateHouseValues, files: File[], existin
 
   formData.append("name", values.name);
   formData.append("propertyType", values.propertyType);
+  if (values.subType) formData.append("subType", values.subType);
   formData.append("price", String(values.price));
   formData.append("province", values.province ?? "");
   formData.append("district", values.district);

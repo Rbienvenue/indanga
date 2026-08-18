@@ -1,6 +1,7 @@
 type PropertyFilters = {
   propertyType: string;
   budget: string;
+  subType: string;
 };
 
 type BuildPropertiesUrlOptions = {
@@ -25,6 +26,10 @@ export function buildPropertiesUrl(
 
   if (propertyTypeFilter) {
     params.set("propertyType", propertyTypeFilter);
+  }
+
+  if (filters.subType && filters.subType !== "all") {
+    params.set("subType", filters.subType);
   }
 
   if (filters.budget !== "any") {
