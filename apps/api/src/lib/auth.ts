@@ -11,7 +11,7 @@ export const auth = betterAuth({
   debug: true,
   baseURL: env.BETTER_AUTH_URL,
   basePath: "/v1/auth",
-  trustedOrigins: [env.BETTER_AUTH_URL, env.FRONTEND_URL],
+  trustedOrigins: [env.BETTER_AUTH_URL, env.FRONTEND_URL,"https://www.indanga.com"],
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
