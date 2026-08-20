@@ -61,7 +61,7 @@ export default function SignupPage() {
   return (
     <>
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight text-[#090a2d] sm:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-tight  sm:text-4xl">
           Create your account
         </h1>
         <p className="mt-3 max-w-sm leading-6 text-muted-foreground">

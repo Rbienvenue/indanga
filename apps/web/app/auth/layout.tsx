@@ -1,12 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 const benefits = ["Verified property listings", "Simple, secure bookings", "Homes across Rwanda"];
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-screen bg-[#f7f5ef] lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(32rem,0.95fr)]">
+    <main className="min-h-screen lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(32rem,0.95fr)]">
       <section className="relative hidden min-h-screen overflow-hidden bg-[#090a2d] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
         <Image
           src="/hero.jpg"

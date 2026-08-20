@@ -39,13 +39,25 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        async before(_user, ctx) {
+        async before(user, ctx) {
           const accountType = (ctx?.body as { accountType?: unknown } | undefined)?.accountType;
 
           if (accountType !== undefined && accountType !== "tenant" && accountType !== "landlord") {
             throw APIError.from("BAD_REQUEST", {
               message: "Invalid account type",
               code: "INVALID_ACCOUNT_TYPE",
+            });
+          }
+          
+          const { phoneNumber } = user as typeof user & { phoneNumber?: string,idNumber:string };
+          if (!phoneNumber) return;
+          const existing = await prisma.user.findUnique({
+            where: { phoneNumber },
+            select: { id: true },
+          });
+          if (existing) {
+            throw new APIError("CONFLICT", {
+              message: "Phone number already in exists",
             });
           }
 

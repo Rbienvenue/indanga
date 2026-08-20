@@ -5,9 +5,9 @@ export const propertyTypes = ["House", "Hotel", "Car"] as const;
 export type PropertyType = (typeof propertyTypes)[number];
 
 export const subTypesByPropertyType: Record<PropertyType, readonly string[]> = {
-  House: ["Apartment", "House", "Villa", "Studio"],
-  Hotel: ["Hotel", "Lodge", "Guesthouse"],
-  Car: ["Sedan", "SUV", "Pickup"],
+  House: ["Economic House", "Apartment", "House", "Villa", "Studio"],
+  Hotel: ["Hotel", "Lodge", "Guesthouse", "Resort", "Motel"],
+  Car: ["Sedan", "SUV", "Pickup", "Bus","Van"],
 };
 
 const typesWithRooms: PropertyType[] = ["House", "Hotel"];

@@ -25,22 +25,26 @@ const propertyTypes = [
 const subTypeOptions: Record<string, readonly { value: string; label: string }[]> = {
   homes: [
     { value: "all", label: "All Type" },
+    { value: "economic_house", label: "Economic House" },
     { value: "apartment", label: "Apartment" },
     { value: "house", label: "House" },
     { value: "villa", label: "Villa" },
-    { value: "studio", label: "Studio" },
   ],
   hotels: [
     { value: "all", label: "All Type" },
-    { value: "hotel", label: "Hotel" },
+    { value: "hotel", label: "Hotel" },   
+    { value: "motel", label: "Motel" },
     { value: "lodge", label: "Lodge" },
     { value: "guesthouse", label: "Guesthouse" },
+    { value: "resort", label: "Resort" },
   ],
   cars: [
     { value: "all", label: "All Type" },
     { value: "sedan", label: "Sedan" },
+    { value: "van", label: "Van" },
     { value: "suv", label: "SUV" },
     { value: "pickup", label: "Pickup" },
+    { value: "bus", label: "Bus" },
   ],
 };
 
