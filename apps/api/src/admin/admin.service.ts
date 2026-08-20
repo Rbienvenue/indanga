@@ -6,6 +6,7 @@ import {
   AdminPaymentsFilterDto,
   AdminPropertiesFilterDto,
   AdminReviewsFilterDto,
+  AdminUsersFilterDto,
 } from "./dtos";
 
 const MONTH_LABELS = [
@@ -39,6 +40,52 @@ function bucketRevenueByMonth(payments: { amount: Prisma.Decimal; createdAt: Dat
 @Injectable()
 export class AdminService {
   constructor(private readonly db: PrismaService) {}
+
+  async getUsers(data: AdminUsersFilterDto) {
+    const { page = 1, limit = 20, search, role } = data;
+    const where: Prisma.UserWhereInput = {};
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+        { phoneNumber: { contains: search, mode: "insensitive" } },
+        { nationalId: { contains: search, mode: "insensitive" } },
+      ];
+    }
+    if (role) where.role = role;
+
+    const [users, total] = await Promise.all([
+      this.db.user.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phoneNumber: true,
+          nationalId: true,
+          role: true,
+          image: true,
+          status: true,
+          banned: true,
+          banReason: true,
+          banExpires: true,
+          emailVerified: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      this.db.user.count({ where }),
+    ]);
+
+    return {
+      data: users,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
 
   async getStats() {
     const startOfYear = new Date(new Date().getFullYear(), 0, 1);

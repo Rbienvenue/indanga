@@ -1,6 +1,6 @@
 import { Type } from "class-transformer";
 import { IsEnum, IsInt, IsOptional, IsString } from "class-validator";
-import { BookingStatus, HouseStatus, PaymentStatus } from "@indanga/db";
+import { BookingStatus, HouseStatus, PaymentStatus, UserRole } from "@indanga/db";
 
 export class PaginationDto {
   @IsOptional()
@@ -40,4 +40,14 @@ export class AdminPropertiesFilterDto extends PaginationDto {
   @IsOptional()
   @IsEnum(HouseStatus)
   status?: HouseStatus;
+}
+
+export class AdminUsersFilterDto extends PaginationDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
 }

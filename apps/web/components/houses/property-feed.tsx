@@ -40,7 +40,7 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
       <SearchBar className="mt-0 px-0" />
 
       {housesQuery.isLoading ? (
-        <section className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 20 }).map((_, index) => (
             <ProductCardSkeleton key={index} />
           ))}
@@ -66,7 +66,7 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
         </div>
       ) : (
         <>
-          <section className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <section className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {houses.map((house) => (
               <ProductCard
                 key={house.id}

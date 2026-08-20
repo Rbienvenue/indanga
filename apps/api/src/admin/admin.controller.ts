@@ -7,6 +7,7 @@ import {
   AdminPaymentsFilterDto,
   AdminPropertiesFilterDto,
   AdminReviewsFilterDto,
+  AdminUsersFilterDto,
 } from "./dtos";
 
 @Controller("admin")
@@ -18,6 +19,12 @@ export class AdminController {
   async getStats() {
     const stats = await this.adminService.getStats();
     return new ApiResponse(stats, "admin stats fetched");
+  }
+
+  @Get("users")
+  async getUsers(@Query() query: AdminUsersFilterDto) {
+    const result = await this.adminService.getUsers(query);
+    return new PaginationResponse(result.data, result.meta);
   }
 
   @Get("bookings")

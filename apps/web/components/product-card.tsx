@@ -113,6 +113,8 @@ export function ProductCard({
   const card = (
     <Card
       key={id}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={cn(
         "group relative h-full w-full gap-0 overflow-hidden border-border/50 py-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-foreground/5",
         className,
@@ -122,17 +124,10 @@ export function ProductCard({
         <Link
           href={href}
           aria-label={`View ${name}`}
-          className="absolute inset-0 z-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="absolute inset-0 z-[1] rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         />
       )}
-      <div
-        className="relative aspect-[16/10] w-full overflow-hidden"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          setCurrentIndex(0);
-        }}
-      >
+      <div className="relative aspect-[16/10] w-full overflow-hidden">
         {/* Image slider track */}
         <div
           className="absolute inset-0 flex transition-transform duration-300 ease-in-out"
@@ -167,7 +162,7 @@ export function ProductCard({
               onClick={goToPrev}
               className={cn(
                 "absolute left-2 top-1/2 z-10 -translate-y-1/2 inline-flex size-7 items-center justify-center rounded-full bg-white/90 text-foreground/70 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:text-foreground",
-                isHovered ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none",
+                isHovered ? "scale-100 opacity-100" : "pointer-events-none scale-75 opacity-0",
               )}
             >
               <ChevronLeft className="size-4" />
@@ -178,7 +173,7 @@ export function ProductCard({
               onClick={goToNext}
               className={cn(
                 "absolute right-2 top-1/2 z-10 -translate-y-1/2 inline-flex size-7 items-center justify-center rounded-full bg-white/90 text-foreground/70 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:text-foreground",
-                isHovered ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none",
+                isHovered ? "scale-100 opacity-100" : "pointer-events-none scale-75 opacity-0",
               )}
             >
               <ChevronRight className="size-4" />
@@ -191,7 +186,7 @@ export function ProductCard({
           <div
             className={cn(
               "absolute bottom-2 left-1/2 z-10 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-black/30 px-2 py-1 backdrop-blur-sm transition-opacity",
-              isHovered ? "opacity-100" : "opacity-0",
+              isHovered ? "opacity-100" : "pointer-events-none opacity-0",
             )}
           >
             {images.map((_, index) => (
@@ -202,9 +197,7 @@ export function ProductCard({
                 onClick={(e) => goToSlide(e, index)}
                 className={cn(
                   "size-1.5 rounded-full transition-all",
-                  index === currentIndex
-                    ? "bg-white scale-125"
-                    : "bg-white/50 hover:bg-white/80",
+                  index === currentIndex ? "bg-white scale-125" : "bg-white/50 hover:bg-white/80",
                 )}
               />
             ))}
@@ -263,14 +256,18 @@ export function ProductCard({
         </div>
 
         <div className="mt-3 flex items-center gap-3 border-t border-border/50 pt-3">
-          {bedrooms > 0 && <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <BedDouble className="size-3.5" />
-            {bedrooms} {bedrooms === 1 ? "Bed" : "Beds"}
-          </div>}
-          {bathrooms > 0 && <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Bath className="size-3.5" />
-            {bathrooms} {bathrooms === 1 ? "Bath" : "Baths"}
-          </div>}
+          {bedrooms > 0 && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <BedDouble className="size-3.5" />
+              {bedrooms} {bedrooms === 1 ? "Bed" : "Beds"}
+            </div>
+          )}
+          {bathrooms > 0 && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Bath className="size-3.5" />
+              {bathrooms} {bathrooms === 1 ? "Bath" : "Baths"}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

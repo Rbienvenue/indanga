@@ -6,7 +6,9 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, UserPlus, Loader2, Shield, Ban, KeyRound, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import type { PaginationResponse } from "@/@types";
 import { authClient } from "@/lib/auth-client";
+import { fetcher } from "@/lib/fetcher";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -42,6 +44,8 @@ type UserWithRole = {
   id: string;
   name: string;
   email: string;
+  phoneNumber: string | null;
+  nationalId: string | null;
   image?: string | null;
   role: string;
   banned: boolean | null;
@@ -116,7 +120,13 @@ function CreateUserDialog() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" type="password" required placeholder="Enter temporary password"/>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              required
+              placeholder="Enter temporary password"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
@@ -183,7 +193,14 @@ function SetPasswordDialog({ userId, userName }: { userId: string; userName: str
         >
           <div className="space-y-2">
             <Label htmlFor="password">New Password</Label>
-            <Input id="password" name="password" type="password" placeholder="Enter new password" required minLength={5} />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Enter new password"
+              required
+              minLength={5}
+            />
           </div>
           <Button type="submit" className="w-full" disabled={mutation.isPending}>
             {mutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
@@ -327,14 +344,20 @@ const columns: ColumnDef<UserWithRole>[] = [
         <div className="flex size-8 items-center justify-center rounded-full bg-muted text-xs font-medium">
           {row.original.name?.charAt(0)?.toUpperCase() ?? "?"}
         </div>
-        <span className="font-medium">{row.original.name}</span>
+        <div className="flex flex-col gap-1">
+          <span className="font-medium">{row.original.name}</span>
+          <span className="text-muted-foreground">{row.original.email}</span>
+          <span className="text-muted-foreground">{row.original.phoneNumber}</span>
+        </div>
       </div>
     ),
   },
   {
-    accessorKey: "email",
-    header: "Email",
-    cell: ({ row }) => <span className="text-muted-foreground">{row.original.email}</span>,
+    accessorKey: "nationalId",
+    header: "ID Number",
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{row.original.nationalId ?? "—"}</span>
+    ),
   },
   {
     accessorKey: "role",
@@ -378,45 +401,27 @@ const columns: ColumnDef<UserWithRole>[] = [
 export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const limit = 20;
 
-  const usersQuery = useQuery({
+  const usersQuery = useQuery<PaginationResponse<UserWithRole>>({
     queryKey: ["admin-users", search, roleFilter, page],
     queryFn: async () => {
-      const query: Record<string, string | number> = {
-        limit,
-        offset: page * limit,
-        sortBy: "createdAt",
-        sortDirection: "desc",
-      };
-      if (search) {
-        query.searchValue = search;
-        query.searchField = "email";
-        query.searchOperator = "contains";
-      }
-      if (roleFilter !== "all") {
-        query.filterField = "role";
-        query.filterValue = roleFilter;
-        query.filterOperator = "eq";
-      }
-      const result = await authClient.admin.listUsers({
-        query: query as any,
-      });
-      if (result.error) throw new Error(result.error.message);
-      return result.data;
+      const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+      if (search) params.set("search", search);
+      if (roleFilter !== "all") params.set("role", roleFilter);
+      return fetcher(`/admin/users?${params}`);
     },
   });
 
-  const users = (usersQuery.data?.users ?? []) as UserWithRole[];
-  const total = usersQuery.data?.total ?? 0;
-  const totalPages = Math.ceil(total / limit);
+  const users = usersQuery.data?.data ?? [];
+  const meta = usersQuery.data?.meta;
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <PageHeader
         title="Users"
-        description={`${total} total users`}
+        description={`${meta?.total ?? 0} total users`}
         actions={<CreateUserDialog />}
       />
 
@@ -425,11 +430,11 @@ export default function AdminUsersPage() {
         data={users}
         loading={usersQuery.isLoading}
         search={{
-          placeholder: "Search by email...",
+          placeholder: "Search users...",
           value: search,
           onChange: (value) => {
             setSearch(value);
-            setPage(0);
+            setPage(1);
           },
         }}
         filterBy={[
@@ -439,7 +444,7 @@ export default function AdminUsersPage() {
             value: roleFilter,
             onChange: (value) => {
               setRoleFilter(value);
-              setPage(0);
+              setPage(1);
             },
             options: [
               { label: "Tenant", value: "tenant" },
@@ -449,9 +454,9 @@ export default function AdminUsersPage() {
           },
         ]}
         pagination={{
-          page: page + 1,
-          totalPages,
-          onPageChange: (next) => setPage(next - 1),
+          page,
+          totalPages: meta?.totalPages ?? 1,
+          onPageChange: setPage,
         }}
       />
     </div>

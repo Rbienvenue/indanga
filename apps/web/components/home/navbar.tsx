@@ -103,7 +103,10 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 bg-[#0A0A2C]">
+            <SheetContent
+              side="right"
+              className="border-white/10 bg-[#0A0A2C] p-5 data-[side=right]:w-80"
+            >
               <SheetTitle className="flex items-center gap-2.5 text-primary">
                 <Image
                   src="/logo.png"
@@ -119,7 +122,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                   <Link
                     key={link.label}
                     href={link.href}
-                    className="rounded-lg px-4 py-3 text-sm font-medium text-background/70 transition-colors hover:bg-background/5 hover:text-primary"
+                    className="rounded-lg px-4 py-3 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-primary"
                   >
                     {link.label}
                   </Link>
