@@ -68,7 +68,7 @@ As Co-Founder & CEO, he provides the vision, strategic direction, and leadership
     name: "Ntakirutimana Gisa Emmanuel",
     position: "Chief Technical Officer",
     department: "Governance",
-    image: "/gisa.jpeg",
+    image: "/Gisa.jpeg",
     bio: `
 Gisa has a strong background in technology and engineering, with over five years of experience in software development, system architecture, and technical leadership. He is dedicated to driving innovation and implementing cutting-edge solutions that enhance operational efficiency and user experience.
 
@@ -100,7 +100,7 @@ const teamMembers: Person[] = [
     name: "NTAKIRUTIMANA Gisa Emmanuel",
     position: "Chair person of the Board",
     department: "Board",
-    image: "/gisa.jpeg",
+    image: "/Gisa.jpeg",
     bio: `
   Gisa has a strong background in technology and engineering, with over five years of experience in software development, system architecture, and technical leadership. He is dedicated to driving innovation and implementing cutting-edge solutions that enhance operational efficiency and user experience.
 
