@@ -452,7 +452,7 @@ function BookingCard({
   function label() {
     if (house.propertyType.toLowerCase() === "hotel") return "Book this hotel";
     if (house.propertyType.toLowerCase() === "car") return "Book this car";
-    return "Bok this house";
+    return "Book this house";
   }
   return (
     <div className="rounded-2xl border border-slate-900/10 bg-white p-6 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-slate-900 dark:shadow-black/40">

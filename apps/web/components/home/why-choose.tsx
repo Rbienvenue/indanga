@@ -26,7 +26,7 @@ const features = [
 
 export function WhyChoose() {
   return (
-    <section id="about" className="bg-muted/40 px-4 py-20 sm:px-6 lg:px-8">
+    <section id="why-choose" className="bg-muted/40 px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         {/* Section Heading */}
         <div className="mb-12 text-center">

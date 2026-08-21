@@ -1,29 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Mail, Phone } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import ThemeToggle from "@/components/providers/theme-toggle";
-// import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
 
 const quickLinks = [
-  { label: "Home", href: "#" },
-  { label: "Explore", href: "#explore" },
-  { label: "About Us", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "Home", href: "/" },
+  { label: "Explore", href: "/properties" },
+  { label: "About Us", href: "/#about" },
+  { label: "How it works", href: "/#how-it-works" },
 ];
 
 const supportLinks = [
-  { label: "Help Center", href: "#" },
-  { label: "Terms & Conditions", href: "#" },
-  { label: "Privacy Policy", href: "#" },
-  { label: "FAQs", href: "#" },
+  { label: "Help Center", href: "/dashboard/support" },
+  { label: "FAQs", href: "/dashboard/support#faqs" },
+  { label: "Email Support", href: "mailto:support@indanga.com" },
+  { label: "Call Support", href: "tel:+250788123456" },
 ];
-
-// const socialLinks = [
-//   { icon: Facebook, href: "#", label: "Facebook" },
-//   { icon: Twitter, href: "#", label: "Twitter" },
-//   { icon: Instagram, href: "#", label: "Instagram" },
-//   { icon: Youtube, href: "#", label: "YouTube" },
-// ];
 
 export function Footer() {
   return (
@@ -81,20 +74,24 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Follow Us */}
+          {/* Contact */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold">Follow Us</h3>
-            <div className="flex items-center gap-3">
-              {/*{socialLinks.map((social) => (
-                <Link
-                  key={social.label}
-                  href={social.href}
-                  aria-label={social.label}
-                  className="inline-flex size-9 items-center justify-center rounded-lg bg-background/10 text-background/60 transition-all hover:bg-primary hover:text-primary-foreground"
-                >
-                  <social.icon className="size-4" />
-                </Link>
-              ))}*/}
+            <h3 className="mb-4 text-sm font-semibold">Contact Us</h3>
+            <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+              <a
+                href="mailto:support@indanga.com"
+                className="inline-flex items-center gap-2 transition-colors hover:text-primary"
+              >
+                <Mail className="size-4" />
+                support@indanga.com
+              </a>
+              <a
+                href="tel:+250788123456"
+                className="inline-flex items-center gap-2 transition-colors hover:text-primary"
+              >
+                <Phone className="size-4" />
+                +250 788 123 456
+              </a>
             </div>
           </div>
         </div>

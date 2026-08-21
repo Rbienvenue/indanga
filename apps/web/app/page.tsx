@@ -7,6 +7,7 @@ import { WhyChoose } from "@/components/home/why-choose";
 import { HowItWorks } from "@/components/home/how-it-works";
 import { CTASection } from "@/components/home/cta-section";
 import { Footer } from "@/components/home/footer";
+import { AboutSection } from "@/components/home/about-section";
 
 export default function Home() {
   return (
@@ -19,6 +20,7 @@ export default function Home() {
         <Recommended />
         <HowItWorks />
         <WhyChoose />
+        <AboutSection />
         <CTASection />
       </main>
       <Footer />

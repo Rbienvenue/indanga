@@ -180,7 +180,7 @@ export default function SupportPage() {
 
       <div className="grid gap-6 xl:grid-cols-[1.55fr_0.9fr]">
         <div className="space-y-6">
-          <Card>
+          <Card id="faqs">
             <CardHeader>
               <CardTitle>How can we help?</CardTitle>
               <CardDescription>
