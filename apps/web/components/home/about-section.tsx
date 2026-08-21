@@ -1,23 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import {
+  Building2,
+  CheckCircle2,
+  ChevronRight,
+  HeartHandshake,
+  MapPin,
   ShieldCheck,
   Sparkles,
-  Building2,
-  HeartHandshake,
-  CheckCircle2,
-  MapPin,
-  ArrowRight,
-  Home,
-  Users2,
-  Award,
 } from "lucide-react";
-import { FaFacebook, FaLinkedin, FaInstagram, FaXTwitter } from "react-icons/fa6";
+import { FaFacebook, FaInstagram, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import type { IconType } from "react-icons";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -50,7 +46,7 @@ const defaultSocialLinks: SocialLink[] = [
 
 const leadershipMembers: Person[] = [
   {
-    name: "RUVEBANA Didier",
+    name: "Ntakirutimana Didier",
     position: "Chief Executive Officer",
     department: "Governance",
     image: "/didier.jpeg",
@@ -70,15 +66,19 @@ As Co-Founder & CEO, he provides the vision, strategic direction, and leadership
     department: "Governance",
     image: "/Gisa.jpeg",
     bio: `
-Gisa has a strong background in technology and engineering, with over five years of experience in software development, system architecture, and technical leadership. He is dedicated to driving innovation and implementing cutting-edge solutions that enhance operational efficiency and user experience.
+Ntakirutimana Gisa Emmanuel is a Rwandan physicist, researcher, innovator, and multidisciplinary professional specializing in Material Science and Engineering, renewable energy, research and development, and practical technological solutions.
 
-His expertise lies in leading technical teams, developing scalable systems, and integrating advanced technologies to support business growth. Gisa is committed to fostering a culture of continuous learning and improvement, ensuring that the organization stays at the forefront of technological advancement.
+He Co-founded and serves as Research Director at Brilliant Researchers Africa (BRA), where he contributes to research, prototype development, and innovative solutions addressing challenges in sustainability, energy, safety, and urban development. 
 
-As Chief Technical Officer, he provides the technical vision and strategic direction needed to transform ideas into robust, reliable solutions. His goal is to build a technology-driven organization that delivers exceptional value to customers and stakeholders.`,
+He previously served as General Manager at MANRON GROUP LTD and later after serving as an Operations Manager at SHDR LTD !
+
+His professional work includes research and development of practical innovations in areas such as biochar technology, fire-safety solutions, renewable energy, and other research-driven projects. He is particularly focused on translating scientific knowledge and research into practical, scalable solutions that respond to real challenges in Rwanda and across Africa.
+
+His long-term vision is to contribute to Africa's development through scientific research, innovation, entrepreneurship, and practical solutions while empowering the next generation through knowledge, skills, and applied research.`,
     socialLinks: defaultSocialLinks,
   },
   {
-    name: " Gasaro Ruth",
+    name: "Gasaro Ruth",
     position: "Marketing Lead",
     department: "Marketing",
     image: "/Ruth.jpeg",
@@ -88,33 +88,35 @@ Gasaro brings a creative, strategic, and customer-focused perspective to the org
 
 Her approach combines creativity with strategic thinking, focusing on understanding people, identifying opportunities, and turning ideas into compelling brand experiences. She is passionate about building a brand that is trusted, relevant, innovative, and capable of creating lasting impact.
 
-As part of the leadership team, she plays a key role in driving brand visibility, market positioning, customer engagement, and sustainable growth
-
-`,
+As part of the leadership team, she plays a key role in driving brand visibility, market positioning, customer engagement, and sustainable growth.`,
     socialLinks: defaultSocialLinks,
   },
 ];
 
-const teamMembers: Person[] = [
+const boardMembers: Person[] = [
   {
     name: "NTAKIRUTIMANA Gisa Emmanuel",
-    position: "Chair person of the Board",
+    position: "Chairperson of the Board",
     department: "Board",
     image: "/Gisa.jpeg",
     bio: `
-  Gisa has a strong background in technology and engineering, with over five years of experience in software development, system architecture, and technical leadership. He is dedicated to driving innovation and implementing cutting-edge solutions that enhance operational efficiency and user experience.
+Ntakirutimana Gisa Emmanuel is a Rwandan physicist, researcher, innovator, and multidisciplinary professional specializing in Material Science and Engineering, renewable energy, research and development, and practical technological solutions.
 
-His expertise lies in leading technical teams, developing scalable systems, and integrating advanced technologies to support business growth. Gisa is committed to fostering a culture of continuous learning and improvement, ensuring that the organization stays at the forefront of technological advancement.
+He Co-founded and serves as Research Director at Brilliant Researchers Africa (BRA), where he contributes to research, prototype development, and innovative solutions addressing challenges in sustainability, energy, safety, and urban development. 
 
-As Chairperson of the Board, he provides the strategic vision and direction needed to transform ideas into robust, reliable solutions. His goal is to build a technology-driven organization that delivers exceptional value to customers and stakeholders.`,
+He previously served as General Manager at MANRON GROUP LTD and later after serving as an Operations Manager at SHDR LTD !
+
+His professional work includes research and development of practical innovations in areas such as biochar technology, fire-safety solutions, renewable energy, and other research-driven projects. He is particularly focused on translating scientific knowledge and research into practical, scalable solutions that respond to real challenges in Rwanda and across Africa.
+
+His long-term vision is to contribute to Africa's development through scientific research, innovation, entrepreneurship, and practical solutions while empowering the next generation through knowledge, skills, and applied research.`,
     socialLinks: defaultSocialLinks,
   },
   {
-    name: "RUVEBANA Didier",
+    name: "NTAKIRUTIMANA Didier",
     position: "Board Member",
     department: "Board",
     image: "/didier.jpeg",
-    bio:`
+    bio: `
 Didier has a strong foundation in Business Management and Finance and nearly six years of hands-on experience in manufacturing, production, and mining sector , he is a strategic leader driven by a passion for building people, transforming operations, and creating sustainable businesses.
 
 He holds a Bachelor of science with Honors in Finance and is currently pursuing a Master of Science (MSc) in Human Resource Management, combining financial intelligence with a deep understanding of people and organizational development.
@@ -126,61 +128,44 @@ As Co-Founder & CEO, he provides the vision, strategic direction, and leadership
   },
 ];
 
-const stats = [
-  {
-    value: "5,000+",
-    label: "Verified Listings",
-    description: "Inspected homes & apartments",
-    icon: Home,
-  },
-  {
-    value: "15,000+",
-    label: "Happy Renters",
-    description: "Tenants matched smoothly",
-    icon: Users2,
-  },
-  {
-    value: "30",
-    label: "Districts Covered",
-    description: "Across all provinces in Rwanda",
-    icon: MapPin,
-  },
-  {
-    value: "99.8%",
-    label: "Satisfaction Rate",
-    description: "Safe & transparent transactions",
-    icon: Award,
-  },
+const sectionLinks = [
+  { id: "overview", label: "Overview" },
+  { id: "organization-structure", label: "Organization Structure" },
+  { id: "senior-management", label: "Senior Management" },
+  { id: "board-of-directors", label: "Board of Directors" },
+] as const;
+
+const overviewStory = [
+  "About Indanga — Our Origin",
+  "Indanga was established from a simple observation: many of the resources people need already exist, but finding and accessing them efficiently remains a challenge.",
+  "The idea emerged from observing the everyday difficulties people face when searching for homes, apartments, cars, professional services, skilled workers, spaces, and other economic resources.",
+  "Much of this information is scattered across WhatsApp groups, social media, personal networks, brokers, advertisements, and physical locations. This fragmentation often forces people to make numerous calls, travel from place to place, rely on intermediaries, and spend valuable time searching for something that may already be available nearby.",
+  "At the same time, individuals and businesses often have underutilized assets, skills, services, and opportunities that are difficult to make visible to the people who need them.",
+  "This creates an important economic gap: resources are available, demand exists, but the two sides are not always efficiently connected.",
+  "Indanga was therefore conceived as a digital connectivity and discovery platform designed to bridge this gap.",
+  "Its purpose is to bring available resources and potential users closer together through a more organized, accessible, and efficient digital environment.",
+  "From its foundation, the concept of Indanga has been built around reducing search time, unnecessary movement, information gaps, and transaction friction, while improving the visibility and utilization of existing resources.",
+  "Whether a person is searching for a home, apartment, vehicle, service provider, skilled professional, or another opportunity, Indanga seeks to simplify the journey from “I need it” to “I found it.”",
+  "The vision behind Indanga goes beyond creating another listing or advertising platform.",
+  "It is to develop an interconnected economic ecosystem where people, assets, services, skills, and opportunities can be discovered and connected more efficiently.",
+  "Indanga was established with the belief that economic efficiency does not always require creating more resources—it can begin by making the resources that already exist easier to find, access, and utilize.",
 ];
 
-const coreValues = [
+const institutionalValues = [
   {
     icon: ShieldCheck,
-    title: "100% Verified Properties",
-    description:
-      "We inspect listings and verify property owners to completely eliminate fraud and fake brokers.",
-    accent: "text-blue-500 bg-blue-500/10",
-  },
-  {
-    icon: Sparkles,
-    title: "Transparent & Seamless",
-    description:
-      "Direct communication, clear rental terms, and straightforward digital agreements without hidden fees.",
-    accent: "text-amber-500 bg-amber-500/10",
+    title: "Trust and verification",
+    description: "We create a more credible marketplace by emphasizing visibility, accountability, and reliable discovery.",
   },
   {
     icon: Building2,
-    title: "Landlord Empowerment",
-    description:
-      "Comprehensive digital tools for property owners to reach qualified tenants, manage bookings, and track rent.",
-    accent: "text-emerald-500 bg-emerald-500/10",
+    title: "Economic connectivity",
+    description: "Indanga connects supply and demand so people can find what they need faster and with less friction.",
   },
   {
     icon: HeartHandshake,
-    title: "Local 24/7 Support",
-    description:
-      "A dedicated Rwanda-based support team ready to assist you before, during, and after your tenancy.",
-    accent: "text-purple-500 bg-purple-500/10",
+    title: "Accessible opportunity",
+    description: "We help individuals, businesses, and communities turn unused assets and services into practical value.",
   },
 ];
 
@@ -197,9 +182,9 @@ function PersonCard({ person }: { person: Person }) {
               event.currentTarget.click();
             }
           }}
-          className="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-border/60 bg-card p-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          className="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-border/70 bg-card p-3 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none sm:p-4"
         >
-          <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-muted">
+          <div className="relative aspect-4/3 w-full overflow-hidden rounded-md bg-muted">
             <Image
               src={person.image}
               alt={`${person.name}, ${person.position}`}
@@ -207,36 +192,33 @@ function PersonCard({ person }: { person: Person }) {
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             {person.department && (
               <div className="absolute top-3 left-3">
-                <span className="rounded-full bg-background/80 px-2.5 py-0.5 text-[11px] font-medium text-foreground backdrop-blur-md">
+                <span className="rounded-full bg-background/85 px-2.5 py-1 text-[11px] font-medium text-foreground backdrop-blur-sm">
                   {person.department}
                 </span>
               </div>
             )}
           </div>
 
-          <div className="mt-4 flex flex-1 flex-col justify-between">
+          <div className="mt-3 flex flex-1 flex-col justify-between">
             <div>
-              <h4 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
+              <h4 className="line-clamp-2 text-base font-semibold tracking-tight text-foreground sm:text-lg">
                 {person.name}
               </h4>
-              <p className="mt-1 text-xs font-medium text-primary sm:text-sm">
-                {person.position}
-              </p>
+              <p className="mt-1 line-clamp-2 text-sm font-medium text-primary">{person.position}</p>
             </div>
 
-            <div className="mt-4 flex items-center gap-1.5 border-t border-border/50 pt-3">
+            <div className="mt-4 flex items-center gap-1.5 border-t border-border/60 pt-3">
               {person.socialLinks.map(({ label, href, icon: Icon }) => (
                 <a
                   key={label}
                   href={href}
                   aria-label={`${person.name} on ${label}`}
                   onClick={(event) => event.stopPropagation()}
-                  className="inline-flex size-7.5 items-center justify-center rounded-lg border border-border/60 text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-primary hover:text-primary-foreground"
+                  className="inline-flex size-7 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
                 >
-                  <Icon className="size-3.5" />
+                  <Icon className="size-3" />
                 </a>
               ))}
             </div>
@@ -246,7 +228,7 @@ function PersonCard({ person }: { person: Person }) {
 
       <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto p-0 sm:max-w-4xl">
         <div className="grid gap-0 md:grid-cols-[minmax(17rem,0.9fr)_1.1fr]">
-          <div className="relative min-h-72 bg-muted md:min-h-[30rem]">
+          <div className="relative min-h-72 bg-muted md:min-h-120">
             <Image
               src={person.image}
               alt={`${person.name}, ${person.position}`}
@@ -271,195 +253,158 @@ function PersonCard({ person }: { person: Person }) {
 }
 
 export function AboutSection() {
-  return (
-    <section id="about" className="relative overflow-hidden bg-muted/20 py-20 sm:py-28 lg:py-32">
-      {/* Decorative Glows */}
-      <div className="pointer-events-none absolute top-12 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <div className="h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
-      </div>
-      <div className="pointer-events-none absolute bottom-12 right-0 translate-x-1/3">
-        <div className="h-80 w-80 rounded-full bg-accent/15 blur-3xl" />
-      </div>
+  const [activeSection, setActiveSection] = useState<string>(sectionLinks[0].id);
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="mx-auto max-w-3xl text-center">
+  const renderActiveSection = () => {
+    switch (activeSection) {
+      case "overview":
+        return (
+          <section id="overview" className="scroll-mt-28 pt-6 sm:pt-8">
+            <div className="max-w-4xl">
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Overview</p>
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-border/80 bg-card/80 p-4 shadow-sm sm:p-5 lg:p-6">
+              <p className="text-sm font-semibold text-foreground sm:text-base">
+                About Indanga — Our Origin
+              </p>
+
+              <div className="mt-4 max-w-4xl space-y-4 text-sm leading-7 text-muted-foreground sm:text-[15px]">
+                {overviewStory.slice(1).map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      case "organization-structure":
+        return (
+          <section id="organization-structure" className="scroll-mt-28 pt-6 sm:pt-8">
+            <div className="max-w-4xl">
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Organization Structure</p>
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-border/80 bg-card p-3 shadow-sm sm:p-4 lg:p-5">
+              <div className="overflow-x-auto">
+                <div className="mx-auto max-w-5xl">
+                  <Image
+                    src="/structure.png"
+                    alt="Indanga organizational overview"
+                    width={1600}
+                    height={900}
+                    className="h-auto max-h-[42svh] w-full rounded-xl border border-border/70 object-contain object-center"
+                    priority
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      case "senior-management":
+        return (
+          <section id="senior-management" className="scroll-mt-28 pt-6 sm:pt-8">
+            <div className="max-w-4xl">
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Senior Management</p>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-2">
+              {leadershipMembers.map((person) => (
+                <PersonCard key={`${person.name}-${person.position}`} person={person} />
+              ))}
+            </div>
+          </section>
+        );
+      case "board-of-directors":
+        return (
+          <section id="board-of-directors" className="scroll-mt-28 pt-6 sm:pt-8">
+            <div className="max-w-4xl">
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Board of Directors</p>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {boardMembers.map((person) => (
+                <PersonCard key={`${person.name}-${person.position}`} person={person} />
+              ))}
+            </div>
+          </section>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <section id="about" className="relative overflow-hidden border-t border-primary/40 bg-background py-10 sm:py-14 lg:py-20">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-border to-transparent" />
+
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <header className="mb-8 max-w-3xl lg:mb-10">
           <Badge
             variant="outline"
-            className="mb-4 gap-1.5 border-primary/30 bg-primary/5 px-3.5 py-1 text-xs font-semibold tracking-wide text-primary"
+            className="mb-3 gap-2 border-primary/30 bg-primary/5 px-3 py-1 text-xs font-semibold tracking-[0.16em] text-primary uppercase"
           >
-            <Sparkles className="size-3.5" />
-            About INDANGA
+            <Sparkles className="size-3" />
+            About Indanga
           </Badge>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-            Transforming Housing & Living in Rwanda
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            INDANGA is Rwanda&apos;s leading digital property ecosystem. We connect tenants, travelers,
-            and landlords directly through verified listings, eliminating middleman scams and
-            bringing seamless digital contracts and payments to real estate.
-          </p>
-        </div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            About Indanga
+          </h1>
+        </header>
 
-        {/* Bento / Story Split Grid */}
-        <div className="mt-16 grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-12">
-          {/* Left: Image Showcase with Floating Overlays */}
-          <div className="relative lg:col-span-6">
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-border/60 bg-muted shadow-2xl">
-              <Image
-                src="/hero.jpg"
-                alt="Modern housing in Kigali, Rwanda"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        <div className="grid items-start gap-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-12">
+          <nav
+            aria-label="About section navigation"
+            className="lg:flex lg:h-[calc(100svh-12rem)] lg:items-center"
+          >
+            <ul className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              {sectionLinks.map(({ id, label }) => (
+                <li key={id}>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection(id)}
+                    aria-pressed={activeSection === id}
+                    className={`flex min-h-14 w-full items-center justify-between border border-border/70 bg-card px-4 text-left text-sm font-semibold shadow-sm transition-all ${
+                      activeSection === id
+                        ? "border-primary/30 text-primary shadow-md ring-1 ring-primary/10"
+                        : "text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                    }`}
+                  >
+                    <span className="truncate">{label}</span>
+                    <ChevronRight
+                      className={`size-4 shrink-0 transition-transform ${
+                        activeSection === id ? "translate-x-0.5" : ""
+                      }`}
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-              {/* Top pill badge */}
-              <div className="absolute top-4 left-4 flex items-center gap-2 rounded-full bg-black/60 px-3.5 py-1.5 text-xs font-semibold text-white backdrop-blur-md border border-white/10">
-                <MapPin className="size-3.5 text-primary" />
-                <span>Active Across Rwanda</span>
-              </div>
+          <main className="min-w-0">
+            {renderActiveSection()}
 
-              {/* Bottom Card Overlay */}
-              <div className="absolute right-4 bottom-4 left-4 rounded-2xl border border-white/15 bg-black/70 p-4 text-white backdrop-blur-md">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                    <CheckCircle2 className="size-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold">Zero Broker Fraud</h4>
-                    <p className="text-xs text-white/80">
-                      Direct verification of land titles & landlord ownership.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: 4 Core Pillars */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-6">
-            {coreValues.map((value) => {
-              const Icon = value.icon;
-              return (
-                <div
-                  key={value.title}
-                  className="group relative flex flex-col justify-between rounded-2xl border border-border/60 bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
-                >
-                  <div>
-                    <div
-                      className={`inline-flex size-11 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 ${value.accent}`}
-                    >
-                      <Icon className="size-5" />
+            {activeSection === "overview" && (
+              <section className="mt-6 grid gap-3 sm:grid-cols-3">
+                {institutionalValues.map(({ icon: Icon, title, description }) => (
+                  <div key={title} className="rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+                    <div className="inline-flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Icon className="size-4" />
                     </div>
-                    <h3 className="mt-4 text-base font-semibold text-foreground">
-                      {value.title}
-                    </h3>
-                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                      {value.description}
-                    </p>
+                    <h3 className="mt-3 text-sm font-semibold text-foreground">{title}</h3>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{description}</p>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+                ))}
+              </section>
+            )}
 
-        {/* Stats Strip */}
-        <div className="mt-16 rounded-3xl border border-border/60 bg-card/80 p-8 shadow-sm backdrop-blur-sm sm:p-10">
-          <div className="grid grid-cols-2 gap-8 lg:grid-cols-4 lg:gap-12">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <div key={stat.label} className="flex flex-col items-center text-center">
-                  <div className="mb-3 inline-flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Icon className="size-5" />
-                  </div>
-                  <div className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-                    {stat.value}
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-foreground">
-                    {stat.label}
-                  </div>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {stat.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Leadership & Team Section */}
-        <div className="mt-24">
-          <div className="flex flex-col items-start justify-between gap-4 border-b border-border/70 pb-6 sm:flex-row sm:items-end">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary sm:text-sm">
-                Our Leadership
-              </p>
-              <h3 className="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                Board & Executive Team
-              </h3>
-            </div>
-            <p className="max-w-md text-xs text-muted-foreground sm:text-sm">
-              Guiding INDANGA with decades of combined experience in African real estate,
-              technology, and digital infrastructure.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
-            {teamMembers.map((person) => (
-              <PersonCard key={person.name} person={person} />
-            ))}
-          </div>
-
-        </div>
-
-        {/* Core Operations Team */}
-        <div className="mt-16">
-          <div className="mb-6">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:text-sm">
-              The Engine Behind INDANGA
-            </p>
-            <h3 className="mt-1 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-              Operations & Engineering
-            </h3>
-          </div>
-
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {leadershipMembers.map((person) => (
-              <PersonCard key={person.name} person={person} />
-            ))}
-          </div>
-        </div>
-
-        {/* Landlord Partner CTA Banner */}
-        <div className="mt-20 overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-accent/10 p-8 sm:p-12">
-          <div className="flex flex-col items-center justify-between gap-6 text-center lg:flex-row lg:text-left">
-            <div className="max-w-xl">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
-                <Building2 className="size-4" /> For Property Owners & Landlords
-              </span>
-              <h3 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                List Your House or Apartment on INDANGA
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Reach thousands of verified tenants across Rwanda, automate rent payments, and
-                eliminate vacancy periods effortlessly.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Button size="lg" className="gap-2 font-semibold shadow-md" asChild>
-                <Link href="/dashboard/properties/new">
-                  List a Property <ArrowRight className="size-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="font-semibold" asChild>
-                <Link href="/properties">Browse Listings</Link>
-              </Button>
-            </div>
-          </div>
+            {activeSection === "overview" && (
+              <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="size-4 shrink-0 text-primary" />
+                Building a more connected, accessible, and trustworthy digital economy.
+              </div>
+            )}
+          </main>
         </div>
       </div>
     </section>
