@@ -46,7 +46,7 @@ const defaultSocialLinks: SocialLink[] = [
 
 const leadershipMembers: Person[] = [
   {
-    name: "Ntakirutimana Didier",
+    name: "NTAKIYIRUTA Didier",
     position: "Chief Executive Officer",
     department: "Governance",
     image: "/didier.jpeg",
@@ -112,7 +112,7 @@ His long-term vision is to contribute to Africa's development through scientific
     socialLinks: defaultSocialLinks,
   },
   {
-    name: "NTAKIRUTIMANA Didier",
+    name: "NTAKIYIRUTA Didier",
     position: "Board Member",
     department: "Board",
     image: "/didier.jpeg",
