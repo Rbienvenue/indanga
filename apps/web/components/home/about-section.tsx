@@ -49,7 +49,7 @@ const leadershipMembers: Person[] = [
     name: "NTAKIYIRUTA Didier",
     position: "Chief Executive Officer",
     department: "Governance",
-    image: "/didier.jpeg",
+    image: "/Didier.png",
     bio: `
 Didier has a strong foundation in Business Management and Finance and nearly six years of hands-on experience in manufacturing, production, and mining sector , he is a strategic leader driven by a passion for building people, transforming operations, and creating sustainable businesses.
 
@@ -64,7 +64,7 @@ As Co-Founder & CEO, he provides the vision, strategic direction, and leadership
     name: "Ntakirutimana Gisa Emmanuel",
     position: "Chief Technical Officer",
     department: "Governance",
-    image: "/Gisa.jpeg",
+    image: "/Gisa.png",
     bio: `
 Ntakirutimana Gisa Emmanuel is a Rwandan physicist, researcher, innovator, and multidisciplinary professional specializing in Material Science and Engineering, renewable energy, research and development, and practical technological solutions.
 
@@ -81,7 +81,7 @@ His long-term vision is to contribute to Africa's development through scientific
     name: "Gasaro Ruth",
     position: "Marketing Lead",
     department: "Marketing",
-    image: "/Ruth.jpeg",
+    image: "/Ruth.png",
     bio: `
 Gasaro holds a Bachelor of Science with Honors in Marketing, with a strong foundation in marketing strategy, brand development, customer engagement, and digital communication.
 Gasaro brings a creative, strategic, and customer-focused perspective to the organization, helping shape the brand, communicate its value, and build meaningful connections with customers, partners, and the wider market.
@@ -98,7 +98,7 @@ const boardMembers: Person[] = [
     name: "NTAKIRUTIMANA Gisa Emmanuel",
     position: "Chairperson of the Board",
     department: "Board",
-    image: "/Gisa.jpeg",
+    image: "/Gisa.png",
     bio: `
 Ntakirutimana Gisa Emmanuel is a Rwandan physicist, researcher, innovator, and multidisciplinary professional specializing in Material Science and Engineering, renewable energy, research and development, and practical technological solutions.
 
@@ -115,7 +115,7 @@ His long-term vision is to contribute to Africa's development through scientific
     name: "NTAKIYIRUTA Didier",
     position: "Board Member",
     department: "Board",
-    image: "/didier.jpeg",
+    image: "/Didier.png",
     bio: `
 Didier has a strong foundation in Business Management and Finance and nearly six years of hands-on experience in manufacturing, production, and mining sector , he is a strategic leader driven by a passion for building people, transforming operations, and creating sustainable businesses.
 
@@ -184,12 +184,12 @@ function PersonCard({ person }: { person: Person }) {
           }}
           className="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-border/70 bg-card p-3 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none sm:p-4"
         >
-          <div className="relative aspect-4/3 w-full overflow-hidden rounded-md bg-muted">
+          <div className="relative aspect-4/3 w-full overflow-hidden rounded-md border border-border/70 ">
             <Image
               src={person.image}
               alt={`${person.name}, ${person.position}`}
               fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className="object-contain"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
             {person.department && (
