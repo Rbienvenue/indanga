@@ -266,7 +266,7 @@ export function AboutSection() {
 
             <div className="mt-5 rounded-2xl border border-border/80 bg-card/80 p-4 shadow-sm sm:p-5 lg:p-6">
               <p className="text-sm font-semibold text-foreground sm:text-base">
-                About Indanga — Our Origin
+                About Indanga  Our Origin
               </p>
 
               <div className="mt-4 max-w-4xl space-y-4 text-sm leading-7 text-muted-foreground sm:text-[15px]">
@@ -339,13 +339,6 @@ export function AboutSection() {
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <header className="mb-8 max-w-3xl lg:mb-10">
-          <Badge
-            variant="outline"
-            className="mb-3 gap-2 border-primary/30 bg-primary/5 px-3 py-1 text-xs font-semibold tracking-[0.16em] text-primary uppercase"
-          >
-            <Sparkles className="size-3" />
-            About Indanga
-          </Badge>
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             About Indanga
           </h1>

@@ -6,6 +6,8 @@ const envSchema = z.object({
   BETTER_AUTH_URL: z.url(),
   BETTER_AUTH_SECRET: z.string(),
   FRONTEND_URL: z.url().default("http://localhost:3000"),
+  RESEND_API_KEY: z.string().default("re_123"),
+  EMAIL_FROM: z.string().default("Indanga <onboarding@resend.dev>"),
   STORAGE_ACCESS_KEY_ID: z.string().default("123"),
   STORAGE_SECRET_ACCESS_KEY: z.string().default("456"),
   S3_ENDPOINT: z.url().default("https://url.com"),
