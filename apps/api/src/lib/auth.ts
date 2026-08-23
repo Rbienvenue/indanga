@@ -1,8 +1,11 @@
 import { betterAuth } from "better-auth";
 import { APIError } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { admin } from "better-auth/plugins";
+import { admin, emailOTP } from "better-auth/plugins";
 import { prisma } from "@indanga/db";
+import { sendEmail } from "../email/mail";
+import ForgotPasswordEmail from "../email/templates/forgot-password";
+import { renderToString } from "../email/render";
 import { env } from "./env";
 
 export const auth = betterAuth({
@@ -19,6 +22,22 @@ export const auth = betterAuth({
     admin({
       defaultRole: "tenant",
       adminRoles: ["admin"],
+    }),
+    emailOTP({
+      otpLength: 6,
+      expiresIn: 5 * 60,
+      async sendVerificationOTP({ email, otp, type }) {
+        if (type !== "forget-password") return;
+        const user = await prisma.user.findUnique({
+          where: { email },
+          select: { name: true },
+        });
+        const html = await renderToString(ForgotPasswordEmail, {
+          name: user?.name ?? "there",
+          otp,
+        });
+        await sendEmail({ to: email, subject: "Reset your password", html });
+      },
     }),
   ],
   user: {

@@ -8,10 +8,16 @@
   "jsc": {
     "parser": {
       "syntax": "typescript",
+      "tsx": true,
       "decorators": true,
       "dynamicImport": true
     },
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "transform": {
+      "react": {
+        "runtime": "automatic"
+      }
+    }
   },
   "minify": false
 }
