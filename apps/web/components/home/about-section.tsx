@@ -226,20 +226,20 @@ function PersonCard({ person }: { person: Person }) {
         </article>
       </DialogTrigger>
 
-      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto p-0 sm:max-w-4xl">
+      <DialogContent className="max-h-[calc(100svh-1rem)] max-w-[calc(100%-1rem)] overflow-y-auto p-0 sm:max-w-4xl">
         <div className="grid gap-0 md:grid-cols-[minmax(17rem,0.9fr)_1.1fr]">
-          <div className="relative min-h-72 bg-muted md:min-h-120">
+          <div className="relative aspect-3/4 w-full bg-muted md:aspect-auto md:min-h-120">
             <Image
               src={person.image}
               alt={`${person.name}, ${person.position}`}
               fill
-              className="object-cover"
+              className="object-contain p-2"
               sizes="(max-width: 768px) 100vw, 40vw"
             />
           </div>
-          <div className="space-y-4 p-6 sm:p-8">
+          <div className="space-y-4 p-4 sm:p-8">
             <div>
-              <DialogTitle className="text-2xl font-bold sm:text-3xl">{person.name}</DialogTitle>
+              <DialogTitle className="text-xl font-bold sm:text-3xl">{person.name}</DialogTitle>
               <p className="mt-2 text-sm font-medium text-primary">{person.position}</p>
             </div>
             <DialogDescription className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
