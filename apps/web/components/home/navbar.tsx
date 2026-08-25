@@ -4,9 +4,10 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Menu, LogOut } from "lucide-react";
+import { ChevronDown, LogOut, Menu } from "lucide-react";
+import { FaFacebook, FaInstagram, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "@/components/providers/session-provider";
 import { signOut } from "@/lib/auth-client";
@@ -20,6 +21,20 @@ const navLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
+const aboutLinks = [
+  { label: "Overview", section: "overview" },
+  { label: "Organization Structure", section: "organization-structure" },
+  { label: "Senior Management", section: "senior-management" },
+  { label: "Board of Directors", section: "board-of-directors" },
+] as const;
+
+const socialLinks = [
+  { label: "LinkedIn", href: "#", icon: FaLinkedin },
+  { label: "X", href: "#", icon: FaXTwitter },
+  { label: "Facebook", href: "#", icon: FaFacebook },
+  { label: "Instagram", href: "#", icon: FaInstagram },
+];
+
 function getInitials(name: string) {
   return name
     .split(" ")
@@ -31,6 +46,7 @@ function getInitials(name: string) {
 
 export function Navbar({ solid = false }: { solid?: boolean } = {}) {
   const [scrolled, setScrolled] = React.useState(solid);
+  const [aboutOpen, setAboutOpen] = React.useState(false);
   const router = useRouter();
   const session = useSession();
   const user = session?.user;
@@ -104,30 +120,73 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
               </Button>
             </SheetTrigger>
             <SheetContent
-              side="right"
-              className="border-white/10 bg-[#0A0A2C] p-5 data-[side=right]:w-80"
+              side="top"
+              className="h-svh w-full max-w-none gap-0 overflow-y-auto border-primary/30 bg-[#0A0A2C] p-0 text-white"
             >
-              <SheetTitle className="flex items-center gap-2.5 text-primary">
-                <Image
-                  src="/logo.png"
-                  alt="INDANGA"
-                  width={28}
-                  height={28}
-                  className="size-7 rounded-md object-contain bg-white shadow-xs"
-                />
-                <span className="text-white">INDANGA</span>
+              <SheetTitle className="flex min-h-20 items-center justify-between border-b border-primary/40 px-5 pr-16 text-primary">
+                <Link href="/" className="flex items-center gap-2.5">
+                  <Image
+                    src="/logo.png"
+                    alt="INDANGA"
+                    width={32}
+                    height={32}
+                    className="size-8 rounded-md object-contain bg-white shadow-xs"
+                  />
+                  <span className="text-lg font-bold text-white">INDANGA</span>
+                </Link>
+                <div className="flex items-center gap-2">
+                  {socialLinks.map(({ label, href, icon: Icon }) => (
+                    <a
+                      key={label}
+                      href={href}
+                      aria-label={label}
+                      className="inline-flex size-9 items-center justify-center rounded-full border border-white/20 text-white/75 transition-colors hover:border-primary hover:text-primary"
+                    >
+                      <Icon className="size-4" />
+                    </a>
+                  ))}
+                </div>
               </SheetTitle>
-              <div className="flex flex-col gap-1 pt-4">
+              <div className="flex flex-col">
                 {navLinks.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className="rounded-lg px-4 py-3 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-primary"
-                  >
-                    {link.label}
-                  </Link>
+                  link.label === "About Us" ? (
+                    <React.Fragment key={link.label}>
+                      <button
+                        type="button"
+                        onClick={() => setAboutOpen((open) => !open)}
+                        aria-expanded={aboutOpen}
+                        className="flex min-h-20 w-full items-center justify-center gap-2 border-b border-primary/40 bg-primary px-5 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                      >
+                        {link.label}
+                        <ChevronDown className={`size-5 transition-transform ${aboutOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      <div
+                        className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ${aboutOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+                      >
+                        <div className="min-h-0">
+                          {aboutLinks.map((aboutLink) => (
+                            <Link
+                              key={aboutLink.section}
+                              href={`/?about=${aboutLink.section}#about`}
+                              className="flex min-h-16 w-full items-center justify-center border-b border-primary/30 bg-[#101044] px-5 text-center text-sm font-medium text-white/85 transition-colors hover:bg-[#17175c] hover:text-accent"
+                            >
+                              {aboutLink.label}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  ) : (
+                    <Link
+                      key={link.label}
+                      href={link.href}
+                      className="flex min-h-20 w-full items-center justify-center border-b border-primary/30 px-5 text-base font-semibold text-white/85 transition-colors hover:bg-[#101044] hover:text-accent"
+                    >
+                      {link.label}
+                    </Link>
+                  )
                 ))}
-                <div className="mt-4 flex flex-col gap-2 px-4">
+                <div className="flex flex-col gap-2 border-t border-primary/30 p-5">
                   {session ? (
                     <>
                       <div className="flex items-center gap-3 rounded-lg bg-background/5 p-3">

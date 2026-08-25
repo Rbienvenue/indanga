@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   Building2,
@@ -254,6 +254,13 @@ function PersonCard({ person }: { person: Person }) {
 
 export function AboutSection() {
   const [activeSection, setActiveSection] = useState<string>(sectionLinks[0].id);
+
+  useEffect(() => {
+    const requestedSection = new URLSearchParams(window.location.search).get("about");
+    if (sectionLinks.some(({ id }) => id === requestedSection)) {
+      setActiveSection(requestedSection as (typeof sectionLinks)[number]["id"]);
+    }
+  }, []);
 
   const renderActiveSection = () => {
     switch (activeSection) {
