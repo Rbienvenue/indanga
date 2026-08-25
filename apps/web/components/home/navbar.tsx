@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, LogOut, Menu } from "lucide-react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
@@ -14,11 +14,11 @@ import { signOut } from "@/lib/auth-client";
 import { UserAvatar } from "@/components/user/user-avatar";
 
 const navLinks = [
-  { label: "Home", href: "#" },
+  { label: "Home", href: "/" },
   { label: "Explore", href: "/properties" },
-  { label: "About Us", href: "#about" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Contact", href: "#contact" },
+    { label: "About Us", href: "/#about" },
+    { label: "How It Works", href: "/#how-it-works" },
+    { label: "Contact", href: "/#contact" },
 ];
 
 const aboutLinks = [
@@ -48,6 +48,9 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
   const [scrolled, setScrolled] = React.useState(solid);
   const [aboutOpen, setAboutOpen] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [activeHash, setActiveHash] = React.useState("");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const session = useSession();
   const user = session?.user;
@@ -59,6 +62,20 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  React.useEffect(() => {
+    const updateHash = () => setActiveHash(window.location.hash);
+    updateHash();
+    window.addEventListener("hashchange", updateHash);
+    return () => window.removeEventListener("hashchange", updateHash);
+  }, []);
+
+  const isActiveLink = (href: string) => {
+    if (href === "/") return pathname === "/" && !activeHash && !searchParams.get("about");
+    if (href === "/#about") return pathname === "/" && (activeHash === "#about" || searchParams.has("about"));
+    if (href.startsWith("/#")) return pathname === "/" && activeHash === href.slice(1);
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   return (
     <header
@@ -85,13 +102,45 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
         {/* Desktop Nav Links */}
         <div className="hidden items-center gap-1 md:flex">
           {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="rounded-lg px-3.5 py-2 text-sm font-medium text-white/75 transition-colors hover:text-primary"
-            >
-              {link.label}
-            </Link>
+            link.label === "About Us" ? (
+              <div key={link.label} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setAboutOpen((open) => !open)}
+                  aria-expanded={aboutOpen}
+                  className={`inline-flex items-center gap-1 border-b-2 px-3.5 py-2 text-sm font-medium text-white/75 transition-colors hover:border-accent hover:text-accent ${isActiveLink(link.href) ? "border-accent text-accent" : "border-transparent"}`}
+                >
+                  {link.label}
+                  <ChevronDown className={`size-4 transition-transform ${aboutOpen ? "rotate-180" : ""}`} />
+                </button>
+                {aboutOpen && (
+                  <div className="absolute top-full left-1/2 z-50 mt-2 w-64 -translate-x-1/2 overflow-hidden rounded-lg border border-primary/30 bg-[#0A0A2C] shadow-xl">
+                    {aboutLinks.map((aboutLink) => {
+                      const active = searchParams.get("about") === aboutLink.section;
+
+                      return (
+                        <Link
+                          key={aboutLink.section}
+                          href={`/?about=${aboutLink.section}#about`}
+                          onClick={() => setAboutOpen(false)}
+                          className={`flex min-h-14 items-center border-b-2 px-4 text-sm font-medium text-white/85 transition-colors hover:border-accent hover:bg-[#101044] hover:text-accent ${active ? "border-accent text-accent" : "border-primary/30"}`}
+                        >
+                          {aboutLink.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                key={link.label}
+                href={link.href}
+                className={`border-b-2 px-3.5 py-2 text-sm font-medium text-white/75 transition-colors hover:border-accent hover:text-accent ${isActiveLink(link.href) ? "border-accent text-accent" : "border-transparent"}`}
+              >
+                {link.label}
+              </Link>
+            )
           ))}
         </div>
 
@@ -157,7 +206,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                         type="button"
                         onClick={() => setAboutOpen((open) => !open)}
                         aria-expanded={aboutOpen}
-                        className="flex min-h-20 w-full items-center justify-center gap-2 border-b border-primary/40 bg-primary px-5 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                        className={`flex min-h-20 w-full items-center justify-center gap-2 border-b-2 bg-primary px-5 text-base font-semibold text-primary-foreground transition-colors hover:border-accent hover:bg-primary/90 ${isActiveLink(link.href) ? "border-accent" : "border-primary/40"}`}
                       >
                         {link.label}
                         <ChevronDown className={`size-5 transition-transform ${aboutOpen ? "rotate-180" : ""}`} />
@@ -166,16 +215,20 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                         className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ${aboutOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
                       >
                         <div className="min-h-0">
-                          {aboutLinks.map((aboutLink) => (
-                            <Link
-                              key={aboutLink.section}
-                              href={`/?about=${aboutLink.section}#about`}
-                              onClick={() => setMobileMenuOpen(false)}
-                              className="flex min-h-16 w-full items-center justify-center border-b border-primary/30 bg-[#101044] px-5 text-center text-sm font-medium text-white/85 transition-colors hover:bg-[#17175c] hover:text-accent"
-                            >
-                              {aboutLink.label}
-                            </Link>
-                          ))}
+                          {aboutLinks.map((aboutLink) => {
+                            const active = searchParams.get("about") === aboutLink.section;
+
+                            return (
+                              <Link
+                                key={aboutLink.section}
+                                href={`/?about=${aboutLink.section}#about`}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={`flex min-h-16 w-full items-center justify-center border-b-2 bg-[#101044] px-5 text-center text-sm font-medium text-white/85 transition-colors hover:border-accent hover:bg-[#17175c] hover:text-accent ${active ? "border-accent text-accent" : "border-primary/30"}`}
+                              >
+                                {aboutLink.label}
+                              </Link>
+                            );
+                          })}
                         </div>
                       </div>
                     </React.Fragment>
@@ -184,7 +237,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                       key={link.label}
                       href={link.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex min-h-20 w-full items-center justify-center border-b border-primary/30 px-5 text-base font-semibold text-white/85 transition-colors hover:bg-[#101044] hover:text-accent"
+                      className={`flex min-h-20 w-full items-center justify-center border-b-2 px-5 text-base font-semibold text-white/85 transition-colors hover:border-accent hover:bg-[#101044] hover:text-accent ${isActiveLink(link.href) ? "border-accent text-accent" : "border-primary/30"}`}
                     >
                       {link.label}
                     </Link>
