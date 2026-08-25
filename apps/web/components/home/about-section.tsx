@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import {
   Building2,
   CheckCircle2,
@@ -254,13 +255,18 @@ function PersonCard({ person }: { person: Person }) {
 
 export function AboutSection() {
   const [activeSection, setActiveSection] = useState<string>(sectionLinks[0].id);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const requestedSection = new URLSearchParams(window.location.search).get("about");
-    if (sectionLinks.some(({ id }) => id === requestedSection)) {
-      setActiveSection(requestedSection as (typeof sectionLinks)[number]["id"]);
-    }
-  }, []);
+    const requestedSection = searchParams.get("about");
+    const isValidSection = sectionLinks.some(({ id }) => id === requestedSection);
+
+    setActiveSection(
+      isValidSection
+        ? (requestedSection as (typeof sectionLinks)[number]["id"])
+        : sectionLinks[0].id,
+    );
+  }, [searchParams]);
 
   const renderActiveSection = () => {
     switch (activeSection) {

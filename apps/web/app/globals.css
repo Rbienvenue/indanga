@@ -168,7 +168,7 @@
   }
 
   html {
-    @apply font-sans scroll-smooth;
+    @apply font-sans;
   }
 
   body {
