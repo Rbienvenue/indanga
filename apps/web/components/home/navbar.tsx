@@ -8,7 +8,6 @@ import { ChevronDown, LogOut, Menu } from "lucide-react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "@/components/providers/session-provider";
 import { signOut } from "@/lib/auth-client";
 import { UserAvatar } from "@/components/user/user-avatar";
@@ -35,15 +34,6 @@ const socialLinks = [
   { label: "Instagram", href: "#", icon: FaInstagram },
 ];
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
-}
-
 export function Navbar({ solid = false }: { solid?: boolean } = {}) {
   const [scrolled, setScrolled] = React.useState(solid);
   const [aboutOpen, setAboutOpen] = React.useState(false);
@@ -53,9 +43,6 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const session = useSession();
-  const user = session?.user;
-  const displayName = user?.name ?? "Guest";
-  const initials = getInitials(displayName) || "G";
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -246,18 +233,6 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                 <div className="flex flex-col gap-2 border-t border-primary/30 p-5">
                   {session ? (
                     <>
-                      <div className="flex items-center gap-3 rounded-lg bg-background/5 p-3">
-                        <Avatar>
-                          <AvatarImage src={user?.image ?? undefined} alt={displayName} />
-                          <AvatarFallback className="bg-primary text-primary-foreground">
-                            {initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-white">{displayName}</p>
-                          <p className="text-xs text-white/60">{user?.email ?? ""}</p>
-                        </div>
-                      </div>
                       <Button asChild size="lg" variant="outline" className="w-full font-semibold">
                         <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                           Dashboard
@@ -265,8 +240,8 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                       </Button>
                       <Button
                         size="lg"
-                        variant="destructive"
-                        className="w-full font-semibold"
+                        variant="outline"
+                        className="w-full border-accent text-accent font-semibold hover:bg-accent hover:text-accent-foreground"
                         onClick={async () => {
                           setMobileMenuOpen(false);
                           await signOut({

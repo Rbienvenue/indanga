@@ -5,8 +5,6 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import {
   Building2,
-  CheckCircle2,
-  ChevronRight,
   HeartHandshake,
   MapPin,
   ShieldCheck,
@@ -357,61 +355,30 @@ export function AboutSection() {
           </h1>
         </header>
 
-        <div className="grid items-start gap-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-12">
-          <nav
-            aria-label="About section navigation"
-            className="lg:flex lg:h-[calc(100svh-12rem)] lg:items-center"
-          >
-            <ul className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-1">
-              {sectionLinks.map(({ id, label }) => (
-                <li key={id}>
-                  <button
-                    type="button"
-                    onClick={() => setActiveSection(id)}
-                    aria-pressed={activeSection === id}
-                    className={`flex min-h-14 w-full items-center justify-between border border-border/70 bg-card px-4 text-left text-sm font-semibold shadow-sm transition-all ${
-                      activeSection === id
-                        ? "border-primary/30 text-primary shadow-md ring-1 ring-primary/10"
-                        : "text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                    }`}
-                  >
-                    <span className="truncate">{label}</span>
-                    <ChevronRight
-                      className={`size-4 shrink-0 transition-transform ${
-                        activeSection === id ? "translate-x-0.5" : ""
-                      }`}
-                    />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
+        <main className="min-w-0">
+          {renderActiveSection()}
 
-          <main className="min-w-0">
-            {renderActiveSection()}
-
-            {activeSection === "overview" && (
-              <section className="mt-6 grid gap-3 sm:grid-cols-3">
-                {institutionalValues.map(({ icon: Icon, title, description }) => (
-                  <div key={title} className="rounded-xl border border-border/70 bg-card p-4 shadow-sm">
-                    <div className="inline-flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <Icon className="size-4" />
-                    </div>
-                    <h3 className="mt-3 text-sm font-semibold text-foreground">{title}</h3>
-                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{description}</p>
+          {activeSection === "overview" && (
+            <section className="mt-6 grid gap-3 sm:grid-cols-3">
+              {institutionalValues.map(({ icon: Icon, title, description }) => (
+                <div key={title} className="rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+                  <div className="inline-flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Icon className="size-4" />
                   </div>
-                ))}
-              </section>
-            )}
+                  <h3 className="mt-3 text-sm font-semibold text-foreground">{title}</h3>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{description}</p>
+                </div>
+              ))}
+            </section>
+          )}
 
-            {activeSection === "overview" && (
-              <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="size-4 shrink-0 text-primary" />
-                Building a more connected, accessible, and trustworthy digital economy.
-              </div>
-            )}
-          </main>
-        </div>
+          {activeSection === "overview" && (
+            <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="size-4 shrink-0 text-primary" />
+              Building a more connected, accessible, and trustworthy digital economy.
+            </div>
+          )}
+        </main>
       </div>
     </section>
   );
