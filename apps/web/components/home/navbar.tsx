@@ -47,6 +47,7 @@ function getInitials(name: string) {
 export function Navbar({ solid = false }: { solid?: boolean } = {}) {
   const [scrolled, setScrolled] = React.useState(solid);
   const [aboutOpen, setAboutOpen] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const router = useRouter();
   const session = useSession();
   const user = session?.user;
@@ -112,7 +113,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
 
         {/* Mobile Menu */}
         <div className="md:hidden">
-          <Sheet>
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-white/80 hover:text-primary">
                 <Menu className="size-5" />
@@ -124,7 +125,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
               className="h-svh w-full max-w-none gap-0 overflow-y-auto border-primary/30 bg-[#0A0A2C] p-0 text-white"
             >
               <SheetTitle className="flex min-h-20 items-center justify-between border-b border-primary/40 px-5 pr-16 text-primary">
-                <Link href="/" className="flex items-center gap-2.5">
+                <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2.5">
                   <Image
                     src="/logo.png"
                     alt="INDANGA"
@@ -140,6 +141,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                       key={label}
                       href={href}
                       aria-label={label}
+                      onClick={() => setMobileMenuOpen(false)}
                       className="inline-flex size-9 items-center justify-center rounded-full border border-white/20 text-white/75 transition-colors hover:border-primary hover:text-primary"
                     >
                       <Icon className="size-4" />
@@ -168,6 +170,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                             <Link
                               key={aboutLink.section}
                               href={`/?about=${aboutLink.section}#about`}
+                              onClick={() => setMobileMenuOpen(false)}
                               className="flex min-h-16 w-full items-center justify-center border-b border-primary/30 bg-[#101044] px-5 text-center text-sm font-medium text-white/85 transition-colors hover:bg-[#17175c] hover:text-accent"
                             >
                               {aboutLink.label}
@@ -180,6 +183,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                     <Link
                       key={link.label}
                       href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
                       className="flex min-h-20 w-full items-center justify-center border-b border-primary/30 px-5 text-base font-semibold text-white/85 transition-colors hover:bg-[#101044] hover:text-accent"
                     >
                       {link.label}
@@ -202,19 +206,22 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                         </div>
                       </div>
                       <Button asChild size="lg" variant="outline" className="w-full font-semibold">
-                        <Link href="/dashboard">Dashboard</Link>
+                        <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                          Dashboard
+                        </Link>
                       </Button>
                       <Button
                         size="lg"
                         variant="destructive"
                         className="w-full font-semibold"
-                        onClick={async () =>
-                          signOut({
+                        onClick={async () => {
+                          setMobileMenuOpen(false);
+                          await signOut({
                             fetchOptions: {
                               onSuccess: () => router.push("/"),
                             },
-                          })
-                        }
+                          });
+                        }}
                       >
                         <LogOut className="mr-2 h-4 w-4" />
                         Sign out
@@ -228,7 +235,9 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                         variant="outline"
                         className="w-full font-semibold cursor-pointer"
                       >
-                        <Link href="/auth/login">Login</Link>
+                        <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                          Login
+                        </Link>
                       </Button>
                       <Button
                         asChild
@@ -236,7 +245,9 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                         variant="default"
                         className="w-full font-semibold cursor-pointer"
                       >
-                        <Link href="/auth/signup">Sign Up</Link>
+                        <Link href="/auth/signup" onClick={() => setMobileMenuOpen(false)}>
+                          Sign Up
+                        </Link>
                       </Button>
                     </>
                   )}
