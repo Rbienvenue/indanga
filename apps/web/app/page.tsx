@@ -18,10 +18,6 @@ export default function Home() {
         <SearchBar redirectTo="/properties" />
         <Categories />
         <Recommended />
-        <HowItWorks />
-        <WhyChoose />
-        <AboutSection />
-        <CTASection />
       </main>
       <Footer />
     </div>

@@ -15,17 +15,8 @@ import { UserAvatar } from "@/components/user/user-avatar";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Explore", href: "/properties" },
-    { label: "About Us", href: "/#about" },
-    { label: "How It Works", href: "/#how-it-works" },
-    { label: "Contact", href: "/#contact" },
+  { label: "About Us", href: "/about" },
 ];
-
-const aboutLinks = [
-  { label: "Overview", section: "overview" },
-  { label: "Organization Structure", section: "organization-structure" },
-  { label: "Senior Management", section: "senior-management" },
-  { label: "Board of Directors", section: "board-of-directors" },
-] as const;
 
 const socialLinks = [
   { label: "LinkedIn", href: "#", icon: FaLinkedin },
@@ -66,11 +57,10 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${
-        scrolled || solid
-          ? "bg-[#0A0A2C]/95 shadow-lg shadow-black/20 backdrop-blur-xl"
-          : "bg-transparent"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${scrolled || solid
+        ? "bg-[#0A0A2C]/95 shadow-lg shadow-black/20 backdrop-blur-xl"
+        : "bg-transparent"
+        }`}
     >
       <nav className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
@@ -86,40 +76,11 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
           <span className="text-xl font-bold tracking-tight text-white">INDANGA</span>
         </Link>
 
-        {/* Desktop Nav Links */}
-        <div className="hidden items-center gap-1 md:flex">
-          {navLinks.map((link) => (
-            link.label === "About Us" ? (
-              <div key={link.label} className="relative">
-                <button
-                  type="button"
-                  onClick={() => setAboutOpen((open) => !open)}
-                  aria-expanded={aboutOpen}
-                  className={`inline-flex items-center gap-1 border-b-2 px-3.5 py-2 text-sm font-medium text-white/75 transition-colors hover:border-accent hover:text-accent ${isActiveLink(link.href) ? "border-accent text-accent" : "border-transparent"}`}
-                >
-                  {link.label}
-                  <ChevronDown className={`size-4 transition-transform ${aboutOpen ? "rotate-180" : ""}`} />
-                </button>
-                {aboutOpen && (
-                  <div className="absolute top-full left-1/2 z-50 mt-2 w-64 -translate-x-1/2 overflow-hidden rounded-lg border border-primary/30 bg-[#0A0A2C] shadow-xl">
-                    {aboutLinks.map((aboutLink) => {
-                      const active = searchParams.get("about") === aboutLink.section;
+        <div className="flex items-center gap-4">
+          {/* Desktop Nav Links */}
+          <div className="hidden items-center gap-1 md:flex">
+            {navLinks.map((link) => (
 
-                      return (
-                        <Link
-                          key={aboutLink.section}
-                          href={`/?about=${aboutLink.section}#about`}
-                          onClick={() => setAboutOpen(false)}
-                          className={`flex min-h-14 items-center border-b-2 px-4 text-sm font-medium text-white/85 transition-colors hover:border-accent hover:bg-[#101044] hover:text-accent ${active ? "border-accent text-accent" : "border-primary/30"}`}
-                        >
-                          {aboutLink.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            ) : (
               <Link
                 key={link.label}
                 href={link.href}
@@ -127,24 +88,25 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
               >
                 {link.label}
               </Link>
-            )
-          ))}
-        </div>
 
-        {/* Desktop CTA - Show avatar if authenticated, otherwise show auth links */}
-        <div className="hidden items-center gap-3 md:flex">
-          {session ? (
-            <UserAvatar />
-          ) : (
-            <>
-              <Button size="lg" variant="outline" className="px-6 font-semibold" asChild>
-                <Link href="/auth/login">Login</Link>
-              </Button>
-              <Button size="lg" variant="default" className="px-6 font-semibold" asChild>
-                <Link href="/auth/signup">Sign Up</Link>
-              </Button>
-            </>
-          )}
+            ))}
+          </div>
+
+          {/* Desktop CTA - Show avatar if authenticated, otherwise show auth links */}
+          <div className="hidden items-center gap-3 md:flex">
+            {session ? (
+              <UserAvatar />
+            ) : (
+              <>
+                <Button size="lg" variant="outline" className="px-6 font-semibold" asChild>
+                  <Link href="/auth/login">Login</Link>
+                </Button>
+                <Button size="lg" variant="default" className="px-6 font-semibold" asChild>
+                  <Link href="/auth/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -187,48 +149,16 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
               </SheetTitle>
               <div className="flex flex-col">
                 {navLinks.map((link) => (
-                  link.label === "About Us" ? (
-                    <React.Fragment key={link.label}>
-                      <button
-                        type="button"
-                        onClick={() => setAboutOpen((open) => !open)}
-                        aria-expanded={aboutOpen}
-                        className={`flex min-h-20 w-full items-center justify-center gap-2 border-b-2 bg-primary px-5 text-base font-semibold text-primary-foreground transition-colors hover:border-accent hover:bg-primary/90 ${isActiveLink(link.href) ? "border-accent" : "border-primary/40"}`}
-                      >
-                        {link.label}
-                        <ChevronDown className={`size-5 transition-transform ${aboutOpen ? "rotate-180" : ""}`} />
-                      </button>
-                      <div
-                        className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ${aboutOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
-                      >
-                        <div className="min-h-0">
-                          {aboutLinks.map((aboutLink) => {
-                            const active = searchParams.get("about") === aboutLink.section;
 
-                            return (
-                              <Link
-                                key={aboutLink.section}
-                                href={`/?about=${aboutLink.section}#about`}
-                                onClick={() => setMobileMenuOpen(false)}
-                                className={`flex min-h-16 w-full items-center justify-center border-b-2 bg-[#101044] px-5 text-center text-sm font-medium text-white/85 transition-colors hover:border-accent hover:bg-[#17175c] hover:text-accent ${active ? "border-accent text-accent" : "border-primary/30"}`}
-                              >
-                                {aboutLink.label}
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </React.Fragment>
-                  ) : (
-                    <Link
-                      key={link.label}
-                      href={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`flex min-h-20 w-full items-center justify-center border-b-2 px-5 text-base font-semibold text-white/85 transition-colors hover:border-accent hover:bg-[#101044] hover:text-accent ${isActiveLink(link.href) ? "border-accent text-accent" : "border-primary/30"}`}
-                    >
-                      {link.label}
-                    </Link>
-                  )
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex min-h-20 w-full items-center justify-center border-b-2 px-5 text-base font-semibold text-white/85 transition-colors hover:border-accent hover:bg-[#101044] hover:text-accent ${isActiveLink(link.href) ? "border-accent text-accent" : "border-primary/30"}`}
+                  >
+                    {link.label}
+                  </Link>
+
                 ))}
                 <div className="flex flex-col gap-2 border-t border-primary/30 p-5">
                   {session ? (
