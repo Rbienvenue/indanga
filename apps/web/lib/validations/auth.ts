@@ -16,7 +16,7 @@ export const signupSchema = z
     // Rwanda national ID is 16 digits; optional for tenant, required for landlord.
     nationalId: z.string().trim().optional(),
     email: z.email("Enter a valid email address"),
-    password: z.string().min(5, "Password must be at least 5 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Confirm your password"),
   })
   .superRefine((values, ctx) => {

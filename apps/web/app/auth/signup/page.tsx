@@ -187,7 +187,7 @@ export default function SignupPage() {
                     <Input
                       type="password"
                       autoComplete="new-password"
-                      placeholder="At least 5 characters"
+                      placeholder="At least 8 characters"
                       className="h-11 bg-white px-3"
                       disabled={isPending}
                       {...field}

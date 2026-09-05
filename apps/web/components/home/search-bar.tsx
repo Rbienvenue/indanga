@@ -50,9 +50,12 @@ const subTypeOptions: Record<string, readonly { value: string; label: string }[]
 
 const budgetOptions = [
   { value: "any", label: "Any Budget" },
-  { value: "0-350000", label: "Under RWF 350K" },
-  { value: "350000-500000", label: "RWF 350K – 500K" },
-  { value: "500000-", label: "RWF 500K+" },
+  { value: "50000-100000", label: "RWF 50K – 100K" },
+  { value: "100000-150000", label: "RWF 100K – 150K" },
+  { value: "150000-200000", label: "RWF 150K – 200K" },
+  { value: "200000-250000", label: "RWF 200K – 250K" },
+  { value: "250000-300000", label: "RWF 250K – 300K" },
+  { value: "300000-350000", label: "RWF 300K – 350K" },
 ] as const;
 
 type SearchBarProps = {
