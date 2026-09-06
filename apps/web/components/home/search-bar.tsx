@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLocations } from "@/hooks/use-locations";
 import { cn } from "@/lib/utils";
 
 const propertyTypes = [
@@ -25,10 +26,14 @@ const propertyTypes = [
 const subTypeOptions: Record<string, readonly { value: string; label: string }[]> = {
   homes: [
     { value: "all", label: "All Type" },
-    { value: "economic_house", label: "Economic House" },
-    { value: "apartment", label: "Apartment" },
-    { value: "house", label: "House" },
-    { value: "villa", label: "Villa" },
+    { value: "1 Bedroom", label: "1 Bedroom" },
+    { value: "2 Bedroom", label: "2 Bedroom" },
+    { value: "3 Bedroom", label: "3 Bedroom" },
+    { value: "Apartment", label: "Apartment" },
+    { value: "Family House", label: "Family House" },
+    { value: "Villa", label: "Villa" },
+    { value: "Economic House", label: "Economic House" },
+    { value: "House", label: "House" },
   ],
   hotels: [
     { value: "all", label: "All Type" },
@@ -66,19 +71,29 @@ type SearchBarProps = {
 
 function buildSearchHref(
   pathname: string,
-  filters: { type: string; budget: string; subType: string },
+  filters: { type: string; budget: string; subType: string; province: string; district: string },
 ) {
   const params = new URLSearchParams();
   if (filters.type !== "all") params.set("type", filters.type);
   if (filters.subType !== "all") params.set("subType", filters.subType);
   if (filters.budget !== "any") params.set("budget", filters.budget);
+  if (filters.province !== "all") params.set("province", filters.province);
+  if (filters.district !== "all") params.set("district", filters.district);
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
 }
 
 export function SearchBar({ className, redirectTo }: SearchBarProps) {
   const router = useRouter();
-  const [location, setLocation] = useState("all");
+  const { locations, isLoading: isLoadingLocations } = useLocations();
+  const [provinceQuery, setProvinceQuery] = useQueryState(
+    "province",
+    parseAsString.withDefault("all").withOptions({ shallow: false }),
+  );
+  const [districtQuery, setDistrictQuery] = useQueryState(
+    "district",
+    parseAsString.withDefault("all").withOptions({ shallow: false }),
+  );
   const [typeQuery, setTypeQuery] = useQueryState(
     "type",
     parseAsString.withDefault("all").withOptions({ shallow: false }),
@@ -94,10 +109,15 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
   const [draftType, setDraftType] = useState("all");
   const [draftBudget, setDraftBudget] = useState("any");
   const [draftSubType, setDraftSubType] = useState("all");
+  const [draftProvince, setDraftProvince] = useState("all");
+  const [draftDistrict, setDraftDistrict] = useState("all");
 
   const propertyType = redirectTo ? draftType : typeQuery;
   const budget = redirectTo ? draftBudget : budgetQuery;
   const subType = redirectTo ? draftSubType : subTypeQuery;
+  const province = redirectTo ? draftProvince : provinceQuery;
+  const district = redirectTo ? draftDistrict : districtQuery;
+  const districtOptions = province !== "all" ? (locations.districts[province] ?? []) : [];
 
   function handleTypeChange(value: string) {
     setDraftSubType("all");
@@ -117,6 +137,24 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
     void setSubTypeQuery(value === "all" ? null : value);
   }
 
+  function handleProvinceChange(value: string) {
+    if (redirectTo) {
+      setDraftProvince(value);
+      setDraftDistrict("all");
+      return;
+    }
+    void setProvinceQuery(value === "all" ? null : value);
+    void setDistrictQuery(null);
+  }
+
+  function handleDistrictChange(value: string) {
+    if (redirectTo) {
+      setDraftDistrict(value);
+      return;
+    }
+    void setDistrictQuery(value === "all" ? null : value);
+  }
+
   function handleBudgetChange(value: string) {
     if (redirectTo) {
       setDraftBudget(value);
@@ -127,17 +165,27 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
 
   function handleSearch() {
     if (redirectTo) {
-      router.push(buildSearchHref(redirectTo, { type: propertyType, budget, subType }));
+      router.push(
+        buildSearchHref(redirectTo, {
+          type: propertyType,
+          budget,
+          subType,
+          province,
+          district,
+        }),
+      );
       return;
     }
     void setTypeQuery(propertyType === "all" ? null : propertyType);
     void setSubTypeQuery(subType === "all" ? null : subType);
     void setBudgetQuery(budget === "any" ? null : budget);
+    void setProvinceQuery(provinceQuery === "all" ? null : provinceQuery);
+    void setDistrictQuery(districtQuery === "all" ? null : districtQuery);
   }
 
   return (
     <section className={cn("relative z-20 -mt-10 px-4 sm:px-6 lg:px-8", className)}>
-      <div className="mx-auto max-w-4xl rounded-xl border border-border/60 bg-card/95 px-5 py-4 shadow-xl shadow-black/10 backdrop-blur-sm sm:px-6">
+      <div className="mx-auto max-w-5xl rounded-xl border border-border/60 bg-card/95 px-5 py-4 shadow-xl shadow-black/10 backdrop-blur-sm sm:px-6">
         <div className="flex flex-col gap-3">
           <Tabs value={propertyType} onValueChange={handleTypeChange}>
             <TabsList className="mx-auto w-fit bg-muted p-1">
@@ -150,15 +198,38 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
             </TabsList>
           </Tabs>
 
-          <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto]">
-            <Select value={location} onValueChange={setLocation}>
+          <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+            <Select value={province} onValueChange={handleProvinceChange} disabled={isLoadingLocations}>
               <SelectTrigger className="w-full">
                 <MapPin className="size-4 text-muted-foreground" />
-                <SelectValue />
+                <SelectValue placeholder={isLoadingLocations ? "Loading..." : "All provinces"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All locations</SelectItem>
-                <SelectItem value="Kigali">Kigali, Rwanda</SelectItem>
+                <SelectItem value="all">All provinces</SelectItem>
+                {locations.provinces.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={district}
+              onValueChange={handleDistrictChange}
+              disabled={province === "all" || isLoadingLocations}
+            >
+              <SelectTrigger className="w-full">
+                <MapPin className="size-4 text-muted-foreground" />
+                <SelectValue placeholder={province === "all" ? "Select province first" : "All districts"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All districts</SelectItem>
+                {districtOptions.map((d) => (
+                  <SelectItem key={d} value={d}>
+                    {d}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
