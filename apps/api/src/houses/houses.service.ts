@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { Prisma, type UserRole } from "@indanga/db";
+import { Prisma, type KycStatus, type UserRole } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
 import {
   CreateHouseDto,
@@ -13,7 +13,8 @@ import {
 export class HousesService {
   constructor(private readonly db: PrismaService) {}
 
-  async createHouse(ownerId: string, data: CreateHouseDto) {
+  async createHouse(ownerId: string, role: UserRole, kycStatus: KycStatus, data: CreateHouseDto) {
+    this.assertVerified(role, kycStatus);
     const {
       province,
       district,
@@ -121,8 +122,15 @@ export class HousesService {
     return house;
   }
 
-  async updateHouse(id: string, userId: string, role: UserRole, data: UpdateHouseDto) {
+  async updateHouse(
+    id: string,
+    userId: string,
+    role: UserRole,
+    kycStatus: KycStatus,
+    data: UpdateHouseDto,
+  ) {
     const house = await this.getHouseById(id);
+    this.assertVerified(role, kycStatus);
     this.isAllowed(house.ownerId, userId, role);
 
     const {
@@ -161,9 +169,10 @@ export class HousesService {
     return updatedHouse;
   }
 
-  async deleteHouse(id: string, userId: string, role: UserRole) {
+  async deleteHouse(id: string, userId: string, role: UserRole, kycStatus: KycStatus) {
     // TODO: check if a house has a pending booking first.
     const house = await this.getHouseById(id);
+    this.assertVerified(role, kycStatus);
     this.isAllowed(house.ownerId, userId, role);
 
     const deletedHouse = await this.db.house.delete({ where: { id } });
@@ -281,6 +290,12 @@ export class HousesService {
       totalRevenue: revenueResult._sum.amount?.toNumber() ?? 0,
       avgRating: ratingResult._avg.rating ? Math.round(ratingResult._avg.rating * 10) / 10 : null,
     };
+  }
+
+  private assertVerified(role: UserRole, kycStatus: KycStatus) {
+    if (role === "landlord" && kycStatus !== "APPROVED") {
+      throw new ForbiddenException("complete ID verification to manage properties");
+    }
   }
 
   private isAllowed(ownerId: string, userId: string, role: UserRole) {

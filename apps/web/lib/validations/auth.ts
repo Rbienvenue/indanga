@@ -33,14 +33,14 @@ export const signupSchema = z
       if (!nationalIdTrimmed || nationalIdTrimmed.length < 9) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Enter a valid national ID/Passport",
+          message: "Enter a valid national ID",
           path: ["nationalId"],
         });
       }
-    } else if (nationalIdTrimmed.length > 0 && nationalIdTrimmed.length < 9) {
+    } else if (nationalIdTrimmed.length > 0 && nationalIdTrimmed.length !==16) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Enter a valid national ID/Passport",
+        message: "Enter a valid national ID",
         path: ["nationalId"],
       });
     }

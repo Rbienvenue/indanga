@@ -13,5 +13,6 @@ const envSchema = z.object({
   S3_ENDPOINT: z.url().default("https://url.com"),
   S3_BUCKET: z.string().default("2"),
   STORAGE_URL: z.url().default("https://url.com"),
+  NIDA_API_URL: z.url().default("https://example.com"),
 });
 export const env = envSchema.parse(process.env);

@@ -8,7 +8,7 @@ import {
   CircleDollarSign,
   Inbox,
   ShieldCheck,
-  Sparkles,
+ Cog,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -56,7 +56,7 @@ function getNotificationIcon(type: string) {
     case "BOOKING_REMINDER":
       return BellRing;
     case "SYSTEM":
-      return Sparkles;
+      return Cog;
     default:
       return ShieldCheck;
   }

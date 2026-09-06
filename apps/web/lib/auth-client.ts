@@ -27,6 +27,11 @@ export const authClient = createAuthClient({
           input: true,
           returned: false,
         },
+        kycStatus: {
+          type: "string",
+          required: false,
+          input: false,
+        },
       },
     }),
     adminClient(),

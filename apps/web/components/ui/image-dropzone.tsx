@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { ImagePlus, X } from "lucide-react";
+import { FileText, ImagePlus, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -13,21 +13,32 @@ interface ImageDropzoneProps {
   onChange: (files: File[]) => void;
   maxFiles?: number;
   className?: string;
+  accept?: string[];
+  maxSize?: number;
+  description?: string;
 }
 
-export function ImageDropzone({ value, onChange, maxFiles = 10, className }: ImageDropzoneProps) {
+export function ImageDropzone({
+  value,
+  onChange,
+  maxFiles = 10,
+  className,
+  accept = ACCEPTED_TYPES,
+  maxSize = MAX_FILE_SIZE,
+  description = `JPG, PNG, WebP or AVIF. Max ${maxFiles} images, 10 MB each.`,
+}: ImageDropzoneProps) {
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const addFiles = useCallback(
     (incoming: FileList | File[]) => {
       const valid = Array.from(incoming).filter(
-        (f) => ACCEPTED_TYPES.includes(f.type) && f.size <= MAX_FILE_SIZE,
+        (f) => accept.includes(f.type) && f.size <= maxSize,
       );
       const next = [...value, ...valid].slice(0, maxFiles);
       onChange(next);
     },
-    [value, onChange, maxFiles],
+    [value, onChange, maxFiles, accept, maxSize],
   );
 
   const removeFile = (index: number) => {
@@ -68,14 +79,12 @@ export function ImageDropzone({ value, onChange, maxFiles = 10, className }: Ima
         <ImagePlus className="size-8 text-muted-foreground" />
         <div>
           <p className="text-sm font-medium">Drop images here or click to browse</p>
-          <p className="text-xs text-muted-foreground">
-            JPG, PNG, WebP or AVIF. Max {maxFiles} images, 10 MB each.
-          </p>
+          <p className="text-xs text-muted-foreground">{description}</p>
         </div>
         <input
           ref={inputRef}
           type="file"
-          accept={ACCEPTED_TYPES.join(",")}
+          accept={accept.join(",")}
           multiple
           className="sr-only"
           onChange={(e) => {
@@ -87,26 +96,39 @@ export function ImageDropzone({ value, onChange, maxFiles = 10, className }: Ima
 
       {value.length > 0 && (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {value.map((file, i) => (
-            <div
-              key={`${file.name}-${file.lastModified}`}
-              className="group relative aspect-square overflow-hidden rounded-md border"
-            >
-              <img
-                src={URL.createObjectURL(file)}
-                alt={file.name}
-                className="h-full w-full object-cover"
-                onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
-              />
-              <button
-                type="button"
-                onClick={() => removeFile(i)}
-                className="absolute right-1 top-1 rounded-full bg-black/60 p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
+          {value.map((file, i) => {
+            const isImage = file.type.startsWith("image/");
+            return (
+              <div
+                key={`${file.name}-${file.lastModified}`}
+                className="group relative aspect-square overflow-hidden rounded-md border"
               >
-                <X className="size-3.5" />
-              </button>
-            </div>
-          ))}
+                {isImage ? (
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={file.name}
+                    className="h-full w-full object-cover"
+                    onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                  />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-center">
+                    <FileText className="size-8 text-muted-foreground" />
+                    <p className="w-full truncate text-xs font-medium">{file.name}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {(file.size / 1024).toFixed(0)} KB
+                    </p>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeFile(i)}
+                  className="absolute right-1 top-1 rounded-full bg-black/60 p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

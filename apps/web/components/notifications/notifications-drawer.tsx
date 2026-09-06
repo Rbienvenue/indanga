@@ -7,8 +7,8 @@ import {
   BellRing,
   CheckCheck,
   CircleDollarSign,
+  Cog,
   ShieldCheck,
-  Sparkles,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -58,7 +58,7 @@ function getNotificationIcon(type: string) {
     case "BOOKING_REMINDER":
       return BellRing;
     case "SYSTEM":
-      return Sparkles;
+      return Cog;
     default:
       return ShieldCheck;
   }

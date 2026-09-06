@@ -28,6 +28,8 @@ import {
   Users,
   Star,
   Shield,
+  ShieldCheck,
+  BadgeCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -61,11 +63,14 @@ const agentItems = [
 const adminItems = [
   { title: "Overview", href: "/admin", icon: Shield },
   { title: "Users", href: "/admin/users", icon: Users },
+  { title: "KYC", href: "/admin/kyc", icon: BadgeCheck },
   { title: "Properties", href: "/admin/properties", icon: House },
   { title: "Bookings", href: "/admin/bookings", icon: Calendar },
   { title: "Payments", href: "/admin/payments", icon: CreditCard },
   { title: "Reviews", href: "/admin/reviews", icon: Star },
 ];
+
+const kycItems = [{ title: "Verification", href: "/dashboard/kyc", icon: ShieldCheck }];
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -75,7 +80,9 @@ export function AppSidebar() {
     session?.user?.role === "admin"
       ? adminItems
       : session?.user?.role === "landlord"
-        ? agentItems
+        ? session.user.kycStatus !== "APPROVED"
+          ? kycItems
+          : agentItems
         : tenantItems;
 
   return (

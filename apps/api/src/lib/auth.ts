@@ -53,6 +53,11 @@ export const auth = betterAuth({
         input: true,
         returned: false,
       },
+      kycStatus: {
+        type: "string",
+        required: false,
+        input: false,
+      },
     },
   },
   databaseHooks: {
@@ -101,7 +106,7 @@ export const auth = betterAuth({
   session: {
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60,
+      maxAge: 60,
     },
   },
 });

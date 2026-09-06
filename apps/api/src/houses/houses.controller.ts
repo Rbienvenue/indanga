@@ -23,7 +23,7 @@ import {
 } from "./dtos";
 import { HousesService } from "./houses.service";
 import { type Session as UserSession } from "src/lib/auth";
-import { UserRole } from "@indanga/db";
+import { KycStatus, UserRole } from "@indanga/db";
 
 @Controller("properties")
 export class HousesController {
@@ -44,10 +44,15 @@ export class HousesController {
       files?.map((file) => file.buffer) ?? [],
       { bucket: StorageBucket.HOUSE_MEDIA },
     );
-    const house = await this.houseService.createHouse(session.user.id, {
-      ...data,
-      media: mediaUrls.map((url) => url.url),
-    });
+    const house = await this.houseService.createHouse(
+      session.user.id,
+      session?.user?.role as UserRole,
+      session?.user?.kycStatus as KycStatus,
+      {
+        ...data,
+        media: mediaUrls.map((url) => url.url),
+      },
+    );
     return new ApiResponse(house, "property created");
   }
 
@@ -92,17 +97,28 @@ export class HousesController {
       files?.map((file) => file.buffer) ?? [],
       { bucket: StorageBucket.HOUSE_MEDIA },
     );
-    const house = await this.houseService.updateHouse(id, session.user.id, session?.user?.role as UserRole, {
-      ...data,
-      media: mediaUrls.map((url) => url.url),
-    });
+    const house = await this.houseService.updateHouse(
+      id,
+      session.user.id,
+      session?.user?.role as UserRole,
+      session?.user?.kycStatus as KycStatus,
+      {
+        ...data,
+        media: mediaUrls.map((url) => url.url),
+      },
+    );
     return new ApiResponse(house, "property updated");
   }
 
   @Delete(":id")
   @Roles(["landlord", "admin"])
   async deleteHouse(@Param("id") id: string, @Session() session: UserSession) {
-    const house = await this.houseService.deleteHouse(id, session.user.id, session?.user?.role as UserRole);
+    const house = await this.houseService.deleteHouse(
+      id,
+      session.user.id,
+      session?.user?.role as UserRole,
+      session?.user?.kycStatus as KycStatus,
+    );
     return new ApiResponse(house, "property deleted");
   }
 

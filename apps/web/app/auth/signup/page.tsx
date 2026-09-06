@@ -158,12 +158,12 @@ export default function SignupPage() {
                 name="nationalId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>National ID/Passport</FormLabel>
+                    <FormLabel>National ID</FormLabel>
                     <FormControl>
                       <Input
                         inputMode="numeric"
                         autoComplete="off"
-                        placeholder="National ID/Passport"
+                        placeholder="National ID"
                         className="h-11 bg-white px-3"
                         disabled={isPending}
                         {...field}

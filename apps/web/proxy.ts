@@ -45,6 +45,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 
+  const isKycPage = pathname === "/dashboard/kyc" || pathname.startsWith("/dashboard/kyc/");
+  if (
+    user?.role === "landlord" &&
+    user?.kycStatus !== "APPROVED" &&
+    pathname.startsWith("/dashboard") &&
+    !isKycPage
+  ) {
+    return NextResponse.redirect(new URL("/dashboard/kyc", request.url));
+  }
+
   const isAuthRoute = pathname.startsWith("/auth");
   if (isAuthRoute && isAuthenticated) {
     return NextResponse.redirect(getCallbackUrl(request) ?? new URL("/dashboard", request.url));
