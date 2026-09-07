@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { FaEnvelope, FaInstagram, FaLinkedinIn } from "react-icons/fa6";
-import { ArrowRight, Home, Building2, Car, Mail, Phone, MapPin, Zap, Users, Shield } from "lucide-react";
+import { ArrowRight, Home, Building2, Car, Mail, Phone, MapPin, Zap, Users, Shield, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Navbar } from "@/components/home/navbar";
@@ -271,18 +271,22 @@ export default function About() {
         <Separator className="my-0" />
 
         {/* Senior Management Section */}
-        <section className="py-20 sm:py-28">
+        <section className="py-2 sm:py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-16">
-              <h2 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
-                Leadership
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Meet the people driving INDANGA forward.
-              </p>
-            </div>
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 [&::-webkit-details-marker]:hidden">
+                <div>
+                  <h2 className="text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
+                    Leadership
+                  </h2>
+                  <p className="mt-2 text-base text-muted-foreground sm:text-lg">
+                    Meet the people driving INDANGA forward.
+                  </p>
+                </div>
+                <ChevronDown className="size-7 shrink-0 text-primary transition-transform duration-300 group-open:rotate-180" />
+              </summary>
 
-            <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
               {/* CEO */}
               <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-xl">
                 <div className="relative h-64 overflow-hidden bg-linear-to-br from-primary/20 to-primary/20 sm:h-72">
@@ -297,7 +301,7 @@ export default function About() {
 
                 <div className="p-8">
                   <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
-                    CEO
+                    CHIEF EXECUTIVE OFFICER
                   </div>
                   <h3 className="mb-4 text-2xl font-bold text-foreground">
                     NTAKIYIRUTA Didier
@@ -337,7 +341,7 @@ export default function About() {
 
                 <div className="p-8">
                   <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
-                    CTO
+                    CHIEF TECHNOLOGY OFFICER
                   </div>
                   <h3 className="mb-4 text-2xl font-bold text-foreground">
                     NTAKIRUTIMANA Gisa Emmanuel
@@ -402,25 +406,30 @@ export default function About() {
                   </div>
                 </div>
               </div>
-            </div>
+              </div>
+            </details>
           </div>
         </section>
 
         <Separator className="my-0" />
 
         {/* Board of Directors Section */}
-        <section className="py-20 sm:py-28">
+        <section className="py-2 sm:py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-16">
-              <h2 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
-                Board of Directors
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Providing strategic guidance, oversight, and accountability.
-              </p>
-            </div>
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 [&::-webkit-details-marker]:hidden">
+                <div>
+                  <h2 className="text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
+                    Board of Directors
+                  </h2>
+                  <p className="mt-2 text-base text-muted-foreground sm:text-lg">
+                    Providing strategic guidance, oversight, and accountability.
+                  </p>
+                </div>
+                <ChevronDown className="size-7 shrink-0 text-primary transition-transform duration-300 group-open:rotate-180" />
+              </summary>
 
-            <div className="grid gap-12 md:grid-cols-2">
+              <div className="mt-16 grid gap-12 md:grid-cols-2">
               {/* Chairperson */}
               <div className="group relative overflow-hidden rounded-2xl border border-border bg-linear-to-br from-card to-muted transition-all hover:border-primary/40 hover:shadow-xl">
                 <div className="relative h-80 overflow-hidden bg-linear-to-br from-primary/20 to-transparent">
@@ -500,7 +509,8 @@ export default function About() {
                   </div>
                 </div>
               </div>
-            </div>
+              </div>
+            </details>
           </div>
         </section>
 

@@ -1,22 +1,50 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
+const slides = [
+  { image: "/family-house.jpg", alt: "A welcoming home" },
+  { image: "/slide-4.jpg", alt: "A modern living space" },
+  { image: "/hotel room 1.jpg", alt: "A modern living space" },
+  { image: "/hotel room 2.jpg", alt: "A modern living space" }
+];
+
 export function Hero() {
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveSlide((current) => (current + 1) % slides.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="relative w-full overflow-hidden pt-18 pb-14">
-      {/* Background Cover Image */}
-      <Image
-        src="/hero.jpg"
-        alt="Kigali cityscape at sunset"
-        fill
-        className="object-cover"
-        priority
-        sizes="100vw"
-        quality={90}
-      />
+      {slides.map((slide, index) => (
+        <div
+          key={slide.image}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+            activeSlide === index ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <Image
+            src={slide.image}
+            alt={slide.alt}
+            fill
+            className="object-cover"
+            priority={index === 0}
+            sizes="100vw"
+            quality={90}
+          />
+        </div>
+      ))}
 
       {/* Dark gradient overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/40" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
+      <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/50 to-black/40" />
+      <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-black/20" />
 
       {/* Content – centered heading */}
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-center px-4 py-8 text-center sm:px-6 sm:py-10 lg:px-8">
