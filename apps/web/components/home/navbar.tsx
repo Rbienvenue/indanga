@@ -3,8 +3,8 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, LogOut, Menu } from "lucide-react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { ChevronDown, Menu } from "lucide-react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -15,7 +15,17 @@ import { UserAvatar } from "@/components/user/user-avatar";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Explore", href: "/properties" },
+];
+
+const aboutLinks = [
   { label: "About Us", href: "/about" },
+  { label: "Who We Are", href: "/about#who-we-are" },
+  { label: "Our Purpose", href: "/about#our-purpose" },
+  { label: "What We Do", href: "/about#what-we-do" },
+  { label: "Leadership", href: "/about#leadership" },
+  { label: "Board of Directors", href: "/about#board-of-directors" },
+  { label: "Why INDANGA?", href: "/about#why-indanga" },
+  { label: "Contact", href: "/about#contact" },
 ];
 
 const socialLinks = [
@@ -32,7 +42,6 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
   const [activeHash, setActiveHash] = React.useState("");
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const session = useSession();
 
   React.useEffect(() => {
@@ -55,6 +64,8 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  const closeAboutMenu = () => setAboutOpen(false);
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${scrolled || solid
@@ -73,14 +84,13 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
             className="size-9 rounded-lg object-contain bg-white shadow-xs"
             priority
           />
-          <span className="text-xl font-bold tracking-tight text-white">INDANGA</span>
+          <span className="hidden text-xl font-bold tracking-tight text-white md:inline">INDANGA</span>
         </Link>
 
         <div className="flex items-center gap-4">
           {/* Desktop Nav Links */}
           <div className="hidden items-center gap-1 md:flex">
             {navLinks.map((link) => (
-
               <Link
                 key={link.label}
                 href={link.href}
@@ -88,8 +98,33 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
               >
                 {link.label}
               </Link>
-
             ))}
+            <div className="relative">
+              <button
+                type="button"
+                aria-expanded={aboutOpen}
+                onClick={() => setAboutOpen((open) => !open)}
+                className={`flex items-center gap-1 border-b-2 px-3.5 py-2 text-sm font-medium text-white/75 transition-colors hover:border-accent hover:text-accent ${pathname === "/about" ? "border-accent text-accent" : "border-transparent"}`}
+              >
+                About Us
+                <ChevronDown className={`size-4 transition-transform ${aboutOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {aboutOpen && (
+                <div className="absolute top-full left-1/2 z-50 mt-2 w-56 -translate-x-1/2 rounded-lg border border-primary/30 bg-[#0A0A2C] p-2 shadow-xl">
+                  {aboutLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={closeAboutMenu}
+                      className="block rounded-md px-3 py-2 text-sm text-white/80 transition-colors hover:bg-[#101044] hover:text-accent"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Desktop CTA - Show avatar if authenticated, otherwise show auth links */}
@@ -109,8 +144,21 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        <div className="md:hidden">
+        {/* Mobile Auth and Menu */}
+        <div className="flex items-center gap-1.5 md:hidden">
+          {session ? (
+            <UserAvatar />
+          ) : (
+            <>
+              <Button asChild size="sm" variant="ghost" className="px-2 text-white hover:text-accent">
+                <Link href="/auth/login">Login</Link>
+              </Button>
+              <Button asChild size="sm" variant="default" className="px-2.5">
+                <Link href="/auth/signup">Sign Up</Link>
+              </Button>
+            </>
+          )}
+
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-white/80 hover:text-primary">
@@ -149,7 +197,6 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
               </SheetTitle>
               <div className="flex flex-col">
                 {navLinks.map((link) => (
-
                   <Link
                     key={link.label}
                     href={link.href}
@@ -158,56 +205,34 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                   >
                     {link.label}
                   </Link>
-
                 ))}
-                <div className="flex flex-col gap-2 border-t border-primary/30 p-5">
-                  {session ? (
-                    <>
-                      <Button asChild size="lg" variant="outline" className="w-full font-semibold">
-                        <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                          Dashboard
+                <div className="border-b-2 border-primary/30">
+                  <button
+                    type="button"
+                    aria-expanded={aboutOpen}
+                    onClick={() => setAboutOpen((open) => !open)}
+                    className={`flex min-h-20 w-full items-center justify-center gap-2 px-5 text-base font-semibold text-white/85 transition-colors hover:bg-[#101044] hover:text-accent ${pathname === "/about" ? "text-accent" : ""}`}
+                  >
+                    About Us
+                    <ChevronDown className={`size-5 transition-transform ${aboutOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {aboutOpen && (
+                    <div className="border-t border-primary/30 bg-[#101044] px-5 py-2">
+                      {aboutLinks.map((link) => (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          onClick={() => {
+                            closeAboutMenu();
+                            setMobileMenuOpen(false);
+                          }}
+                          className="block border-b border-white/10 px-3 py-3 text-center text-sm text-white/80 last:border-b-0 hover:text-accent"
+                        >
+                          {link.label}
                         </Link>
-                      </Button>
-                      <Button
-                        size="lg"
-                        variant="outline"
-                        className="w-full border-accent text-accent font-semibold hover:bg-accent hover:text-accent-foreground"
-                        onClick={async () => {
-                          setMobileMenuOpen(false);
-                          await signOut({
-                            fetchOptions: {
-                              onSuccess: () => router.push("/"),
-                            },
-                          });
-                        }}
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Sign out
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        asChild
-                        size="lg"
-                        variant="outline"
-                        className="w-full font-semibold cursor-pointer"
-                      >
-                        <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
-                          Login
-                        </Link>
-                      </Button>
-                      <Button
-                        asChild
-                        size="lg"
-                        variant="default"
-                        className="w-full font-semibold cursor-pointer"
-                      >
-                        <Link href="/auth/signup" onClick={() => setMobileMenuOpen(false)}>
-                          Sign Up
-                        </Link>
-                      </Button>
-                    </>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>

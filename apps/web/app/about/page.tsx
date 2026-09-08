@@ -106,7 +106,7 @@ export default function About() {
         <Separator className="my-0" />
 
         {/* Who We Are Section */}
-        <section className="py-20 sm:py-28">
+        <section id="who-we-are" className="scroll-mt-20 py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-16 lg:grid-cols-2 lg:gap-20">
               {/* Left Content */}
@@ -146,7 +146,7 @@ export default function About() {
         <Separator className="my-0" />
 
         {/* Mission & Vision Section */}
-        <section className="py-20 sm:py-28">
+        <section id="our-purpose" className="scroll-mt-20 py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-16 text-center">
               <h2 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
@@ -193,7 +193,7 @@ export default function About() {
         <Separator className="my-0" />
 
         {/* What We Do Section */}
-        <section className="py-20 sm:py-28">
+        <section id="what-we-do" className="scroll-mt-20 py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-16 text-center">
               <h2 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
@@ -271,7 +271,7 @@ export default function About() {
         <Separator className="my-0" />
 
         {/* Senior Management Section */}
-        <section className="py-2 sm:py-10">
+        <section id="leadership" className="scroll-mt-20 py-2 sm:py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <details className="group">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-6 [&::-webkit-details-marker]:hidden">
@@ -414,7 +414,7 @@ export default function About() {
         <Separator className="my-0" />
 
         {/* Board of Directors Section */}
-        <section className="py-2 sm:py-10">
+        <section id="board-of-directors" className="scroll-mt-20 py-2 sm:py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <details className="group">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-6 [&::-webkit-details-marker]:hidden">
@@ -517,7 +517,7 @@ export default function About() {
         <Separator className="my-0" />
 
         {/* Why INDANGA Section */}
-        <section className="py-20 sm:py-28">
+        <section id="why-indanga" className="scroll-mt-20 py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-16 text-center">
               <h2 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
@@ -576,7 +576,7 @@ export default function About() {
         <Separator className="my-0" />
 
         {/* Contact Section */}
-        <section id="contact" className="py-20 sm:py-28">
+        <section id="contact" className="scroll-mt-20 py-20 sm:py-28">
           <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
             <div className="rounded-2xl border border-border bg-linear-to-br from-primary/5 to-primary/5 p-12 sm:p-16 text-center">
               <h2 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
