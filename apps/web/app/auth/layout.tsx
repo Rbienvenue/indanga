@@ -9,7 +9,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <main className="min-h-screen lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(32rem,0.95fr)]">
       <section className="relative hidden min-h-screen overflow-hidden bg-[#090a2d] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
         <Image
-          src="/hero.jpg"
+          src="/hero-bg.png"
           alt="Kigali skyline and homes"
           fill
           priority
