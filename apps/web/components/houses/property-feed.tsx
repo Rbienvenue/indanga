@@ -18,10 +18,10 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
   const [budget] = useQueryState("budget", parseAsString.withDefault("any"));
   const [province] = useQueryState("province", parseAsString.withDefault("all"));
   const [district] = useQueryState("district", parseAsString.withDefault("all"));
+  const [sector] = useQueryState("sector", parseAsString.withDefault("all"));
 
-  // Backend only supports a single `location` contains-search, so send the
-  // most specific selection: district if picked, otherwise province.
-  const effectiveLocation = district !== "all" ? district : province !== "all" ? province : "all";
+  const effectiveLocation =
+    sector !== "all" ? sector : district !== "all" ? district : province !== "all" ? province : "all";
   const filters = { propertyType, subType, budget, location: effectiveLocation };
   const status = ownerId ? null : "AVAILABLE";
 
