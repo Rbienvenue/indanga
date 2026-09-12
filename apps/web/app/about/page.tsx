@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { FaEnvelope, FaInstagram, FaLinkedinIn } from "react-icons/fa6";
-import { ArrowRight, Home, Building2, Car, Mail, Phone, MapPin, Zap, Users, Shield, ChevronDown } from "lucide-react";
+import { ArrowRight, Building2, Mail, Phone, MapPin, Zap, Users, Shield, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Navbar } from "@/components/home/navbar";
@@ -398,6 +398,79 @@ export default function About() {
                         aria-label={label}
                         target="_blank"
                         rel="noreferrer"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/15 bg-primary/5 text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-white"
+                      >
+                        <Icon className="h-4 w-4" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-xl">
+                <div className="relative h-64 overflow-hidden bg-linear-to-br from-primary/20 to-primary/20 sm:h-72">
+                  <Image
+                    src="/Bienvenue.png"
+                    alt="Frontend Engineer"
+                    width={400}
+                    height={400}
+                    className="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-105"
+                  />
+                </div>
+
+                <div className="p-8">
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
+                    Frontend Engineer
+                  </div>
+                  <h3 className="mb-4 text-2xl font-bold text-foreground">
+                    Rudasingwa bienvenue
+                  </h3>
+                  <div className="flex items-center gap-3 pt-1">
+                    {[
+                      { href: "#", label: "Email", icon: FaEnvelope },
+                      { href: "#", label: "LinkedIn", icon: FaLinkedinIn },
+                      { href: "#", label: "Instagram", icon: FaInstagram },
+                    ].map(({ href, label, icon: Icon }) => (
+                      <a
+                        key={label}
+                        href={href}
+                        aria-label={label}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/15 bg-primary/5 text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-white"
+                      >
+                        <Icon className="h-4 w-4" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-xl">
+                <div className="relative h-64 overflow-hidden bg-linear-to-br from-primary/20 to-primary/20 sm:h-72">
+                  <Image
+                    src="/Elie.png"
+                    alt="Backend Engineer"
+                    width={400}
+                    height={400}
+                    className="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-105"
+                  />
+                </div>
+
+                <div className="p-8">
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
+                    Backend Engineer
+                  </div>
+                  <h3 className="mb-4 text-2xl font-bold text-foreground">
+                    Ikuzwe Shema Elie
+                  </h3>
+                  <div className="flex items-center gap-3 pt-1">
+                    {[
+                      { href: "#", label: "Email", icon: FaEnvelope },
+                      { href: "#", label: "LinkedIn", icon: FaLinkedinIn },
+                      { href: "#", label: "Instagram", icon: FaInstagram },
+                    ].map(({ href, label, icon: Icon }) => (
+                      <a
+                        key={label}
+                        href={href}
+                        aria-label={label}
                         className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/15 bg-primary/5 text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-white"
                       >
                         <Icon className="h-4 w-4" />

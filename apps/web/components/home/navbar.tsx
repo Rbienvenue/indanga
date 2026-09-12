@@ -9,7 +9,6 @@ import { FaFacebook, FaInstagram, FaLinkedin, FaXTwitter } from "react-icons/fa6
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useSession } from "@/components/providers/session-provider";
-import { signOut } from "@/lib/auth-client";
 import { UserAvatar } from "@/components/user/user-avatar";
 
 const navLinks = [
@@ -23,7 +22,6 @@ const aboutLinks = [
   { label: "Our Purpose", href: "/about#our-purpose" },
   { label: "What We Do", href: "/about#what-we-do" },
   { label: "Leadership", href: "/about#leadership" },
-  { label: "Board of Directors", href: "/about#board-of-directors" },
   { label: "Why INDANGA?", href: "/about#why-indanga" },
   { label: "Contact", href: "/about#contact" },
 ];

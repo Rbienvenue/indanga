@@ -72,8 +72,8 @@ export const auth = betterAuth({
               code: "INVALID_ACCOUNT_TYPE",
             });
           }
-          
-          const { phoneNumber } = user as typeof user & { phoneNumber?: string,idNumber:string };
+
+          const { phoneNumber, nationalId } = user as typeof user & { phoneNumber?: string, nationalId?: string };
           if (!phoneNumber) return;
           const existing = await prisma.user.findUnique({
             where: { phoneNumber },
@@ -83,6 +83,17 @@ export const auth = betterAuth({
             throw new APIError("CONFLICT", {
               message: "Phone number already in exists",
             });
+          }
+          if (nationalId) {
+            const existingId = await prisma.user.findUnique({
+              where: { nationalId },
+              select: { id: true },
+            });
+            if (existingId) {
+              throw new APIError("CONFLICT", {
+                message: "ID number already in exists",
+              });
+            }
           }
 
           return {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, UserPlus, Loader2, Shield, Ban, KeyRound, Trash2 } from "lucide-react";
+import { MoreHorizontal, Loader2, Shield, Ban, KeyRound, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import type { PaginationResponse } from "@/@types";
@@ -39,6 +39,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
+import { CreateUserDialog } from "@/components/admin/create-user";
 
 type UserWithRole = {
   id: string;
@@ -58,98 +59,6 @@ const roleBadgeVariant: Record<string, string> = {
   landlord: "bg-blue-100 text-blue-700",
   tenant: "bg-green-100 text-green-700",
 };
-
-function CreateUserDialog() {
-  const [open, setOpen] = useState(false);
-  const queryClient = useQueryClient();
-
-  const createMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      const result = await authClient.admin.createUser({
-        name: formData.get("name") as string,
-        email: formData.get("email") as string,
-        password: formData.get("password") as string,
-        role: formData.get("role") as "admin" | "user",
-        data: {
-          phoneNumber: formData.get("phoneNumber") as string,
-        },
-      });
-      if (result.error) throw new Error(result.error.message);
-      return result.data;
-    },
-    onSuccess: () => {
-      toast.success("User created");
-      setOpen(false);
-      void queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message ?? "Failed to create user");
-    },
-  });
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <UserPlus className="size-4" />
-          Create User
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create New User</DialogTitle>
-        </DialogHeader>
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            createMutation.mutate(new FormData(e.currentTarget));
-          }}
-        >
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" required placeholder="Enter names" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" required placeholder="Enter email" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Phone Number</Label>
-            <Input id="phoneNumber" name="phoneNumber" required placeholder="Enter phone number" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              required
-              placeholder="Enter temporary password"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
-            <select
-              id="role"
-              name="role"
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-              defaultValue="tenant"
-            >
-              <option value="tenant">Tenant</option>
-              <option value="landlord">Landlord</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-            {createMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-            Create User
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function SetPasswordDialog({ userId, userName }: { userId: string; userName: string }) {
   const [open, setOpen] = useState(false);
@@ -402,7 +311,7 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
-  const limit = 20;
+  const limit = 15;
 
   const usersQuery = useQuery<PaginationResponse<UserWithRole>>({
     queryKey: ["admin-users", search, roleFilter, page],
