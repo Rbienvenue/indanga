@@ -693,8 +693,8 @@ export default function About() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">Phone</p>
-                      <Link href="tel:+250788123456" className="mt-1 text-sm text-primary hover:text-primary/80">
-                        +250 788 123 456
+                      <Link href="tel:+250788765547" className="mt-1 text-sm text-primary hover:text-primary/80">
+                        +250 788 765 547
                       </Link>
                     </div>
                   </div>

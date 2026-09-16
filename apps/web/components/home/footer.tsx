@@ -15,7 +15,7 @@ const supportLinks = [
   { label: "Help Center", href: "/dashboard/support" },
   { label: "FAQs", href: "/dashboard/support#faqs" },
   { label: "Email Support", href: "mailto:support@indanga.com" },
-  { label: "Call for Support", href: "tel:+250788123456" },
+  { label: "Call for Support", href: "tel:+250788765547" },
 ];
 
 export function Footer() {
@@ -86,11 +86,11 @@ export function Footer() {
                 support@indanga.com
               </a>
               <a
-                href="tel:+250788123456"
+                href="tel:+250788765547"
                 className="inline-flex items-center gap-2 transition-colors hover:text-primary"
               >
                 <Phone className="size-4" />
-                +250 788 123 456
+                +250 788 765 547
               </a>
             </div>
           </div>
