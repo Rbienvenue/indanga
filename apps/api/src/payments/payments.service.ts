@@ -5,49 +5,62 @@ import { CreateOrderDto, FilterPaymentsDto } from "./dtos";
 import { type UserSession } from "@thallesp/nestjs-better-auth";
 import { randomUUID } from "node:crypto";
 import { NotificationsService } from "src/notifications/notifications.service";
+import { ITECService } from "./itec";
 
 @Injectable()
 export class PaymentsService {
   constructor(private readonly db: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly itec: ITECService,
   ) { }
   async initiatePayment(clientId: string, data: CreateOrderDto) {
 
-    const house = await this.db.house.findUnique({ where: { id: data.houseId } });
-    if (!house) {
-      throw new NotFoundException("Property not found");
-    }
-    if (house.status !== HouseStatus.AVAILABLE) {
-      throw new ConflictException("Property is already booked");
-    }
+    const { booking, payment, result } = await this.db.$transaction(async (tx) => {
+      const house = await tx.house.findUnique({ where: { id: data.houseId } });
+      if (!house) {
+        throw new NotFoundException("Property not found");
+      }
+      if (house.status !== HouseStatus.AVAILABLE) {
+        throw new ConflictException("Property is already booked");
+      }
 
-    const booking = await this.db.booking.create({
-      data: {
-        clientId,
-        houseId: data.houseId,
-        status: BookingStatus.APPROVED,
-      },
-      include: {
-        house: true,
-        client: true,
-      },
-    });
+      const booking = await tx.booking.create({
+        data: {
+          clientId,
+          houseId: data.houseId,
+          status: BookingStatus.APPROVED,
+        },
+        include: {
+          house: true,
+          client: true,
+        },
+      });
 
-    const payment= await this.db.payment.create({
-      data: {
+      const payment = await tx.payment.create({
+        data: {
           amount: house.price,
           bookingId: booking.id,
-         // TODO: set to pending
-          status: "COMPLETED",
-          method: "direct",
-          transactionReference: `TXN-${randomUUID()}`,
-        }
+          status: "PENDING",
+          method: data.method,
+          transactionReference: randomUUID(),
+        },
       });
-    await this.db.house.update({
-      where: { id: data.houseId },
-      data: { status: HouseStatus.BOOKED },
-    });
-   // TODO: send admin notifications
+
+      const result = await this.itec.initiatePayment({
+        id: payment.transactionReference,
+        amount: Number(payment.amount),
+        phone: data.phone,
+        method: data.method,
+      });
+      //TODO: save the PCODE if payment method is CARD
+      await tx.house.update({
+        where: { id: data.houseId },
+        data: { status: HouseStatus.BOOKED },
+      });
+
+      return { booking, payment, result };
+    }, { timeout: 10_000 });
+
     await this.notifications.create({
       userId: booking.house.ownerId,
       type: "BOOKING_CONFIRMED",
@@ -55,7 +68,7 @@ export class PaymentsService {
       message: `${booking.client.name} booked ${booking.house.name}.`,
       bookingId: booking.id,
     });
-    
+
     await this.notifications.create({
       userId: booking.client.id,
       type: "BOOKING_CONFIRMED",
@@ -63,8 +76,14 @@ export class PaymentsService {
       message: `You booked ${booking.house.name}.`,
       bookingId: booking.id,
     });
-    
-    return payment;
+
+    return {
+      id: payment.id,
+      amount: Number(payment.amount),
+      phone: data.phone,
+      method: data.method,
+      ...result,
+    };
   }
 
   async getPayments(user: UserSession["user"], data: FilterPaymentsDto) {

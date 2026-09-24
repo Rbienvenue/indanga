@@ -144,7 +144,6 @@ model Booking {
   @@index([houseId])
   @@map("booking")
 }
-
 model Payment {
   id                   String         @id @default(cuid())
   amount               Decimal        @db.Decimal(12, 2)

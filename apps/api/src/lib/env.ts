@@ -14,5 +14,8 @@ const envSchema = z.object({
   S3_BUCKET: z.string().default("2"),
   STORAGE_URL: z.url().default("https://url.com"),
   NIDA_API_URL: z.url().default("https://example.com"),
+  ITEC_API_URL: z.url().default("https://pay.itecpay.rw"),
+  ITEC_MOMO_API_KEY: z.string(),
+  ITEC_CARD_API_KEY: z.string(),
 });
 export const env = envSchema.parse(process.env);
