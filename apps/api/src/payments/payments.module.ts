@@ -4,9 +4,10 @@ import { PaymentsController } from "./payments.controller";
 import { PaymentsService } from "./payments.service";
 import { NotificationsModule } from "src/notifications/notifications.module";
 import { ITECService } from "./itec";
+import { WsModule } from "src/ws/ws.module";
 
 @Module({
-  imports: [PrismaModule,NotificationsModule],
+  imports: [PrismaModule, NotificationsModule, WsModule],
   controllers: [PaymentsController],
   providers: [PaymentsService, ITECService],
 })

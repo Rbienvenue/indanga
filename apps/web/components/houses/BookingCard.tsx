@@ -3,9 +3,10 @@
 import type { House } from "@indanga/db";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, Loader } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -15,6 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fetcher } from "@/lib/fetcher";
+import { useSocketIo } from "@/components/providers/socket-io-provider";
 import { cn, formatPrice } from "@/lib/utils";
 import {
   bookingSchema,
@@ -41,6 +43,8 @@ type PaymentResponse = {
   link?: string;
 };
 
+type PaymentStatus = "pending" | "successful" | "failed";
+
 interface BookingCardProps {
   house: House;
   isAvailable: boolean;
@@ -50,11 +54,15 @@ interface BookingCardProps {
 
 export function BookingCard({ house, isAvailable, onBook, compact = false }: BookingCardProps) {
   const [step, setStep] = useState<"booking" | "payment" | "submitted">("booking");
+  const [payment, setPayment] = useState<{ id: string; status: PaymentStatus } | null>(null);
+  const { socket } = useSocketIo();
+  const router = useRouter();
   const form = useForm<BookingValues>({
     resolver: zodResolver(bookingSchema),
     defaultValues: { houseId: house.id, gateway: "momo", phone: "" },
   });
   const gateway = useWatch({ control: form.control, name: "gateway" });
+  const paymentId = payment?.id;
 
   const paymentMutation = useMutation({
     mutationFn: async ({ houseId, gateway, phone }: BookingValues) => {
@@ -76,6 +84,7 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
         return;
       }
 
+      setPayment({ id: data.id, status: "pending" });
       setStep("submitted");
       toast.success("Payment prompt sent", {
         description: "Follow the instructions on your phone to complete payment.",
@@ -90,13 +99,32 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
     },
   });
 
+  useEffect(() => {
+    if (!socket || !paymentId) return;
+
+    function handlePaymentUpdate(update: { paymentId: string; status: PaymentStatus }) {
+      if (update.paymentId !== paymentId) return;
+      setPayment({ id: update.paymentId, status: update.status });
+      if (update.status === "successful") {
+        toast.success("Booking confirmed", { position: "top-center" });
+        router.push("/dashboard/bookings");
+      } else if (update.status === "failed") {
+        toast.error("Payment failed", {
+          description: "Please try again or choose another payment method.",
+          position: "top-center",
+        });
+      }
+    }
+
+    socket.on("payment.update", handlePaymentUpdate);
+    socket.emit("subscribe:payment", { paymentId });
+    return () => {
+      socket.off("payment.update", handlePaymentUpdate);
+    };
+  }, [paymentId, router, socket]);
+
   function beginCheckout() {
     if (onBook()) setStep("payment");
-  }
-
-  function cancelCheckout() {
-    setStep("booking");
-    form.reset({ houseId: house.id, gateway: "momo", phone: "" });
   }
 
   const submitting = paymentMutation.isPending;
@@ -158,9 +186,19 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
 
       {step === "submitted" ? (
         <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
-          <p className="font-semibold">Payment prompt sent</p>
+          <p className="font-semibold">
+            {payment?.status === "successful"
+              ? "Booking confirmed"
+              : payment?.status === "failed"
+                ? "Payment failed"
+                : "Payment pending"}
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Check your phone and approve the payment to finish booking.
+            {payment?.status === "successful"
+              ? "Your payment was successful and the home is booked."
+              : payment?.status === "failed"
+                ? "The payment could not be completed. Please try again."
+                : "Check your phone and approve the payment to finish booking."}
           </p>
         </div>
       ) : (
@@ -195,7 +233,13 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
                               : "border-border text-muted-foreground hover:border-primary/40",
                           )}
                         >
-                          <Image src={logo} alt="" width={72} height={32} className="h-8 w-auto object-contain" />
+                          <Image
+                            src={logo}
+                            alt=""
+                            width={72}
+                            height={32}
+                            className="h-8 w-auto object-contain"
+                          />
                           <span className="text-xs font-medium">{label}</span>
                         </button>
                       );
@@ -236,7 +280,7 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
             <Button type="submit" className="h-11 w-full font-bold" disabled={submitting}>
               {submitting ? (
                 <>
-                  <Loader className="animate-spin" /> Starting payment...
+                  <Loader2 className="animate-spin" /> Starting payment...
                 </>
               ) : (
                 <>
