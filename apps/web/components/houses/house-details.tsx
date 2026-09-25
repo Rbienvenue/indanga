@@ -7,7 +7,6 @@ import {
   Bath,
   BedDouble,
   Building2,
-  Check,
   ChevronRight,
   Heart,
   Home,
@@ -22,20 +21,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
+import { BookingCard } from "@/components/houses/BookingCard";
 import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
-import { cn, formatPrice } from "@/lib/utils";
-
-type Booking = {
-  id: string;
-  houseId: string;
-};
+import { cn } from "@/lib/utils";
 function Gallery({ house }: { house: House }) {
   const media = house.media.length > 0 ? house.media : [];
   const images = Array.from({ length: 5 }, (_, index) => media[index % media.length]);
@@ -124,7 +120,6 @@ export function HouseDetails({ houseId }: { houseId: string }) {
   const session = useSession();
   const queryClient = useQueryClient();
   const [isFavorite, setIsFavorite] = useState(false);
-  const [notice, setNotice] = useState<string>();
 
   const houseQuery = useQuery<ApiResponse<House>>({
     queryKey: ["properties", houseId],
@@ -138,34 +133,20 @@ export function HouseDetails({ houseId }: { houseId: string }) {
       }),
     onSuccess: ({ data }) => {
       setIsFavorite(data.isFavorite);
-      setNotice(data.isFavorite ? "Saved to your favorites." : "Removed from your favorites.");
+      toast.success(data.isFavorite ? "Saved to your favorites." : "Removed from your favorites.");
       void queryClient.invalidateQueries({ queryKey: ["properties", "favorites"] });
     },
-    onError: (error: Error) => setNotice(error.message),
+    onError: (error: Error) => toast.error(error.message),
   });
 
-  const bookingMutation = useMutation({
-    mutationFn: () =>
-      fetcher<ApiResponse<Booking>>("/payments", {
-        method: "POST",
-        body: JSON.stringify({ houseId }),
-      }),
-    onSuccess: () => {
-      setNotice("Your booking is confirmed. You can view it from your dashboard.");
-      void queryClient.invalidateQueries({ queryKey: ["properties", houseId] });
-      void queryClient.invalidateQueries({ queryKey: ["bookings"] });
-    },
-    onError: (error: Error) => setNotice(error.message),
-  });
-
-  function requireAuthentication(action: () => void) {
+  function requireAuthentication(): boolean {
     if (!session) {
       const callbackUrl = `/properties/${houseId}`;
       router.push(`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-      return;
+      return false;
     }
 
-    action();
+    return true;
   }
 
   async function shareHouse() {
@@ -181,7 +162,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
     }
 
     await navigator.clipboard.writeText(window.location.href);
-    setNotice("Link copied to your clipboard.");
+    toast.success("Link copied to your clipboard.");
   }
 
   if (houseQuery.isLoading) return <HouseDetailsSkeleton />;
@@ -235,7 +216,9 @@ export function HouseDetails({ houseId }: { houseId: string }) {
               icon={Heart}
               label={isFavorite ? "Saved" : "Save"}
               active={isFavorite}
-              onClick={() => requireAuthentication(() => favoriteMutation.mutate())}
+              onClick={() => {
+                if (requireAuthentication()) favoriteMutation.mutate();
+              }}
             />
             {!session ? (
               <Button variant="outline" asChild className="ml-2 hidden h-10 px-5 md:inline-flex">
@@ -357,38 +340,18 @@ export function HouseDetails({ houseId }: { houseId: string }) {
           </div>
 
           <aside className="sticky top-24 hidden lg:block">
-            <BookingCard
-              house={house}
-              isAvailable={isAvailable}
-              isPending={bookingMutation.isPending}
-              notice={notice}
-              onBook={() => requireAuthentication(() => bookingMutation.mutate())}
-            />
+            <BookingCard house={house} isAvailable={isAvailable} onBook={requireAuthentication} />
           </aside>
         </div>
       </main>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-900/10 bg-[#f7f5f0]/95 p-4 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/95 lg:hidden">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-5">
-          <div>
-            <p className="text-lg font-black">{formatPrice(house.price)}</p>
-            {/*<p className="text-xs text-slate-500">per month</p>*/}
-          </div>
-          <Button
-            className="h-12 min-w-40 px-6 font-bold"
-            disabled={!isAvailable || bookingMutation.isPending}
-            onClick={() => requireAuthentication(() => bookingMutation.mutate())}
-          >
-            {bookingMutation.isPending
-              ? "Booking..."
-              : isAvailable
-                ? "Book this home"
-                : "Unavailable"}
-          </Button>
-        </div>
-        {notice ? (
-          <p className="mt-2 text-center text-xs text-slate-600 dark:text-slate-400">{notice}</p>
-        ) : null}
+        <BookingCard
+          house={house}
+          isAvailable={isAvailable}
+          onBook={requireAuthentication}
+          compact
+        />
       </div>
     </div>
   );
@@ -436,67 +399,13 @@ function Feature({
   );
 }
 
-function BookingCard({
-  house,
-  isAvailable,
-  isPending,
-  notice,
-  onBook,
-}: {
-  house: House;
-  isAvailable: boolean;
-  isPending: boolean;
-  notice?: string;
-  onBook: () => void;
-}) {
-  function label() {
-    if (house.propertyType.toLowerCase() === "hotel") return "Book this hotel";
-    if (house.propertyType.toLowerCase() === "car") return "Book this car";
-    return "Book this house";
-  }
-  return (
-    <div className="rounded-2xl border border-slate-900/10 bg-white p-6 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-slate-900 dark:shadow-black/40">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-2xl font-black tracking-tight">{formatPrice(house.price)}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">per month</p>
-        </div>
-      </div>
-
-      <Button
-        className="h-12 w-full text-base font-bold"
-        disabled={!isAvailable || isPending}
-        onClick={onBook}
-      >
-        {isPending ? "Confirming..." : isAvailable ? label() : "Not available"}
-      </Button>
-
-      {notice ? (
-        <p className="mt-4 rounded-xl bg-slate-50 p-3 text-sm leading-5 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-          {notice}
-        </p>
-      ) : null}
-
-      <Separator className="my-5 bg-slate-900/10 dark:bg-white/10" />
-      <div className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
-        <p className="flex items-center gap-2">
-          <Check className="size-4 text-emerald-600" /> Verified listing details
-        </p>
-        <p className="flex items-center gap-2">
-          <Check className="size-4 text-emerald-600" /> Secure booking through INDANGA
-        </p>
-      </div>
-    </div>
-  );
-}
-
 function HouseDetailsSkeleton() {
   return (
     <div className="min-h-screen bg-[#f7f5f0] dark:bg-slate-950">
       <div className="h-18 border-b border-slate-900/8 dark:border-white/10" />
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Skeleton className="mb-5 h-5 w-40" />
-        <Skeleton className="h-[22rem] w-full rounded-2xl sm:h-[30rem] lg:h-[34rem]" />
+        <Skeleton className="h-88 w-full rounded-2xl sm:h-120 lg:h-136" />
         <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_23rem]">
           <div>
             <Skeleton className="h-5 w-32" />
