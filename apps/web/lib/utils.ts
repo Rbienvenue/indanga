@@ -4,6 +4,6 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-export function formatPrice(price: number) {
-  return `${Math.round(price).toLocaleString("en-US")} RWF`;
+export function formatPrice(price: number | string) {
+  return `${Math.round(Number(price)).toLocaleString("en-US")} RWF`;
 }

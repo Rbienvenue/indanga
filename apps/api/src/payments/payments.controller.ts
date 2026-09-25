@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Query,Body } from "@nestjs/common";
-import { Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
+import { Body, Controller, Get, Post, Query } from "@nestjs/common";
+import { AllowAnonymous, Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { ApiResponse, PaginationResponse } from "src/@types";
+import { CreateOrderDto, FilterPaymentsDto, PaymentCallbackDto } from "./dtos";
 import { PaymentsService } from "./payments.service";
-import { CreateOrderDto, FilterPaymentsDto } from "./dtos";
 
 @Controller("payments")
 export class PaymentsController {
@@ -20,5 +20,12 @@ export class PaymentsController {
   async createPayment(@Session() session: UserSession, @Body() body: CreateOrderDto) {
     const result = await this.paymentsService.initiatePayment(session.user.id, body);
     return new ApiResponse(result);
+  }
+
+  @Post("callback")
+  @AllowAnonymous()
+  async handleCallback(@Body() body: PaymentCallbackDto) {
+    const result = await this.paymentsService.checkPaymentStatus(body.data.transaction_id);
+    return new ApiResponse(result, "payment status checked");
   }
 }

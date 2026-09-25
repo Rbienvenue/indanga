@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { BookingStatus, HouseStatus, Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateOrderDto, FilterPaymentsDto } from "./dtos";
@@ -17,7 +22,7 @@ export class PaymentsService {
     private readonly ws: WsGateway,
   ) {}
   async initiatePayment(clientId: string, data: CreateOrderDto) {
-    const { booking, payment, result } = await this.db.$transaction(
+    const { payment, result } = await this.db.$transaction(
       async (tx) => {
         const house = await tx.house.findUnique({ where: { id: data.houseId } });
         if (!house) {
@@ -62,10 +67,6 @@ export class PaymentsService {
       { timeout: 10_000 },
     );
 
-    if (data.method !== "CARD") {
-      void this.monitorPayment(payment.id, payment.transactionReference);
-    }
-
     return {
       id: payment.id,
       amount: Number(payment.amount),
@@ -86,16 +87,21 @@ export class PaymentsService {
     if (!booking) throw new NotFoundException("Booking not found");
 
     if (payment.status !== "PENDING") return payment;
-    const result = await this.itec.checkPaymentStatus(transactionReference);
+   //ITEC deletes failed transactions
+    let result: Awaited<ReturnType<ITECService["checkPaymentStatus"]>>;
+    try {
+      result = await this.itec.checkPaymentStatus(transactionReference);
+    } catch (error) {
+      if (!(error instanceof BadRequestException) || !/no transaction found/i.test(error.message)) {
+        throw error;
+      }
+      return this.markPaymentFailed(payment, booking, transactionReference);
+    }
+
     const status = result.data.status;
 
     if (status === "FAILED") {
-      await this.db.$transaction(async (tx) => {
-        await tx.payment.update({ where: { transactionReference }, data: { status: "FAILED" } });
-        await tx.booking.update({ where: { id: booking.id }, data: { status: "CANCELLED" } });
-      });
-      this.ws.emitPaymentUpdate(payment.id, "failed");
-      return { ...payment, status: "FAILED" as const };
+      return this.markPaymentFailed(payment, booking, transactionReference);
     }
 
     if (status === "SUCCESSFULL") {
@@ -133,17 +139,17 @@ export class PaymentsService {
     return payment;
   }
 
-  private async monitorPayment(paymentId: string, transactionReference: string) {
-    for (let attempt = 0; attempt < 60; attempt += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 5_000));
-      try {
-        const payment = await this.checkPaymentStatus(transactionReference);
-        if (payment.status !== "PENDING") return;
-      } catch {
-        continue;
-      }
-    }
-    this.ws.emitPaymentUpdate(paymentId, "pending");
+  private async markPaymentFailed(
+    payment: Prisma.PaymentGetPayload<{}>,
+    booking: Prisma.BookingGetPayload<{ include: { house: true; client: true } }>,
+    transactionReference: string,
+  ) {
+    await this.db.$transaction(async (tx) => {
+      await tx.payment.update({ where: { transactionReference }, data: { status: "FAILED" } });
+      await tx.booking.update({ where: { id: booking.id }, data: { status: "CANCELLED" } });
+    });
+    this.ws.emitPaymentUpdate(payment.id, "failed");
+    return { ...payment, status: "FAILED" as const };
   }
 
   async getPayments(user: UserSession["user"], data: FilterPaymentsDto) {

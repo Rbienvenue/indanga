@@ -11,6 +11,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetcher } from "@/lib/fetcher";
+import { formatPrice } from "@/lib/utils";
 import type { ColumnDef } from "@tanstack/react-table";
 
 type PaymentWithBooking = {
@@ -33,15 +34,11 @@ const statusColors: Record<string, string> = {
   FAILED: "bg-red-100 text-red-700",
 };
 
-function formatRWF(amount: string | number) {
-  return `${Number(amount).toLocaleString()} RWF`;
-}
-
 const columns: ColumnDef<PaymentWithBooking>[] = [
   {
     accessorKey: "amount",
     header: "Amount",
-    cell: ({ row }) => <span className="font-medium">{formatRWF(row.original.amount)}</span>,
+    cell: ({ row }) => <span className="font-medium">{formatPrice(row.original.amount)}</span>,
   },
   {
     id: "property",

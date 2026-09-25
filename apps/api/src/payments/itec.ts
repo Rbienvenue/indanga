@@ -48,7 +48,7 @@ export class ITECService implements PaymentGateway {
   }
 
   async checkPaymentStatus(transactionId: string): Promise<CheckPaymentStatusResponse> {
-    const response = await this.fetcher<CheckPaymentStatusResponse>("/api2/pay", {
+    const response = await this.fetcher<CheckPaymentStatusResponse>("/api2/verify", {
       method: "POST",
       body: JSON.stringify({
         action: "status_check",

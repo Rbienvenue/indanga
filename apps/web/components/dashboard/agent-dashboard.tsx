@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
+import { formatPrice } from "@/lib/utils";
 
 type AgentStats = {
   totalProperties: number;
@@ -55,10 +56,6 @@ const statusColors: Record<string, string> = {
   REJECTED: "bg-red-100 text-red-700",
   CANCELLED: "bg-gray-100 text-gray-700",
 };
-
-function formatRWF(amount: number) {
-  return `${amount.toLocaleString()} RWF`;
-}
 
 function AgentStatCards() {
   const statsQuery = useQuery<ApiResponse<AgentStats>>({
@@ -100,7 +97,7 @@ function AgentStatCards() {
       />
       <StatCard
         title="Total Revenue"
-        value={formatRWF(stats?.totalRevenue ?? 0)}
+        value={formatPrice(stats?.totalRevenue ?? 0)}
         icon={<CreditCard className="size-5" />}
       />
       <StatCard

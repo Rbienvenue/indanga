@@ -27,6 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { fetcher } from "@/lib/fetcher";
+import { formatPrice } from "@/lib/utils";
 
 type HouseWithOwner = {
   id: string;
@@ -42,10 +43,6 @@ type HouseWithOwner = {
     email: string;
   };
 };
-
-function formatRWF(amount: number) {
-  return `${amount.toLocaleString()} RWF`;
-}
 
 function PropertyActions({ property }: { property: HouseWithOwner }) {
   const queryClient = useQueryClient();
@@ -191,7 +188,7 @@ const columns: ColumnDef<HouseWithOwner>[] = [
   {
     accessorKey: "price",
     header: "Price",
-    cell: ({ row }) => formatRWF(row.original.price),
+    cell: ({ row }) => formatPrice(row.original.price),
   },
   {
     accessorKey: "status",
