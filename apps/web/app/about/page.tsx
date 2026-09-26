@@ -274,14 +274,11 @@ export default function About() {
         <section id="leadership" className="scroll-mt-20 py-2 sm:py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <details className="group">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 [&::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 [&::-webkit-details-marker]:hidden">
                 <div>
                   <h2 className="text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
-                    Leadership
+                    Executive Management
                   </h2>
-                  <p className="mt-2 text-base text-muted-foreground sm:text-lg">
-                    Meet the people driving INDANGA forward.
-                  </p>
                 </div>
                 <ChevronDown className="size-7 shrink-0 text-primary transition-transform duration-300 group-open:rotate-180" />
               </summary>
@@ -495,9 +492,6 @@ export default function About() {
                   <h2 className="text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
                     Board of Directors
                   </h2>
-                  <p className="mt-2 text-base text-muted-foreground sm:text-lg">
-                    Providing strategic guidance, oversight, and accountability.
-                  </p>
                 </div>
                 <ChevronDown className="size-7 shrink-0 text-primary transition-transform duration-300 group-open:rotate-180" />
               </summary>

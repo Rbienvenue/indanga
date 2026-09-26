@@ -18,11 +18,8 @@ const navLinks = [
 
 const aboutLinks = [
   { label: "About Us", href: "/about" },
-  { label: "Who We Are", href: "/about#who-we-are" },
-  { label: "Our Purpose", href: "/about#our-purpose" },
   { label: "What We Do", href: "/about#what-we-do" },
-  { label: "Leadership", href: "/about#leadership" },
-  { label: "Why INDANGA?", href: "/about#why-indanga" },
+  { label: "Team", href: "/about#leadership" },
   { label: "Contact", href: "/about#contact" },
 ];
 
