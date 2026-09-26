@@ -406,7 +406,7 @@ export default function About() {
               <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-xl">
                 <div className="relative h-64 overflow-hidden bg-linear-to-br from-primary/20 to-primary/20 sm:h-72">
                   <Image
-                    src="/Bienvenue.png"
+                    src="/Rudasingwa.png"
                     alt="Frontend Engineer"
                     width={400}
                     height={400}
@@ -443,7 +443,7 @@ export default function About() {
               <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-xl">
                 <div className="relative h-64 overflow-hidden bg-linear-to-br from-primary/20 to-primary/20 sm:h-72">
                   <Image
-                    src="/Elie.png"
+                    src="/Shema.png"
                     alt="Backend Engineer"
                     width={400}
                     height={400}
