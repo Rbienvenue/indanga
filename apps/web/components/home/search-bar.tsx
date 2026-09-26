@@ -221,7 +221,7 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
             </TabsList>
           </Tabs>
 
-          <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
+          <div className="grid grid-cols-2 items-center gap-2 sm:gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
             <Select value={province} onValueChange={handleProvinceChange} disabled={isLoadingLocations}>
               <SelectTrigger className="w-full">
                 <MapPin className="size-4 text-muted-foreground" />
@@ -301,7 +301,7 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
               </SelectContent>
             </Select>
 
-            <Button className="w-full font-semibold" onClick={handleSearch}>
+            <Button className="col-span-2 w-full font-semibold lg:col-span-1" onClick={handleSearch}>
               <Search className="size-4" />
               Search
             </Button>
