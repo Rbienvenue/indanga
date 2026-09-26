@@ -4,11 +4,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { FaEnvelope, FaInstagram, FaLinkedinIn } from "react-icons/fa6";
-import { ArrowRight, Building2, Mail, Phone, MapPin, Zap, Users, Shield, ChevronDown } from "lucide-react";
+import {
+  ArrowRight,
+  Building2,
+  Mail,
+  Phone,
+  MapPin,
+  Zap,
+  Users,
+  Shield,
+  ChevronDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Navbar } from "@/components/home/navbar";
 import { Footer } from "@/components/home/footer";
+import { AboutSection } from "@/components/home/about-section";
 
 const slides = [
   { id: 1, image: "/slide-1.jpg" },
@@ -39,8 +50,9 @@ export default function About() {
               {slides.map((slide, index) => (
                 <div
                   key={slide.id}
-                  className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${activeSlide === index ? "opacity-100" : "opacity-0"
-                    }`}
+                  className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                    activeSlide === index ? "opacity-100" : "opacity-0"
+                  }`}
                   style={{
                     backgroundImage: `url(${slide.image})`,
                     backgroundSize: "cover",
@@ -62,14 +74,12 @@ export default function About() {
                     Making it easier to
                     <span className="block">find the right place.</span>
                   </h1>
-
-                  <p className="mt-6 max-w-3xl text-base leading-relaxed text-white/85 sm:text-lg md:text-[1.35rem]">
-                    Indanga was established from a simple observation: many of the resources people need already exist, but finding and accessing them efficiently remains a challenge. The platform was built to connect people with homes, apartments, cars, services, skills, and opportunities that are often scattered across fragmented channels and hard to discover.
-                  </p>
-
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                     <Link href="/properties">
-                      <Button size="lg" className="w-full bg-[#0a7bd7] text-white hover:bg-[#0869b8] sm:w-auto">
+                      <Button
+                        size="lg"
+                        className="w-full bg-[#0a7bd7] text-white hover:bg-[#0869b8] sm:w-auto"
+                      >
                         Explore Properties
                         <ArrowRight className="ml-2 size-4" />
                       </Button>
@@ -94,8 +104,11 @@ export default function About() {
                     type="button"
                     aria-label={`Go to slide ${index + 1}`}
                     onClick={() => setActiveSlide(index)}
-                    className={`h-2.5 rounded-full transition-all duration-300 ${activeSlide === index ? "w-8 bg-white" : "w-2.5 bg-white/50 hover:bg-white/80"
-                      }`}
+                    className={`h-2.5 rounded-full transition-all duration-300 ${
+                      activeSlide === index
+                        ? "w-8 bg-white"
+                        : "w-2.5 bg-white/50 hover:bg-white/80"
+                    }`}
                   />
                 ))}
               </div>
@@ -122,19 +135,37 @@ export default function About() {
               {/* Right Content */}
               <div>
                 <p className="text-lg leading-relaxed text-muted-foreground">
-                  Indanga was established from a simple observation: many of the resources people need already exist, but finding and accessing them efficiently remains a challenge. The platform was built to connect people with homes, apartments, cars, services, skills, and opportunities that are often scattered across fragmented channels and hard to discover.
+                  Indanga was established from a simple observation: many of the
+                  resources people need already exist, but finding and accessing
+                  them efficiently remains a challenge. The platform was built
+                  to connect people with homes, apartments, cars, services,
+                  skills, and opportunities that are often scattered across
+                  fragmented channels and hard to discover.
                 </p>
 
                 <div className="mt-12 grid gap-8 sm:grid-cols-2">
                   {[
-                    { label: "DISCOVER", desc: "Find properties matching your needs" },
-                    { label: "COMPARE", desc: "Review and compare options easily" },
+                    {
+                      label: "DISCOVER",
+                      desc: "Find properties matching your needs",
+                    },
+                    {
+                      label: "COMPARE",
+                      desc: "Review and compare options easily",
+                    },
                     { label: "BOOK", desc: "Secure your booking instantly" },
                     { label: "CONNECT", desc: "Link with service providers" },
                   ].map((item) => (
-                    <div key={item.label} className="rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/40 hover:shadow-lg">
-                      <div className="text-2xl font-bold text-primary">{item.label}</div>
-                      <p className="mt-2 text-sm text-muted-foreground">{item.desc}</p>
+                    <div
+                      key={item.label}
+                      className="rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/40 hover:shadow-lg"
+                    >
+                      <div className="text-2xl font-bold text-primary">
+                        {item.label}
+                      </div>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {item.desc}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -166,7 +197,11 @@ export default function About() {
                     Mission
                   </h3>
                   <p className="leading-relaxed text-muted-foreground">
-                    To reduce search time, unnecessary movement, and information gaps by creating a more organized and accessible digital environment where people can discover and connect with the resources, services, and opportunities that already exist around them.
+                    To reduce search time, unnecessary movement, and information
+                    gaps by creating a more organized and accessible digital
+                    environment where people can discover and connect with the
+                    resources, services, and opportunities that already exist
+                    around them.
                   </p>
                 </div>
               </div>
@@ -182,7 +217,11 @@ export default function About() {
                     Vision
                   </h3>
                   <p className="leading-relaxed text-muted-foreground">
-                    To become the leading digital ecosystem for discovery and connection, where people, assets, services, skills, and opportunities are easier to find, access, and utilize—turning fragmented information into a more efficient and connected economy.
+                    To become the leading digital ecosystem for discovery and
+                    connection, where people, assets, services, skills, and
+                    opportunities are easier to find, access, and
+                    utilize—turning fragmented information into a more efficient
+                    and connected economy.
                   </p>
                 </div>
               </div>
@@ -190,398 +229,7 @@ export default function About() {
           </div>
         </section>
 
-        <Separator className="my-0" />
-
-        {/* What We Do Section */}
-        <section id="operations" className="scroll-mt-20 py-20 sm:py-28">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-16 text-center">
-              <h2 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
-                Everything you need, connected in one platform.
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Discover our comprehensive ecosystem of services
-              </p>
-            </div>
-
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {/* Properties */}
-              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-lg">
-                <div className="relative h-56 overflow-hidden">
-                  <Image
-                    src="/slide-1.jpg"
-                    alt="Properties"
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                </div>
-
-                <div className="p-8">
-                  <h3 className="mb-3 text-xl font-bold text-foreground">Properties</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    Discover houses and properties based on location, price, property type, availability, and other criteria tailored to your needs.
-                  </p>
-                </div>
-              </div>
-
-              {/* Hotels & Accommodation */}
-              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-lg">
-                <div className="relative h-56 overflow-hidden">
-                  <Image
-                    src="/slide-2.jpg"
-                    alt="Hotels & Accommodation"
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                </div>
-
-                <div className="p-8">
-                  <h3 className="mb-3 text-xl font-bold text-foreground">Hotels & Accommodation</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    Discover and book suitable accommodation for travel, business, family gatherings, and other occasions throughout Rwanda.
-                  </p>
-                </div>
-              </div>
-
-              {/* Cars & Mobility */}
-              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-lg sm:col-span-2 lg:col-span-1">
-                <div className="relative h-56 overflow-hidden">
-                  <Image
-                    src="/car2.jpg"
-                    alt="Cars & Mobility"
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                </div>
-
-                <div className="p-8">
-                  <h3 className="mb-3 text-xl font-bold text-foreground">Cars & Mobility</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    Access vehicle and mobility booking services conveniently through our integrated platform for all your transportation needs.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <Separator className="my-0" />
-
-        {/* Senior Management Section */}
-        <section id="leadership" className="scroll-mt-20 py-2 sm:py-10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <details className="group">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 [&::-webkit-details-marker]:hidden">
-                <div>
-                  <h2 className="text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
-                    Executive Management
-                  </h2>
-                </div>
-                <ChevronDown className="size-7 shrink-0 text-primary transition-transform duration-300 group-open:rotate-180" />
-              </summary>
-
-              <div className="mt-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-              {/* CEO */}
-              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-xl">
-                <div className="relative h-64 overflow-hidden bg-linear-to-br from-primary/20 to-primary/20 sm:h-72">
-                  <Image
-                    src="/Didier.png"
-                    alt="CEO"
-                    width={400}
-                    height={400}
-                    className="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="p-8">
-                  <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
-                    CHIEF EXECUTIVE OFFICER
-                  </div>
-                  <h3 className="mb-4 text-2xl font-bold text-foreground">
-                    NTAKIYIRUTA Didier
-                  </h3>
-                  <div className="flex items-center gap-3 pt-1">
-                    {[
-                      { href: "mailto:didier@indanga.rw", label: "Email", icon: FaEnvelope },
-                      { href: "https://linkedin.com", label: "LinkedIn", icon: FaLinkedinIn },
-                      { href: "https://instagram.com", label: "Instagram", icon: FaInstagram },
-                    ].map(({ href, label, icon: Icon }) => (
-                      <a
-                        key={label}
-                        href={href}
-                        aria-label={label}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/15 bg-primary/5 text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-white"
-                      >
-                        <Icon className="h-4 w-4" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* CTO */}
-              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-xl">
-                <div className="relative h-64 overflow-hidden bg-linear-to-br from-primary/20 to-primary/20 sm:h-72">
-                  <Image
-                    src="/Gisa.png"
-                    alt="CTO"
-                    width={400}
-                    height={400}
-                    className="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="p-8">
-                  <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
-                    CHIEF TECHNOLOGY OFFICER
-                  </div>
-                  <h3 className="mb-4 text-2xl font-bold text-foreground">
-                    NTAKIRUTIMANA Gisa Emmanuel
-                  </h3>
-                  <div className="flex items-center gap-3 pt-1">
-                    {[
-                      { href: "mailto:gisa@indanga.rw", label: "Email", icon: FaEnvelope },
-                      { href: "https://linkedin.com", label: "LinkedIn", icon: FaLinkedinIn },
-                      { href: "https://instagram.com", label: "Instagram", icon: FaInstagram },
-                    ].map(({ href, label, icon: Icon }) => (
-                      <a
-                        key={label}
-                        href={href}
-                        aria-label={label}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/15 bg-primary/5 text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-white"
-                      >
-                        <Icon className="h-4 w-4" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Marketing Lead */}
-              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-xl sm:col-span-2 lg:col-span-1">
-                <div className="relative h-64 overflow-hidden bg-linear-to-br from-primary/20 to-primary/20 sm:h-72">
-                  <Image
-                    src="/Ruth.png"
-                    alt="Marketing Lead"
-                    width={400}
-                    height={400}
-                    className="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="p-8">
-                  <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
-                    Marketing Lead
-                  </div>
-                  <h3 className="mb-4 text-2xl font-bold text-foreground">
-                    GASARO Ruth
-                  </h3>
-                  <div className="flex items-center gap-3 pt-1">
-                    {[
-                      { href: "mailto:ruth@indanga.rw", label: "Email", icon: FaEnvelope },
-                      { href: "https://linkedin.com", label: "LinkedIn", icon: FaLinkedinIn },
-                      { href: "https://instagram.com", label: "Instagram", icon: FaInstagram },
-                    ].map(({ href, label, icon: Icon }) => (
-                      <a
-                        key={label}
-                        href={href}
-                        aria-label={label}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/15 bg-primary/5 text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-white"
-                      >
-                        <Icon className="h-4 w-4" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-xl">
-                <div className="relative h-64 overflow-hidden bg-linear-to-br from-primary/20 to-primary/20 sm:h-72">
-                  <Image
-                    src="/Rudasingwa.png"
-                    alt="Frontend Engineer"
-                    width={400}
-                    height={400}
-                    className="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="p-8">
-                  <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
-                    Frontend Engineer
-                  </div>
-                  <h3 className="mb-4 text-2xl font-bold text-foreground">
-                    Rudasingwa bienvenue
-                  </h3>
-                  <div className="flex items-center gap-3 pt-1">
-                    {[
-                      { href: "#", label: "Email", icon: FaEnvelope },
-                      { href: "#", label: "LinkedIn", icon: FaLinkedinIn },
-                      { href: "#", label: "Instagram", icon: FaInstagram },
-                    ].map(({ href, label, icon: Icon }) => (
-                      <a
-                        key={label}
-                        href={href}
-                        aria-label={label}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/15 bg-primary/5 text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-white"
-                      >
-                        <Icon className="h-4 w-4" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-xl">
-                <div className="relative h-64 overflow-hidden bg-linear-to-br from-primary/20 to-primary/20 sm:h-72">
-                  <Image
-                    src="/Shema.png"
-                    alt="Backend Engineer"
-                    width={400}
-                    height={400}
-                    className="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="p-8">
-                  <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
-                    Backend Engineer
-                  </div>
-                  <h3 className="mb-4 text-2xl font-bold text-foreground">
-                    Ikuzwe Shema Elie
-                  </h3>
-                  <div className="flex items-center gap-3 pt-1">
-                    {[
-                      { href: "#", label: "Email", icon: FaEnvelope },
-                      { href: "#", label: "LinkedIn", icon: FaLinkedinIn },
-                      { href: "#", label: "Instagram", icon: FaInstagram },
-                    ].map(({ href, label, icon: Icon }) => (
-                      <a
-                        key={label}
-                        href={href}
-                        aria-label={label}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/15 bg-primary/5 text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-white"
-                      >
-                        <Icon className="h-4 w-4" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              </div>
-            </details>
-          </div>
-        </section>
-
-        <Separator className="my-0" />
-
-        {/* Board of Directors Section */}
-        <section id="board-of-directors" className="scroll-mt-20 py-2 sm:py-10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <details className="group">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 [&::-webkit-details-marker]:hidden">
-                <div>
-                  <h2 className="text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
-                    Board of Directors
-                  </h2>
-                </div>
-                <ChevronDown className="size-7 shrink-0 text-primary transition-transform duration-300 group-open:rotate-180" />
-              </summary>
-
-              <div className="mt-16 grid gap-12 md:grid-cols-2">
-              {/* Chairperson */}
-              <div className="group relative overflow-hidden rounded-2xl border border-border bg-linear-to-br from-card to-muted transition-all hover:border-primary/40 hover:shadow-xl">
-                <div className="relative h-80 overflow-hidden bg-linear-to-br from-primary/20 to-transparent">
-                  <Image
-                    src="/Gisa.png"
-                    alt="Chairperson"
-                    width={400}
-                    height={400}
-                    className="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="p-8 sm:p-10">
-                  <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary">
-                    Chairperson
-                  </div>
-                  <h3 className="mb-4 text-3xl font-bold text-foreground">
-                    NTAKIRUTIMANA Gisa Emmanuel
-                  </h3>
-                  <div className="flex items-center gap-3 pt-1">
-                    {[
-                      { href: "mailto:gisa@indanga.rw", label: "Email", icon: FaEnvelope },
-                      { href: "https://linkedin.com", label: "LinkedIn", icon: FaLinkedinIn },
-                      { href: "https://instagram.com", label: "Instagram", icon: FaInstagram },
-                    ].map(({ href, label, icon: Icon }) => (
-                      <a
-                        key={label}
-                        href={href}
-                        aria-label={label}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/15 bg-primary/5 text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-white"
-                      >
-                        <Icon className="h-4 w-4" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Board Member */}
-              <div className="group relative overflow-hidden rounded-2xl border border-border bg-linear-to-br from-card to-muted transition-all hover:border-primary/40 hover:shadow-xl">
-                <div className="relative h-80 overflow-hidden bg-linear-to-br from-primary/20 to-transparent">
-                  <Image
-                    src="/Didier.png"
-                    alt="Board Member"
-                    width={400}
-                    height={400}
-                    className="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="p-8 sm:p-10">
-                  <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary">
-                    Board Member
-                  </div>
-                  <h3 className="mb-4 text-3xl font-bold text-foreground">
-                    NTAKIYIRUTA Didier
-                  </h3>
-                  <div className="flex items-center gap-3 pt-1">
-                    {[
-                      { href: "mailto:didier@indanga.rw", label: "Email", icon: FaEnvelope },
-                      { href: "https://linkedin.com", label: "LinkedIn", icon: FaLinkedinIn },
-                      { href: "https://instagram.com", label: "Instagram", icon: FaInstagram },
-                    ].map(({ href, label, icon: Icon }) => (
-                      <a
-                        key={label}
-                        href={href}
-                        aria-label={label}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/15 bg-primary/5 text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-white"
-                      >
-                        <Icon className="h-4 w-4" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              </div>
-            </details>
-          </div>
-        </section>
-
-        <Separator className="my-0" />
+        <AboutSection />
 
         {/* Why INDANGA Section */}
         <section id="why-indanga" className="scroll-mt-20 py-20 sm:py-28">
@@ -609,7 +257,9 @@ export default function About() {
                 <div className="mb-4 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
                   <Users className="size-6 text-primary" />
                 </div>
-                <h3 className="mb-2 font-bold text-foreground">Connected Experience</h3>
+                <h3 className="mb-2 font-bold text-foreground">
+                  Connected Experience
+                </h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   Connect customers with property and service providers.
                 </p>
@@ -631,9 +281,12 @@ export default function About() {
                 <div className="mb-4 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
                   <Building2 className="size-6 text-primary" />
                 </div>
-                <h3 className="mb-2 font-bold text-foreground">Digital Convenience</h3>
+                <h3 className="mb-2 font-bold text-foreground">
+                  Digital Convenience
+                </h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  Discovery, booking, and payment made easier through technology.
+                  Discovery, booking, and payment made easier through
+                  technology.
                 </p>
               </div>
             </div>
@@ -650,7 +303,8 @@ export default function About() {
                 Let's connect.
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
-                Have a question, partnership idea, or need assistance? We'd love to hear from you.
+                Have a question, partnership idea, or need assistance? We'd love
+                to hear from you.
               </p>
 
               <div className="mt-12 space-y-6">
@@ -662,8 +316,12 @@ export default function About() {
                       <MapPin className="size-6 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">Location</p>
-                      <p className="mt-1 text-sm text-muted-foreground">Kigali, Rwanda</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        Location
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Kigali, Rwanda
+                      </p>
                     </div>
                   </div>
 
@@ -673,8 +331,13 @@ export default function About() {
                       <Mail className="size-6 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">Email</p>
-                      <Link href="mailto:info@indanga.com" className="mt-1 text-sm text-primary hover:text-primary/80">
+                      <p className="text-sm font-semibold text-foreground">
+                        Email
+                      </p>
+                      <Link
+                        href="mailto:info@indanga.com"
+                        className="mt-1 text-sm text-primary hover:text-primary/80"
+                      >
                         info@indanga.com
                       </Link>
                     </div>
@@ -686,8 +349,13 @@ export default function About() {
                       <Phone className="size-6 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">Phone</p>
-                      <Link href="tel:+250788765547" className="mt-1 text-sm text-primary hover:text-primary/80">
+                      <p className="text-sm font-semibold text-foreground">
+                        Phone
+                      </p>
+                      <Link
+                        href="tel:+250788765547"
+                        className="mt-1 text-sm text-primary hover:text-primary/80"
+                      >
                         +250 788 765 547
                       </Link>
                     </div>

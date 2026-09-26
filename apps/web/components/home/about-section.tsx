@@ -1,16 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import {
   Building2,
+  CheckCircle2,
+  ChevronRight,
   HeartHandshake,
   MapPin,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { FaFacebook, FaInstagram, FaLinkedin, FaXTwitter } from "react-icons/fa6";
+import {
+  FaFacebook,
+  FaInstagram,
+  FaLinkedin,
+  FaXTwitter,
+} from "react-icons/fa6";
 import type { IconType } from "react-icons";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -48,7 +54,7 @@ const leadershipMembers: Person[] = [
     name: "NTAKIYIRUTA Didier",
     position: "Chief Executive Officer",
     department: "Governance",
-    image: "/Didier.png",
+    image: "/didier.png",
     bio: `
 Didier has a strong foundation in Business Management and Finance and nearly six years of hands-on experience in manufacturing, production, and mining sector , he is a strategic leader driven by a passion for building people, transforming operations, and creating sustainable businesses.
 
@@ -63,7 +69,7 @@ As Co-Founder & CEO, he provides the vision, strategic direction, and leadership
     name: "Ntakirutimana Gisa Emmanuel",
     position: "Chief Technical Officer",
     department: "Governance",
-    image: "/Gisa.png",
+    image: "/Gisa.jpeg",
     bio: `
 Ntakirutimana Gisa Emmanuel is a Rwandan physicist, researcher, innovator, and multidisciplinary professional specializing in Material Science and Engineering, renewable energy, research and development, and practical technological solutions.
 
@@ -90,6 +96,24 @@ Her approach combines creativity with strategic thinking, focusing on understand
 As part of the leadership team, she plays a key role in driving brand visibility, market positioning, customer engagement, and sustainable growth.`,
     socialLinks: defaultSocialLinks,
   },
+  {
+    name: "Ikuzwe Shema Elie",
+    position: "Backend Developer",
+    department: "Engineering",
+    image: "/shema.png",
+    bio: `
+Ikuzwe Shema Elie is a skilled backend developer with expertise in building robust, scalable, and efficient server-side applications. He has a strong foundation in programming languages, database management, and API development.`,
+    socialLinks: defaultSocialLinks,
+  },
+  {
+    name: "RUDASINGWA Bienvenue",
+    position: "Frontend Developer",
+    department: "Engineering",
+    image: "/Rudasingwa.png",
+    bio: `
+RUDASINGWA Bienvenue is a talented frontend developer with a passion for creating engaging and user-friendly web experiences. He has a strong foundation in modern web technologies and a keen eye for design.`,
+    socialLinks: defaultSocialLinks,
+  },
 ];
 
 const boardMembers: Person[] = [
@@ -97,7 +121,7 @@ const boardMembers: Person[] = [
     name: "NTAKIRUTIMANA Gisa Emmanuel",
     position: "Chairperson of the Board",
     department: "Board",
-    image: "/Gisa.png",
+    image: "/Gisa.jpeg",
     bio: `
 Ntakirutimana Gisa Emmanuel is a Rwandan physicist, researcher, innovator, and multidisciplinary professional specializing in Material Science and Engineering, renewable energy, research and development, and practical technological solutions.
 
@@ -128,10 +152,9 @@ As Co-Founder & CEO, he provides the vision, strategic direction, and leadership
 ];
 
 const sectionLinks = [
-  { id: "overview", label: "Overview" },
   { id: "organization-structure", label: "Organization Structure" },
-  { id: "senior-management", label: "Senior Management" },
-  { id: "board-of-directors", label: "Board of Directors" },
+  { id: "board-of-directors", label: "Board Members" },
+  { id: "Executive-management", label: "Executive Management" },
 ] as const;
 
 const overviewStory = [
@@ -154,17 +177,20 @@ const institutionalValues = [
   {
     icon: ShieldCheck,
     title: "Trust and verification",
-    description: "We create a more credible marketplace by emphasizing visibility, accountability, and reliable discovery.",
+    description:
+      "We create a more credible marketplace by emphasizing visibility, accountability, and reliable discovery.",
   },
   {
     icon: Building2,
     title: "Economic connectivity",
-    description: "Indanga connects supply and demand so people can find what they need faster and with less friction.",
+    description:
+      "Indanga connects supply and demand so people can find what they need faster and with less friction.",
   },
   {
     icon: HeartHandshake,
     title: "Accessible opportunity",
-    description: "We help individuals, businesses, and communities turn unused assets and services into practical value.",
+    description:
+      "We help individuals, businesses, and communities turn unused assets and services into practical value.",
   },
 ];
 
@@ -183,12 +209,12 @@ function PersonCard({ person }: { person: Person }) {
           }}
           className="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-border/70 bg-card p-3 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none sm:p-4"
         >
-          <div className="relative aspect-4/3 w-full overflow-hidden rounded-md border border-border/70 ">
+          <div className="relative aspect-4/3 w-full overflow-hidden rounded-md bg-muted">
             <Image
               src={person.image}
               alt={`${person.name}, ${person.position}`}
               fill
-              className="object-contain"
+              className="object-contain transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
             {person.department && (
@@ -205,7 +231,9 @@ function PersonCard({ person }: { person: Person }) {
               <h4 className="line-clamp-2 text-base font-semibold tracking-tight text-foreground sm:text-lg">
                 {person.name}
               </h4>
-              <p className="mt-1 line-clamp-2 text-sm font-medium text-primary">{person.position}</p>
+              <p className="mt-1 line-clamp-2 text-sm font-medium text-primary">
+                {person.position}
+              </p>
             </div>
 
             <div className="mt-4 flex items-center gap-1.5 border-t border-border/60 pt-3">
@@ -225,21 +253,25 @@ function PersonCard({ person }: { person: Person }) {
         </article>
       </DialogTrigger>
 
-      <DialogContent className="max-h-[calc(100svh-1rem)] max-w-[calc(100%-1rem)] overflow-y-auto p-0 sm:max-w-4xl">
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto p-0 sm:max-w-4xl">
         <div className="grid gap-0 md:grid-cols-[minmax(17rem,0.9fr)_1.1fr]">
-          <div className="relative aspect-3/4 w-full bg-muted md:aspect-auto md:min-h-120">
+          <div className="relative min-h-72 bg-muted md:min-h-120">
             <Image
               src={person.image}
               alt={`${person.name}, ${person.position}`}
               fill
-              className="object-contain p-2"
+              className="object-cover"
               sizes="(max-width: 768px) 100vw, 40vw"
             />
           </div>
-          <div className="space-y-4 p-4 sm:p-8">
+          <div className="space-y-4 p-6 sm:p-8">
             <div>
-              <DialogTitle className="text-xl font-bold sm:text-3xl">{person.name}</DialogTitle>
-              <p className="mt-2 text-sm font-medium text-primary">{person.position}</p>
+              <DialogTitle className="text-2xl font-bold sm:text-3xl">
+                {person.name}
+              </DialogTitle>
+              <p className="mt-2 text-sm font-medium text-primary">
+                {person.position}
+              </p>
             </div>
             <DialogDescription className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
               {person.bio?.trim() || "Biography coming soon."}
@@ -252,19 +284,9 @@ function PersonCard({ person }: { person: Person }) {
 }
 
 export function AboutSection() {
-  const [activeSection, setActiveSection] = useState<string>(sectionLinks[0].id);
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const requestedSection = searchParams.get("about");
-    const isValidSection = sectionLinks.some(({ id }) => id === requestedSection);
-
-    setActiveSection(
-      isValidSection
-        ? (requestedSection as (typeof sectionLinks)[number]["id"])
-        : sectionLinks[0].id,
-    );
-  }, [searchParams]);
+  const [activeSection, setActiveSection] = useState<string>(
+    sectionLinks[0].id,
+  );
 
   const renderActiveSection = () => {
     switch (activeSection) {
@@ -272,12 +294,14 @@ export function AboutSection() {
         return (
           <section id="overview" className="scroll-mt-28 pt-6 sm:pt-8">
             <div className="max-w-4xl">
-              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Overview</p>
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
+                Overview
+              </p>
             </div>
 
             <div className="mt-5 rounded-2xl border border-border/80 bg-card/80 p-4 shadow-sm sm:p-5 lg:p-6">
               <p className="text-sm font-semibold text-foreground sm:text-base">
-                About Indanga  Our Origin
+                About Indanga — Our Origin
               </p>
 
               <div className="mt-4 max-w-4xl space-y-4 text-sm leading-7 text-muted-foreground sm:text-[15px]">
@@ -290,16 +314,21 @@ export function AboutSection() {
         );
       case "organization-structure":
         return (
-          <section id="organization-structure" className="scroll-mt-28 pt-6 sm:pt-8">
+          <section
+            id="organization-structure"
+            className="scroll-mt-28 pt-6 sm:pt-8"
+          >
             <div className="max-w-4xl">
-              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Organization Structure</p>
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
+                Organization Structure
+              </p>
             </div>
 
             <div className="mt-5 rounded-2xl border border-border/80 bg-card p-3 shadow-sm sm:p-4 lg:p-5">
               <div className="overflow-x-auto">
                 <div className="mx-auto max-w-5xl">
                   <Image
-                    src="/structure.png"
+                    src="/structure.jpeg"
                     alt="Indanga organizational overview"
                     width={1600}
                     height={900}
@@ -311,30 +340,43 @@ export function AboutSection() {
             </div>
           </section>
         );
-      case "senior-management":
+      case "Executive-management":
         return (
-          <section id="senior-management" className="scroll-mt-28 pt-6 sm:pt-8">
+          <section id="executive-management" className="scroll-mt-28 pt-6 sm:pt-8">
             <div className="max-w-4xl">
-              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Senior Management</p>
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
+                Executive Management
+              </p>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-2">
               {leadershipMembers.map((person) => (
-                <PersonCard key={`${person.name}-${person.position}`} person={person} />
+                <PersonCard
+                  key={`${person.name}-${person.position}`}
+                  person={person}
+                />
               ))}
             </div>
           </section>
         );
       case "board-of-directors":
         return (
-          <section id="board-of-directors" className="scroll-mt-28 pt-6 sm:pt-8">
+          <section
+            id="board-of-directors"
+            className="scroll-mt-28 pt-6 sm:pt-8"
+          >
             <div className="max-w-4xl">
-              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Board of Directors</p>
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
+                Board Members
+              </p>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {boardMembers.map((person) => (
-                <PersonCard key={`${person.name}-${person.position}`} person={person} />
+                <PersonCard
+                  key={`${person.name}-${person.position}`}
+                  person={person}
+                />
               ))}
             </div>
           </section>
@@ -345,40 +387,78 @@ export function AboutSection() {
   };
 
   return (
-    <section id="about" className="relative overflow-hidden border-t border-primary/40 bg-background py-10 sm:py-14 lg:py-20">
+    <section
+      id="about"
+      className="relative overflow-hidden border-t border-primary/40 bg-background py-10 sm:py-14 lg:py-20"
+    >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-border to-transparent" />
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <header className="mb-8 max-w-3xl lg:mb-10">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            About Indanga
-          </h1>
-        </header>
-
-        <main className="min-w-0">
-          {renderActiveSection()}
-
-          {activeSection === "overview" && (
-            <section className="mt-6 grid gap-3 sm:grid-cols-3">
-              {institutionalValues.map(({ icon: Icon, title, description }) => (
-                <div key={title} className="rounded-xl border border-border/70 bg-card p-4 shadow-sm">
-                  <div className="inline-flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="size-4" />
-                  </div>
-                  <h3 className="mt-3 text-sm font-semibold text-foreground">{title}</h3>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{description}</p>
-                </div>
+        <div className="grid items-start gap-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-12">
+          <nav
+            aria-label="About section navigation"
+            className="lg:flex lg:h-[calc(100svh-12rem)] lg:items-center"
+          >
+            <ul className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              {sectionLinks.map(({ id, label }) => (
+                <li key={id}>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection(id)}
+                    aria-pressed={activeSection === id}
+                    className={`flex min-h-14 w-full items-center justify-between border border-border/70 bg-card px-4 text-left text-sm font-semibold shadow-sm transition-all ${
+                      activeSection === id
+                        ? "border-primary/30 text-primary shadow-md ring-1 ring-primary/10"
+                        : "text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                    }`}
+                  >
+                    <span className="truncate">{label}</span>
+                    <ChevronRight
+                      className={`size-4 shrink-0 transition-transform ${
+                        activeSection === id ? "translate-x-0.5" : ""
+                      }`}
+                    />
+                  </button>
+                </li>
               ))}
-            </section>
-          )}
+            </ul>
+          </nav>
 
-          {activeSection === "overview" && (
-            <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="size-4 shrink-0 text-primary" />
-              Building a more connected, accessible, and trustworthy digital economy.
-            </div>
-          )}
-        </main>
+          <main className="min-w-0">
+            {renderActiveSection()}
+
+            {activeSection === "overview" && (
+              <section className="mt-6 grid gap-3 sm:grid-cols-3">
+                {institutionalValues.map(
+                  ({ icon: Icon, title, description }) => (
+                    <div
+                      key={title}
+                      className="rounded-xl border border-border/70 bg-card p-4 shadow-sm"
+                    >
+                      <div className="inline-flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <Icon className="size-4" />
+                      </div>
+                      <h3 className="mt-3 text-sm font-semibold text-foreground">
+                        {title}
+                      </h3>
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                        {description}
+                      </p>
+                    </div>
+                  ),
+                )}
+              </section>
+            )}
+
+            {activeSection === "overview" && (
+              <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="size-4 shrink-0 text-primary" />
+                Building a more connected, accessible, and trustworthy digital
+                economy.
+              </div>
+            )}
+          </main>
+        </div>
       </div>
     </section>
   );
