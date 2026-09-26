@@ -100,7 +100,7 @@ As part of the leadership team, she plays a key role in driving brand visibility
     name: "Ikuzwe Shema Elie",
     position: "Backend Developer",
     department: "Engineering",
-    image: "/shema.png",
+    image: "/Elie.png",
     bio: `
 Ikuzwe Shema Elie is a skilled backend developer with expertise in building robust, scalable, and efficient server-side applications. He has a strong foundation in programming languages, database management, and API development.`,
     socialLinks: defaultSocialLinks,

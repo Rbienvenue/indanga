@@ -105,11 +105,6 @@ model House {
   id           String      @id @default(cuid())
   name         String
   location     String
-  address      String?
-  price        Int
-  media        String[]
-  ownerId      String
-  description  String
   propertyType String
   subType      String?
   bedrooms     Int

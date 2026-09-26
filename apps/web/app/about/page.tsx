@@ -66,14 +66,14 @@ export default function About() {
 
               <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
                 <div className="max-w-4xl text-white">
-                  <div className="mb-4 inline-flex items-center rounded-full border border-white/30 bg-white/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white/90 backdrop-blur-sm">
-                    About INDANGA
-                  </div>
-
                   <h1 className="text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white sm:text-5xl md:text-7xl">
                     Making it easier to
                     <span className="block">find the right place.</span>
                   </h1>
+
+                  <p className="mt-5">
+                    Discover homes, stays, vehicles, and local services in one convenient place. Explore your options, connect with providers, and make your next move with less searching and more confidence.
+                  </p>
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                     <Link href="/properties">
                       <Button
