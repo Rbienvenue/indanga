@@ -10,8 +10,13 @@ const slides = [
   { image: "/hotel room 2.jpg", alt: "A modern living space" }
 ];
 
+const words = ["Stay", "Home", "Ride"];
+
 export function Hero() {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [wordIndex, setWordIndex] = useState(0);
+  const [displayText, setDisplayText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -20,6 +25,34 @@ export function Hero() {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const currentWord = words[wordIndex];
+    let delay = isDeleting ? 60 : 120;
+
+    if (!isDeleting && displayText === currentWord) {
+      delay = 1800;
+    } else if (isDeleting && displayText === "") {
+      delay = 400;
+    }
+
+    const timeout = setTimeout(() => {
+      if (!isDeleting && displayText === currentWord) {
+        setIsDeleting(true);
+      } else if (isDeleting && displayText === "") {
+        setIsDeleting(false);
+        setWordIndex((current) => (current + 1) % words.length);
+      } else {
+        setDisplayText(
+          isDeleting
+            ? currentWord.slice(0, displayText.length - 1)
+            : currentWord.slice(0, displayText.length + 1)
+        );
+      }
+    }, delay);
+
+    return () => clearTimeout(timeout);
+  }, [displayText, isDeleting, wordIndex]);
 
   return (
     <section className="relative w-full overflow-hidden pt-18 pb-14">
@@ -51,7 +84,16 @@ export function Hero() {
         <h1 className="text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
           Find Your Perfect
           <br />
-          Stay, Home or Ride
+          <span
+            aria-live="polite"
+            className="inline-block min-h-[1.2em] min-w-[4ch]"
+          >
+            {displayText}
+            <span
+              aria-hidden="true"
+              className="ml-0.5 inline-block h-[1em] w-[2px] animate-pulse bg-white align-[-0.1em]"
+            />
+          </span>
         </h1>
         <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/70 sm:text-base">
           Search verified homes, hotels, and cars  all in one place.
