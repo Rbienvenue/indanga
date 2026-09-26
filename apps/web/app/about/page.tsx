@@ -6,14 +6,21 @@ import { useEffect, useState } from "react";
 import { FaEnvelope, FaInstagram, FaLinkedinIn } from "react-icons/fa6";
 import {
   ArrowRight,
+  BadgeCheck,
   Building2,
+  ClipboardList,
+  Eye,
+  KeyRound,
+  LayoutList,
+  LifeBuoy,
   Mail,
-  Phone,
   MapPin,
-  Zap,
-  Users,
+  MessageSquareText,
+  Phone,
+  Search,
   Shield,
-  ChevronDown,
+  Users,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -146,32 +153,6 @@ export default function About() {
                   fragmented channels and hard to discover.
                 </p>
 
-                <div className="mt-12 grid gap-8 sm:grid-cols-2">
-                  {[
-                    {
-                      label: "DISCOVER",
-                      desc: "Find properties matching your needs",
-                    },
-                    {
-                      label: "COMPARE",
-                      desc: "Review and compare options easily",
-                    },
-                    { label: "BOOK", desc: "Secure your booking instantly" },
-                    { label: "CONNECT", desc: "Link with service providers" },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/40 hover:shadow-lg"
-                    >
-                      <div className="text-2xl font-bold text-primary">
-                        {item.label}
-                      </div>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {item.desc}
-                      </p>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
@@ -290,6 +271,185 @@ export default function About() {
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   Discovery, booking, and payment made easier through
                   technology.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <Separator className="my-0" />
+
+        {/* Our Operations Section */}
+        <section id="our-operations" className="scroll-mt-20 py-20 sm:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-16 text-center">
+              <h2 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
+                Our Operations
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+                From property registration to ongoing support, INDANGA makes
+                renting simpler and more transparent for tenants, owners, and
+                agents.
+              </p>
+            </div>
+
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {/* 1. Property Registration */}
+              <div className="relative rounded-2xl border border-border bg-card p-8 transition-all hover:border-primary/40 hover:shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <ClipboardList className="size-6 text-primary" />
+                  </div>
+                  <span className="text-sm font-bold text-muted-foreground/60">
+                    01
+                  </span>
+                </div>
+                <h3 className="mb-2 font-bold text-foreground">
+                  Property Registration
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Property owners and authorized agents register their houses
+                  or apartments on INDANGA by providing accurate property
+                  details, location, pricing, photos, and availability.
+                </p>
+              </div>
+
+              {/* 2. Property Verification */}
+              <div className="relative rounded-2xl border border-border bg-card p-8 transition-all hover:border-primary/40 hover:shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <BadgeCheck className="size-6 text-primary" />
+                  </div>
+                  <span className="text-sm font-bold text-muted-foreground/60">
+                    02
+                  </span>
+                </div>
+                <h3 className="mb-2 font-bold text-foreground">
+                  Property Verification
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  INDANGA works to verify property information and improve
+                  transparency, helping users access reliable rental listings.
+                </p>
+              </div>
+
+              {/* 3. Property Listing */}
+              <div className="relative rounded-2xl border border-border bg-card p-8 transition-all hover:border-primary/40 hover:shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <LayoutList className="size-6 text-primary" />
+                  </div>
+                  <span className="text-sm font-bold text-muted-foreground/60">
+                    03
+                  </span>
+                </div>
+                <h3 className="mb-2 font-bold text-foreground">
+                  Property Listing
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Verified or approved properties are published on the platform
+                  with clear information, allowing potential tenants to easily
+                  discover available houses and apartments.
+                </p>
+              </div>
+
+              {/* 4. Search & Discovery */}
+              <div className="relative rounded-2xl border border-border bg-card p-8 transition-all hover:border-primary/40 hover:shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Search className="size-6 text-primary" />
+                  </div>
+                  <span className="text-sm font-bold text-muted-foreground/60">
+                    04
+                  </span>
+                </div>
+                <h3 className="mb-2 font-bold text-foreground">
+                  Search &amp; Discovery
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Tenants can search for properties based on their preferred
+                  location, price, property type, size, and other requirements.
+                </p>
+              </div>
+
+              {/* 5. Property Inquiry */}
+              <div className="relative rounded-2xl border border-border bg-card p-8 transition-all hover:border-primary/40 hover:shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <MessageSquareText className="size-6 text-primary" />
+                  </div>
+                  <span className="text-sm font-bold text-muted-foreground/60">
+                    05
+                  </span>
+                </div>
+                <h3 className="mb-2 font-bold text-foreground">
+                  Property Inquiry
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Interested tenants can contact the property owner or agent
+                  through the platform to ask questions, request more
+                  information, or arrange a viewing.
+                </p>
+              </div>
+
+              {/* 6. Viewing & Selection */}
+              <div className="relative rounded-2xl border border-border bg-card p-8 transition-all hover:border-primary/40 hover:shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Eye className="size-6 text-primary" />
+                  </div>
+                  <span className="text-sm font-bold text-muted-foreground/60">
+                    06
+                  </span>
+                </div>
+                <h3 className="mb-2 font-bold text-foreground">
+                  Viewing &amp; Selection
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Tenants can visit suitable properties, evaluate their
+                  options, and select the property that meets their needs.
+                </p>
+              </div>
+
+              {/* 7. Rental Process */}
+              <div className="relative rounded-2xl border border-border bg-card p-8 transition-all hover:border-primary/40 hover:shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <KeyRound className="size-6 text-primary" />
+                  </div>
+                  <span className="text-sm font-bold text-muted-foreground/60">
+                    07
+                  </span>
+                </div>
+                <h3 className="mb-2 font-bold text-foreground">
+                  Rental Process
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Once the tenant and property owner/agent agree on the terms,
+                  INDANGA facilitates the next steps of the rental process,
+                  including available digital payment solutions where
+                  applicable.
+                </p>
+              </div>
+
+              {/* 8. Ongoing Support */}
+              <div className="relative rounded-2xl border border-border bg-card p-8 transition-all hover:border-primary/40 hover:shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <LifeBuoy className="size-6 text-primary" />
+                  </div>
+                  <span className="text-sm font-bold text-muted-foreground/60">
+                    08
+                  </span>
+                </div>
+                <h3 className="mb-2 font-bold text-foreground">
+                  Ongoing Support
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  INDANGA continues to connect tenants, property owners, and
+                  agents while providing a platform for managing
+                  property-related interactions and improving the rental
+                  experience.
                 </p>
               </div>
             </div>

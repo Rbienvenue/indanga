@@ -7,7 +7,8 @@ import ThemeToggle from "@/components/providers/theme-toggle";
 const quickLinks = [
   { label: "Home", href: "/" },
   { label: "Explore", href: "/properties" },
-  { label: "About Us", href: "/#about" },
+  { label: "About Us", href: "/about" },
+  { label: "Our Operations", href: "/about#our-operations" },
   { label: "How it works", href: "/#how-it-works" },
 ];
 
