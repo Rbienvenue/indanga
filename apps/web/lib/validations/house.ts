@@ -26,6 +26,36 @@ export function typeHasRooms(type: PropertyType): boolean {
   return typesWithRooms.includes(type);
 }
 
+export const propertyAmenities = [
+  "wifi",
+  "pool",
+  "parking",
+  "breakfast",
+  "air-conditioning",
+  "tv",
+  "washing-machine",
+  "backup-power",
+  "furnished",
+  "gym",
+  "balcony",
+] as const;
+
+export type PropertyAmenity = (typeof propertyAmenities)[number];
+
+export const propertyAmenityLabels: Record<PropertyAmenity, string> = {
+  wifi: "WiFi",
+  pool: "Pool",
+  parking: "Parking",
+  breakfast: "Breakfast",
+  "air-conditioning": "Air conditioning",
+  tv: "TV",
+  "washing-machine": "Washing machine",
+  "backup-power": "Backup power",
+  furnished: "Furnished",
+  gym: "Gym",
+  balcony: "Balcony",
+};
+
 export const createHouseSchema = z.object({
   name: z.string().trim().min(2, "Property name must be at least 2 characters"),
   propertyType: z.enum(propertyTypes, { message: "Select a property type" }),
@@ -40,6 +70,7 @@ export const createHouseSchema = z.object({
   village: z.string().trim().min(1, "Village is required"),
   address: z.string().trim().optional(),
   description: z.string().trim().min(10, "Description must be at least 10 characters"),
+  metadata: z.array(z.enum(propertyAmenities)).optional(),
 });
 
 export type CreateHouseValues = z.infer<typeof createHouseSchema>;

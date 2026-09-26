@@ -114,8 +114,8 @@ model House {
   subType      String?
   bedrooms     Int
   bathrooms    Int
-  // features     String[]
-  // isFeatured   Boolean  @default(false)
+  metadata     Json         @default("[]")
+  // features     String[]  // isFeatured   Boolean  @default(false)
   status       HouseStatus @default(PENDING)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt

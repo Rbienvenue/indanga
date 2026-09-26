@@ -29,6 +29,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { ImageDropzone } from "@/components/ui/image-dropzone";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -42,9 +43,12 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/components/providers/session-provider";
+import { amenityIcons, parseAmenities } from "@/lib/amenities";
 import { fetcher } from "@/lib/fetcher";
 import {
   createHouseSchema,
+  propertyAmenities,
+  propertyAmenityLabels,
   propertyTypes,
   subTypesByPropertyType,
   typeHasRooms,
@@ -94,6 +98,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
       village: "",
       address: "",
       description: "",
+      metadata: [],
     },
   });
 
@@ -114,6 +119,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
         village: locationParts.village,
         address: house.address ?? "",
         description: house.description,
+        metadata: parseAmenities(house.metadata),
       });
       setExistingMedia(house.media);
     }
@@ -239,6 +245,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
                           if (!typeHasRooms(value as PropertyType)) {
                             form.setValue("bedrooms", undefined);
                             form.setValue("bathrooms", undefined);
+                            form.setValue("metadata", []);
                           }
                         }}
                         className="grid grid-cols-2 gap-3 sm:grid-cols-3"
@@ -404,6 +411,62 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
               )}
             />
 
+            {showRooms && (
+              <FormField
+                control={form.control}
+                name="metadata"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Features</FormLabel>
+                    <p className="text-muted-foreground text-sm">
+                      Select the features available at this property (optional).
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {propertyAmenities.map((amenity) => (
+                        <FormField
+                          key={amenity}
+                          control={form.control}
+                          name="metadata"
+                          render={({ field }) => {
+                            const selected = field.value ?? [];
+                            const checked = selected.includes(amenity);
+                            const AmenityIcon = amenityIcons[amenity];
+                            return (
+                              <FormItem>
+                                <Label
+                                  htmlFor={`amenity-${amenity}`}
+                                  className="border-input has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5 flex cursor-pointer items-center gap-2.5 rounded-lg border p-3 transition-colors hover:bg-accent"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      id={`amenity-${amenity}`}
+                                      checked={checked}
+                                      onCheckedChange={(value) => {
+                                        const next =
+                                          value === true
+                                            ? [...selected, amenity]
+                                            : selected.filter((item) => item !== amenity);
+                                        field.onChange(next);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <AmenityIcon className="size-4" />
+                                  <span className="text-sm font-medium">
+                                    {propertyAmenityLabels[amenity]}
+                                  </span>
+                                </Label>
+                              </FormItem>
+                            );
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <div className="space-y-2">
               <Label>Photos</Label>
               {existingMedia.length > 0 && (
@@ -475,6 +538,7 @@ function buildPropertyFormData(values: CreateHouseValues, files: File[], existin
 
   if (values.bedrooms != null) formData.append("bedrooms", String(values.bedrooms));
   if (values.bathrooms != null) formData.append("bathrooms", String(values.bathrooms));
+  formData.append("metadata", JSON.stringify(values.metadata ?? []));
 
   for (const url of existingMedia ?? []) {
     formData.append("existingMedia", url);

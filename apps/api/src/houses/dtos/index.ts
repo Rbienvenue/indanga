@@ -5,7 +5,15 @@ import { IsArray, IsEnum, IsInt, IsOptional, IsPositive, IsString } from "class-
 
 function toStringArray(value: unknown) {
   if (Array.isArray(value)) return value;
-  if (typeof value === "string") return value ? [value] : [];
+  if (typeof value === "string") {
+    try {
+      const parsed: unknown = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      // not JSON, fall through to single-value handling
+    }
+    return value ? [value] : [];
+  }
   return value;
 }
 
@@ -62,6 +70,12 @@ export class CreateHouseDto {
   @IsInt()
   @IsOptional()
   bathrooms?: number;
+
+  @IsOptional()
+  @Transform(({ value }) => toStringArray(value))
+  @IsArray()
+  @IsString({ each: true })
+  metadata?: string[];
 }
 
 export class UpdateHouseDto extends PartialType(CreateHouseDto) {

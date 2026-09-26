@@ -33,7 +33,10 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
+import { amenityIcons, parseAmenities } from "@/lib/amenities";
+import { propertyAmenityLabels } from "@/lib/validations/house";
 import { cn } from "@/lib/utils";
+
 function Gallery({ house }: { house: House }) {
   const media = house.media.length > 0 ? house.media : [];
   const images =
@@ -198,6 +201,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
   const house = houseQuery.data.data;
   const isAvailable = house.status === "AVAILABLE";
   const bookingKind = getBookingKind(house.propertyType);
+  const amenities = parseAmenities(house.metadata);
   const detailCopy =
     bookingKind === "car"
       ? {
@@ -331,9 +335,6 @@ export function HouseDetails({ houseId }: { houseId: string }) {
             </div>
 
             <section className="py-9">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                {detailCopy.spaceEyebrow}
-              </p>
               <h2 className="mt-2 text-2xl font-bold tracking-tight">{detailCopy.spaceHeading}</h2>
               <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-400">
                 {house.description}
@@ -342,10 +343,32 @@ export function HouseDetails({ houseId }: { houseId: string }) {
 
             <Separator className="bg-slate-900/10 dark:bg-white/10" />
 
+            {amenities.length > 0 ? (
+              <>
+                <section className="py-9">
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                    What this place offers
+                  </h2>
+                  <ul className="mt-6 grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2">
+                    {amenities.map((amenity) => {
+                      const Icon = amenityIcons[amenity];
+                      return (
+                        <li key={amenity} className="flex items-center gap-4">
+                          <Icon className="size-6 shrink-0 text-slate-950 dark:text-slate-50" />
+                          <span className="text-base text-slate-800 dark:text-slate-200">
+                            {propertyAmenityLabels[amenity]}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+
+                <Separator className="bg-slate-900/10 dark:bg-white/10" />
+              </>
+            ) : null}
+
             <section className="py-9">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                Why it works
-              </p>
               <h2 className="mt-2 text-2xl font-bold tracking-tight">{detailCopy.whyHeading}</h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <Feature
