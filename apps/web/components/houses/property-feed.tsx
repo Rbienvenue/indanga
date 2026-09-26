@@ -13,12 +13,29 @@ import { fetcher } from "@/lib/fetcher";
 import { buildPropertiesUrl } from "@/lib/property-filters";
 
 export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
-  const [propertyType] = useQueryState("type", parseAsString.withDefault("all"));
-  const [subType] = useQueryState("subType", parseAsString.withDefault("all"));
-  const [budget] = useQueryState("budget", parseAsString.withDefault("any"));
-  const [province] = useQueryState("province", parseAsString.withDefault("all"));
-  const [district] = useQueryState("district", parseAsString.withDefault("all"));
-  const [sector] = useQueryState("sector", parseAsString.withDefault("all"));
+  const [propertyType, setPropertyType] = useQueryState("type", parseAsString.withDefault("all"));
+  const [subType, setSubType] = useQueryState("subType", parseAsString.withDefault("all"));
+  const [budget, setBudget] = useQueryState("budget", parseAsString.withDefault("any"));
+  const [province, setProvince] = useQueryState("province", parseAsString.withDefault("all"));
+  const [district, setDistrict] = useQueryState("district", parseAsString.withDefault("all"));
+  const [sector, setSector] = useQueryState("sector", parseAsString.withDefault("all"));
+
+  const hasActiveFilters =
+    propertyType !== "all" ||
+    subType !== "all" ||
+    budget !== "any" ||
+    province !== "all" ||
+    district !== "all" ||
+    sector !== "all";
+
+  function clearFilters() {
+    void setPropertyType(null);
+    void setSubType(null);
+    void setBudget(null);
+    void setProvince(null);
+    void setDistrict(null);
+    void setSector(null);
+  }
 
   const effectiveLocation =
     sector !== "all" ? sector : district !== "all" ? district : province !== "all" ? province : "all";
@@ -66,8 +83,15 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
           </div>
           <h2 className="mt-6 text-xl font-semibold">No properties found</h2>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            Try changing the property type or budget.
+            {hasActiveFilters
+              ? "Try changing the property type or budget, or clear all filters to see everything."
+              : "There are no properties available right now. Please check back later."}
           </p>
+          {hasActiveFilters ? (
+            <Button variant="outline" className="mt-5" onClick={clearFilters}>
+              Clear filters
+            </Button>
+          ) : null}
         </div>
       ) : (
         <>

@@ -75,6 +75,7 @@ export function Recommended({ className }: Props) {
                   media={house.media}
                   bedrooms={house.bedrooms}
                   bathrooms={house.bathrooms}
+                  propertyType={house.propertyType}
                   badge="Featured"
                 />
               ))}

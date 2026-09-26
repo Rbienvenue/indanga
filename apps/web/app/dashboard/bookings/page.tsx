@@ -249,6 +249,7 @@ export default function BookingsPage() {
                 media={house.media}
                 bedrooms={house.bedrooms}
                 bathrooms={house.bathrooms}
+                propertyType={house.propertyType}
                 badge={house.propertyType}
               />
             ))}

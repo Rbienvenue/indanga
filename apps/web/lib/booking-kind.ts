@@ -14,3 +14,10 @@ export function getBookingKind(propertyType?: string): BookingKind {
   }
   return "home";
 }
+
+export function getPriceUnit(propertyType?: string): string {
+  const kind = getBookingKind(propertyType);
+  if (kind === "hotel") return "/ night";
+  if (kind === "car") return "/ day";
+  return "/ month";
+}
