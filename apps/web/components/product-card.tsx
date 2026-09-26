@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetcher } from "@/lib/fetcher";
+import { getPriceUnit } from "@/lib/booking-kind";
 import { cn, formatPrice } from "@/lib/utils";
 import { useSession } from "./providers/session-provider";
 
@@ -55,12 +56,13 @@ export function ProductCard({
   badge,
   badgeClassName = "bg-primary text-primary-foreground",
   href,
-  priceUnit = "/ month",
+  priceUnit,
   className,
   isFavorite = false,
   showManageActions = false,
   status,
 }: ProductCardProps) {
+  const resolvedPriceUnit = priceUnit ?? getPriceUnit(propertyType);
   const queryClient = useQueryClient();
   const session = useSession();
   const isLoggedIn = !!session?.user;
@@ -246,7 +248,7 @@ export function ProductCard({
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-1">
             <span className="text-lg font-bold text-primary">{formatPrice(price)}</span>
-            <span className="text-sm text-muted-foreground">{priceUnit}</span>
+            <span className="text-sm text-muted-foreground">{resolvedPriceUnit}</span>
           </div>
           {status && <PropertyStatusBadge status={status} />}
         </div>

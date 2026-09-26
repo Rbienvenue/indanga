@@ -129,6 +129,7 @@ export default function HotelsPage() {
                 media={hotel.media}
                 bedrooms={hotel.bedrooms}
                 bathrooms={hotel.bathrooms}
+                propertyType={hotel.propertyType}
                 badge="Hotel room"
               />
             ))}

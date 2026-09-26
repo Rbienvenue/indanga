@@ -25,9 +25,10 @@ import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
 import { BookingCard } from "@/components/houses/BookingCard";
+import { HousePhotoSlideshow } from "@/components/houses/house-photo-slideshow";
 import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
@@ -35,14 +36,24 @@ import { getBookingKind } from "@/lib/booking-kind";
 import { cn } from "@/lib/utils";
 function Gallery({ house }: { house: House }) {
   const media = house.media.length > 0 ? house.media : [];
-  const images = Array.from({ length: 5 }, (_, index) => media[index % media.length]);
+  const images =
+    media.length > 0 ? Array.from({ length: 5 }, (_, index) => media[index % media.length]) : [];
+  const [open, setOpen] = useState(false);
+  const [initialIndex, setInitialIndex] = useState(0);
+
+  function openSlideshow(index: number) {
+    setInitialIndex(index);
+    setOpen(true);
+  }
 
   return (
-    <Dialog>
-      <div className="grid h-[22rem] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-2xl sm:h-[30rem] lg:h-[34rem]">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <div className="relative grid h-[18rem] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-2xl sm:h-[22rem] lg:h-[24rem]">
         {images.map((src, index) => (
-          <DialogTrigger
+          <button
             key={`${src}-${index}`}
+            type="button"
+            onClick={() => openSlideshow(index % media.length)}
             className={cn(
               "group relative overflow-hidden bg-muted text-left",
               index === 0 ? "col-span-4 row-span-2 sm:col-span-2" : "hidden sm:block",
@@ -57,37 +68,29 @@ function Gallery({ house }: { house: House }) {
               sizes={index === 0 ? "(max-width: 640px) 100vw, 50vw" : "25vw"}
             />
             <span className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
-          </DialogTrigger>
+          </button>
         ))}
-        <DialogTrigger asChild>
-          <Button
-            variant="secondary"
-            className="absolute right-4 bottom-4 z-10 h-10 border border-black/10 bg-white/95 px-4 text-slate-950 shadow-lg hover:bg-white"
-          >
-            <Maximize2 />
-            View all photos
-          </Button>
-        </DialogTrigger>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => openSlideshow(0)}
+          className="absolute right-4 bottom-4 z-10 h-10 border border-black/10 bg-white/95 px-4 text-slate-950 shadow-lg hover:bg-white"
+        >
+          <Maximize2 />
+          View all photos
+        </Button>
       </div>
 
       <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto bg-[#f7f5f0] p-5 dark:bg-slate-950 sm:max-w-5xl">
         <DialogTitle className="text-xl">{house.name}</DialogTitle>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {media.map((src, index) => (
-            <div
-              key={`${src}-dialog-${index}`}
-              className="relative aspect-[4/3] overflow-hidden rounded-xl"
-            >
-              <Image
-                src={src}
-                alt={`${house.name} photo ${index + 1}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 100vw, 50vw"
-              />
-            </div>
-          ))}
-        </div>
+        {open ? (
+          <HousePhotoSlideshow
+            key={initialIndex}
+            houseName={house.name}
+            media={media}
+            initialIndex={initialIndex}
+          />
+        ) : null}
       </DialogContent>
     </Dialog>
   );
@@ -437,7 +440,7 @@ function HouseDetailsSkeleton() {
       <div className="h-18 border-b border-slate-900/8 dark:border-white/10" />
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Skeleton className="mb-5 h-5 w-40" />
-        <Skeleton className="h-88 w-full rounded-2xl sm:h-120 lg:h-136" />
+        <Skeleton className="h-72 w-full rounded-2xl sm:h-88 lg:h-96" />
         <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_23rem]">
           <div>
             <Skeleton className="h-5 w-32" />

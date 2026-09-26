@@ -33,6 +33,7 @@ const socialLinks = [
 export function Navbar({ solid = false }: { solid?: boolean } = {}) {
   const [scrolled, setScrolled] = React.useState(solid);
   const [aboutOpen, setAboutOpen] = React.useState(false);
+  const [mobileAboutOpen, setMobileAboutOpen] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [activeHash, setActiveHash] = React.useState("");
   const pathname = usePathname();
@@ -59,7 +60,35 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  const closeTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openAboutMenu = () => {
+    if (closeTimeout.current) {
+      clearTimeout(closeTimeout.current);
+      closeTimeout.current = null;
+    }
+    setAboutOpen(true);
+  };
+
   const closeAboutMenu = () => setAboutOpen(false);
+
+  const scheduleCloseAboutMenu = () => {
+    if (closeTimeout.current) {
+      clearTimeout(closeTimeout.current);
+    }
+    closeTimeout.current = setTimeout(() => {
+      setAboutOpen(false);
+      closeTimeout.current = null;
+    }, 120);
+  };
+
+  React.useEffect(() => {
+    return () => {
+      if (closeTimeout.current) {
+        clearTimeout(closeTimeout.current);
+      }
+    };
+  }, []);
 
   return (
     <header
@@ -94,11 +123,26 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                 {link.label}
               </Link>
             ))}
-            <div className="relative">
+            <div
+              className="relative"
+              onMouseEnter={openAboutMenu}
+              onMouseLeave={scheduleCloseAboutMenu}
+              onFocus={openAboutMenu}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                  closeAboutMenu();
+                }
+              }}
+            >
               <button
                 type="button"
                 aria-expanded={aboutOpen}
-                onClick={() => setAboutOpen((open) => !open)}
+                aria-haspopup="menu"
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    closeAboutMenu();
+                  }
+                }}
                 className={`flex items-center gap-1 border-b-2 px-3.5 py-2 text-sm font-medium text-white/75 transition-colors hover:border-accent hover:text-accent ${pathname === "/about" ? "border-accent text-accent" : "border-transparent"}`}
               >
                 About Us
@@ -106,7 +150,10 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
               </button>
 
               {aboutOpen && (
-                <div className="absolute top-full left-1/2 z-50 mt-2 w-56 -translate-x-1/2 rounded-lg border border-primary/30 bg-[#0A0A2C] p-2 shadow-xl">
+                <div
+                  role="menu"
+                  className="absolute top-full left-1/2 z-50 mt-2 w-56 -translate-x-1/2 rounded-lg border border-primary/30 bg-[#0A0A2C] p-2 shadow-xl"
+                >
                   {aboutLinks.map((link) => (
                     <Link
                       key={link.href}
@@ -204,22 +251,22 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                 <div className="border-b-2 border-primary/30">
                   <button
                     type="button"
-                    aria-expanded={aboutOpen}
-                    onMouseEnter={() => setAboutOpen((open) => !open)}
+                    aria-expanded={mobileAboutOpen}
+                    onClick={() => setMobileAboutOpen((open) => !open)}
                     className={`flex min-h-20 w-full items-center justify-center gap-2 px-5 text-base font-semibold text-white/85 transition-colors hover:bg-[#101044] hover:text-accent ${pathname === "/about" ? "text-accent" : ""}`}
                   >
                     About Us
-                    <ChevronDown className={`size-5 transition-transform ${aboutOpen ? "rotate-180" : ""}`} />
+                    <ChevronDown className={`size-5 transition-transform ${mobileAboutOpen ? "rotate-180" : ""}`} />
                   </button>
 
-                  {aboutOpen && (
+                  {mobileAboutOpen && (
                     <div className="border-t border-primary/30 bg-[#101044] px-5 py-2">
                       {aboutLinks.map((link) => (
                         <Link
                           key={link.href}
                           href={link.href}
                           onClick={() => {
-                            closeAboutMenu();
+                            setMobileAboutOpen(false);
                             setMobileMenuOpen(false);
                           }}
                           className="block border-b border-white/10 px-3 py-3 text-center text-sm text-white/80 last:border-b-0 hover:text-accent"
