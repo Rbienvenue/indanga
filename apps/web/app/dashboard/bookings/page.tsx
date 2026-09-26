@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { fetcher } from "@/lib/fetcher";
+import { formatPrice } from "@/lib/utils";
 
 const PAGE_SIZE = 6;
 
@@ -90,9 +91,7 @@ const agentColumns: ColumnDef<BookingWithHouse>[] = [
     header: "Price",
     accessorFn: (row) => row.house.price,
     cell: ({ row }) => (
-      <span className="text-muted-foreground">
-        {row.original.house.price.toLocaleString()} RWF/mo
-      </span>
+      <span className="text-muted-foreground">{formatPrice(row.original.house.price)}/mo</span>
     ),
   },
   {

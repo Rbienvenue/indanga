@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetcher } from "@/lib/fetcher";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 import { useSession } from "./providers/session-provider";
 
 export type ProductCardProps = {
@@ -40,10 +40,6 @@ export type ProductCardProps = {
   showManageActions?: boolean;
   status?: PropertyStatus;
 };
-
-function formatPrice(price: number) {
-  return `$${price.toLocaleString()}`;
-}
 
 export function ProductCard({
   id,

@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Loader2, RefreshCw } from "lucide-react";
 
 import type { PaginationResponse } from "@/@types";
 import { PageHeader } from "@/components/dashboard/page-header";
-import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
 import { fetcher } from "@/lib/fetcher";
+import { formatPrice } from "@/lib/utils";
 
 type PaymentWithBooking = {
   id: string;
@@ -30,15 +33,44 @@ const statusColors: Record<string, string> = {
   FAILED: "bg-red-100 text-red-700",
 };
 
-function formatRWF(amount: string | number) {
-  return `${Number(amount).toLocaleString()} RWF`;
+function RefreshPayment({ payment }: { payment: PaymentWithBooking }) {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () =>
+      fetcher("/payments/callback", {
+        method: "POST",
+        body: JSON.stringify({
+          data: { transaction_id: payment.transactionReference },
+        }),
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-payments"] }),
+  });
+
+  if (payment.status !== "PENDING") return null;
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      title="Refresh payment status"
+      aria-label="Refresh payment status"
+      onClick={() => mutation.mutate()}
+      disabled={mutation.isPending}
+    >
+      {mutation.isPending ? (
+        <Loader2 className="size-4 animate-spin" />
+      ) : (
+        <RefreshCw className="size-4" />
+      )}
+    </Button>
+  );
 }
 
 const columns: ColumnDef<PaymentWithBooking>[] = [
   {
     accessorKey: "amount",
     header: "Amount",
-    cell: ({ row }) => <span className="font-medium">{formatRWF(row.original.amount)}</span>,
+    cell: ({ row }) => <span className="font-medium">{formatPrice(row.original.amount)}</span>,
   },
   {
     id: "tenant",
@@ -61,15 +93,6 @@ const columns: ColumnDef<PaymentWithBooking>[] = [
     header: "Method",
   },
   {
-    accessorKey: "transactionReference",
-    header: "Reference",
-    cell: ({ row }) => (
-      <span className="font-mono text-xs text-muted-foreground">
-        {row.original.transactionReference}
-      </span>
-    ),
-  },
-  {
     accessorKey: "createdAt",
     header: "Date",
     cell: ({ row }) => (
@@ -82,9 +105,12 @@ const columns: ColumnDef<PaymentWithBooking>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
-      <Badge variant="secondary" className={statusColors[row.original.status]}>
-        {row.original.status.charAt(0) + row.original.status.slice(1).toLowerCase()}
-      </Badge>
+      <div className="flex items-center gap-2">
+        <Badge variant="secondary" className={statusColors[row.original.status]}>
+          {row.original.status.charAt(0) + row.original.status.slice(1).toLowerCase()}
+        </Badge>
+        <RefreshPayment payment={row.original} />
+      </div>
     ),
   },
 ];

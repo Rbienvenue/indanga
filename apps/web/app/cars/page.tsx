@@ -4,6 +4,7 @@ import { Car, Compass, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatPrice } from "@/lib/utils";
 
 const featuredCars = [
   {
@@ -98,7 +99,7 @@ export default function CarsPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">From</p>
                   <p className="text-xl font-semibold text-foreground">
-                    RWF {car.price.toLocaleString()}
+                    {formatPrice(car.price)}
                   </p>
                 </div>
                 <Button asChild size="sm">

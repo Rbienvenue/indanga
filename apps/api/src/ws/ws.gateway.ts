@@ -12,6 +12,10 @@ type NotificationPayload = {
   userId: string;
 };
 
+type PaymentPayload = {
+  paymentId: string;
+};
+
 @WebSocketGateway({
   cors: {
     origin: [env.FRONTEND_URL],
@@ -39,11 +43,33 @@ export class WsGateway {
     return { room };
   }
 
+  @SubscribeMessage("subscribe:payment")
+  subscribeToPayment(@ConnectedSocket() client: Socket, @MessageBody() payload: PaymentPayload) {
+    if (!payload?.paymentId) {
+      client.emit("payment:error", { message: "paymentId is required" });
+      return;
+    }
+
+    const room = this.getPaymentRoom(payload.paymentId);
+    client.join(room);
+    client.emit("subscribed:payment", { room });
+
+    return { room };
+  }
+
   emitToUser(userId: string, notification: unknown) {
     this.server.to(this.getUserRoom(userId)).emit("notification", notification);
   }
 
+  emitPaymentUpdate(paymentId: string, status: "pending" | "successful" | "failed") {
+    this.server.to(this.getPaymentRoom(paymentId)).emit("payment.update", { paymentId, status });
+  }
+
   private getUserRoom(userId: string) {
     return `user:${userId}`;
+  }
+
+  private getPaymentRoom(paymentId: string) {
+    return `payment:${paymentId}`;
   }
 }
