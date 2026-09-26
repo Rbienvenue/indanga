@@ -18,8 +18,8 @@ const navLinks = [
 
 const aboutLinks = [
   { label: "Who we are", href: "/about" },
-  { label: "operations", href: "/about#operations" },
-  { label: "Team", href: "/about#leadership" },
+  { label: "our purpose", href: "/about#our-purpose" },
+  { label: "Team", href: "/about#team" },
   { label: "Contact", href: "/about#contact" },
 ];
 

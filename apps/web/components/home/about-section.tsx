@@ -54,7 +54,7 @@ const leadershipMembers: Person[] = [
     name: "NTAKIYIRUTA Didier",
     position: "Chief Executive Officer",
     department: "Governance",
-    image: "/didier.png",
+    image: "/Didier.png",
     bio: `
 Didier has a strong foundation in Business Management and Finance and nearly six years of hands-on experience in manufacturing, production, and mining sector , he is a strategic leader driven by a passion for building people, transforming operations, and creating sustainable businesses.
 
@@ -323,21 +323,14 @@ export function AboutSection() {
                 Organization Structure
               </p>
             </div>
-
-            <div className="mt-5 rounded-2xl border border-border/80 bg-card p-3 shadow-sm sm:p-4 lg:p-5">
-              <div className="overflow-x-auto">
-                <div className="mx-auto max-w-5xl">
                   <Image
                     src="/structure.jpeg"
                     alt="Indanga organizational overview"
                     width={1600}
-                    height={900}
-                    className="h-auto max-h-[42svh] w-full rounded-xl border border-border/70 object-contain object-center"
+                    height={20000}
+                    className="h-auto  w-full rounded-xl border border-border/70  object-center"
                     priority
                   />
-                </div>
-              </div>
-            </div>
           </section>
         );
       case "Executive-management":
@@ -388,7 +381,7 @@ export function AboutSection() {
 
   return (
     <section
-      id="about"
+      id="team"
       className="relative overflow-hidden border-t border-primary/40 bg-background py-10 sm:py-14 lg:py-20"
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-border to-transparent" />
