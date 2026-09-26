@@ -18,6 +18,7 @@ export default function Home() {
         <SearchBar redirectTo="/properties" />
         <Categories />
         <Recommended />
+        <HowItWorks />
       </main>
       <Footer />
     </div>

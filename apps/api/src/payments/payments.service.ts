@@ -60,9 +60,15 @@ export class PaymentsService {
           phone: data.phone,
           method: data.method,
         });
-        //TODO: save the PCODE if payment method is CARD
+        const savedPayment =
+          data.method === "CARD" && "PCODE" in result
+            ? await tx.payment.update({
+                where: { transactionReference: payment.transactionReference },
+                data: { transactionReference: result.PCODE },
+              })
+            : payment;
 
-        return { booking, payment, result };
+        return { booking, payment: savedPayment, result };
       },
       { timeout: 10_000 },
     );
@@ -87,11 +93,12 @@ export class PaymentsService {
     if (!booking) throw new NotFoundException("Booking not found");
 
     if (payment.status !== "PENDING") return payment;
-   //ITEC deletes failed transactions
+    //ITEC deletes failed transactions
     let result: Awaited<ReturnType<ITECService["checkPaymentStatus"]>>;
     try {
       result = await this.itec.checkPaymentStatus(transactionReference);
     } catch (error) {
+      console.error(error);
       if (!(error instanceof BadRequestException) || !/no transaction found/i.test(error.message)) {
         throw error;
       }

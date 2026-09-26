@@ -37,10 +37,7 @@ export class KycService {
     private readonly notificationsService: NotificationsService,
   ) {}
 
-  async submitKyc(
-    userId: string,
-    files: { ID_DOCUMENT?: Express.Multer.File[] },
-  ) {
+  async submitKyc(userId: string, files: { ID_DOCUMENT?: Express.Multer.File[] }) {
     const file = files?.ID_DOCUMENT?.[0];
     if (!file) {
       throw new BadRequestException("ID document is required");
@@ -134,7 +131,7 @@ export class KycService {
 
   async listKyc(data: GetKycDto) {
     const { page = 1, limit = 20, search, status } = data;
-    const where: Prisma.UserWhereInput = { role: "landlord", kycDocuments: { some: {} }, };
+    const where: Prisma.UserWhereInput = { role: "landlord", kycDocuments: { some: {} } };
     if (status) where.kycStatus = status;
     if (search) {
       where.OR = [
@@ -222,7 +219,7 @@ export class KycService {
 
   async verifyNationalId(id: string) {
     const response = await fetch(`${env.NIDA_API_URL}/${id}`);
-    console.log(response)
+    console.log(response);
     if (response.status === 500) {
       throw new ServiceUnavailableException("nida service is unavailable");
     }

@@ -62,6 +62,7 @@ export type InitiatePaymentResponse = {
 
 export type CardPaymentResponse = {
   status: number;
+  PCODE: string;
   link: string;
   valid_until: string;
   amount: number;

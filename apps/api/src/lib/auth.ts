@@ -14,7 +14,7 @@ export const auth = betterAuth({
   debug: true,
   baseURL: env.BETTER_AUTH_URL,
   basePath: "/v1/auth",
-  trustedOrigins: [env.BETTER_AUTH_URL, env.FRONTEND_URL,"https://www.indanga.com"],
+  trustedOrigins: [env.BETTER_AUTH_URL, env.FRONTEND_URL, "https://www.indanga.com"],
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
@@ -73,7 +73,10 @@ export const auth = betterAuth({
             });
           }
 
-          const { phoneNumber, nationalId } = user as typeof user & { phoneNumber?: string, nationalId?: string };
+          const { phoneNumber, nationalId } = user as typeof user & {
+            phoneNumber?: string;
+            nationalId?: string;
+          };
           if (!phoneNumber) return;
           const existing = await prisma.user.findUnique({
             where: { phoneNumber },

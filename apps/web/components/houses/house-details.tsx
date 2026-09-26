@@ -31,6 +31,7 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
+import { getBookingKind } from "@/lib/booking-kind";
 import { cn } from "@/lib/utils";
 function Gallery({ house }: { house: House }) {
   const media = house.media.length > 0 ? house.media : [];
@@ -193,6 +194,37 @@ export function HouseDetails({ houseId }: { houseId: string }) {
 
   const house = houseQuery.data.data;
   const isAvailable = house.status === "AVAILABLE";
+  const bookingKind = getBookingKind(house.propertyType);
+  const detailCopy =
+    bookingKind === "car"
+      ? {
+          spaceEyebrow: "The vehicle",
+          spaceHeading: "Ready for the road",
+          whyHeading: "Designed for an easy rental",
+          firstTitle: "Ready to drive away",
+          firstDescription: `A ${house.propertyType.toLowerCase()} available for flexible rental, priced per day.`,
+          availabilityDescription:
+            "Availability is kept current so you know when a car is ready to book.",
+        }
+      : bookingKind === "hotel"
+        ? {
+            spaceEyebrow: "The stay",
+            spaceHeading: "A place to rest easy",
+            whyHeading: "Designed for an easy stay",
+            firstTitle: "Ready for your stay",
+            firstDescription: `A ${house.propertyType.toLowerCase()} listed for comfortable short stays, booked per night.`,
+            availabilityDescription:
+              "Availability is kept current so you know when a room is ready to book.",
+          }
+        : {
+            spaceEyebrow: "The space",
+            spaceHeading: "A place to settle into",
+            whyHeading: "Designed for an easy move",
+            firstTitle: "Ready to call home",
+            firstDescription: `A ${house.propertyType.toLowerCase()} listed for long-term monthly living.`,
+            availabilityDescription:
+              "Availability is kept current so you know when a home is ready to book.",
+          };
 
   return (
     <div className="min-h-screen bg-[#f7f5f0] text-slate-950 dark:bg-slate-950 dark:text-slate-50">
@@ -297,9 +329,9 @@ export function HouseDetails({ houseId }: { houseId: string }) {
 
             <section className="py-9">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                The space
+                {detailCopy.spaceEyebrow}
               </p>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight">A place to settle into</h2>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight">{detailCopy.spaceHeading}</h2>
               <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-400">
                 {house.description}
               </p>
@@ -311,12 +343,12 @@ export function HouseDetails({ houseId }: { houseId: string }) {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
                 Why it works
               </p>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight">Designed for an easy move</h2>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight">{detailCopy.whyHeading}</h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <Feature
                   icon={KeyRound}
-                  title="Ready to call home"
-                  description={`A ${house.propertyType.toLowerCase()} listed for long-term monthly living.`}
+                  title={detailCopy.firstTitle}
+                  description={detailCopy.firstDescription}
                 />
                 <Feature
                   icon={MapPin}
@@ -326,7 +358,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                 <Feature
                   icon={ShieldCheck}
                   title="Clear availability"
-                  description="Availability is kept current so you know when a home is ready to book."
+                  description={detailCopy.availabilityDescription}
                 />
                 <Feature
                   icon={MessageCircle}

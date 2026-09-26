@@ -16,7 +16,7 @@ export class PaymentsController {
   }
 
   @Post()
-  @Roles(["tenant"])
+  @Roles(["tenant","landlord","admin"])
   async createPayment(@Session() session: UserSession, @Body() body: CreateOrderDto) {
     const result = await this.paymentsService.initiatePayment(session.user.id, body);
     return new ApiResponse(result);

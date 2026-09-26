@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fetcher } from "@/lib/fetcher";
 import { useSocketIo } from "@/components/providers/socket-io-provider";
+import { getBookingKind } from "@/lib/booking-kind";
 import { cn, formatPrice } from "@/lib/utils";
 import {
   bookingSchema,
@@ -63,6 +64,10 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
   });
   const gateway = useWatch({ control: form.control, name: "gateway" });
   const paymentId = payment?.id;
+  const bookingKind = getBookingKind(house.propertyType);
+  const bookThisLabel = `Book this ${bookingKind}`;
+  const priceUnitLabel =
+    bookingKind === "hotel" ? "per night" : bookingKind === "car" ? "per day" : "per month";
 
   const paymentMutation = useMutation({
     mutationFn: async ({ houseId, gateway, phone }: BookingValues) => {
@@ -139,7 +144,7 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
             disabled={!isAvailable}
             onClick={beginCheckout}
           >
-            {isAvailable ? "Book this home" : "Unavailable"}
+            {isAvailable ? bookThisLabel : "Unavailable"}
           </Button>
         </div>
       );
@@ -148,13 +153,13 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
     return (
       <div className="rounded-2xl border border-slate-900/10 bg-white p-6 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-slate-900 dark:shadow-black/40">
         <p className="text-2xl font-black tracking-tight">{formatPrice(house.price)}</p>
-        <p className="text-sm text-slate-500 dark:text-slate-400">per month</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{priceUnitLabel}</p>
         <Button
           className="mt-4 h-12 w-full text-base font-bold"
           disabled={!isAvailable}
           onClick={beginCheckout}
         >
-          {isAvailable ? "Book this home" : "Not available"}
+          {isAvailable ? bookThisLabel : "Not available"}
         </Button>
         <div className="mt-5 space-y-3 text-sm text-slate-600 dark:text-slate-400">
           <p className="flex items-center gap-2">
@@ -180,7 +185,7 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xl font-black tracking-tight">{formatPrice(house.price)}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">per month</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{priceUnitLabel}</p>
         </div>
       </div>
 
@@ -195,7 +200,7 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             {payment?.status === "successful"
-              ? "Your payment was successful and the home is booked."
+              ? `Your payment was successful and the ${bookingKind} is booked.`
               : payment?.status === "failed"
                 ? "The payment could not be completed. Please try again."
                 : "Check your phone and approve the payment to finish booking."}
