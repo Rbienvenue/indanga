@@ -18,7 +18,7 @@ const navLinks = [
 
 const aboutLinks = [
   { label: "About Us", href: "/about" },
-  { label: "What We Do", href: "/about#what-we-do" },
+  { label: "operations", href: "/about#operations" },
   { label: "Team", href: "/about#leadership" },
   { label: "Contact", href: "/about#contact" },
 ];
@@ -205,7 +205,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                   <button
                     type="button"
                     aria-expanded={aboutOpen}
-                    onClick={() => setAboutOpen((open) => !open)}
+                    onMouseEnter={() => setAboutOpen((open) => !open)}
                     className={`flex min-h-20 w-full items-center justify-center gap-2 px-5 text-base font-semibold text-white/85 transition-colors hover:bg-[#101044] hover:text-accent ${pathname === "/about" ? "text-accent" : ""}`}
                   >
                     About Us

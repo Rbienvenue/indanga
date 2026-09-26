@@ -193,7 +193,7 @@ export default function About() {
         <Separator className="my-0" />
 
         {/* What We Do Section */}
-        <section id="what-we-do" className="scroll-mt-20 py-20 sm:py-28">
+        <section id="operations" className="scroll-mt-20 py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-16 text-center">
               <h2 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
