@@ -72,7 +72,10 @@ export default function About() {
                   </h1>
 
                   <p className="mt-5">
-                    Discover homes, stays, vehicles, and local services in one convenient place. Explore your options, connect with providers, and make your next move with less searching and more confidence.
+                    Discover homes, stays, vehicles, and local services in one
+                    convenient place. Explore your options, connect with
+                    providers, and make your next move with less searching and
+                    more confidence.
                   </p>
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                     <Link href="/properties">
@@ -311,55 +314,61 @@ export default function About() {
                 {/* Contact Details */}
                 <div className="grid gap-6 sm:grid-cols-3">
                   {/* Location */}
-                  <div className="flex flex-col items-center">
-                    <div className="mb-3 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
-                      <MapPin className="size-6 text-primary" />
+                  <Link
+                    href="https://goo.gl/maps/6Z1g5k1F7vQ2"
+                    target="_blank"
+                    className="mt-1 text-sm text-primary hover:text-primary/80"
+                  >
+                    <div className="flex flex-col items-center">
+                      <div className="mb-3 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                        <MapPin className="size-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          Location
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Kigali, Rwanda
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        Location
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Kigali, Rwanda
-                      </p>
-                    </div>
-                  </div>
+                  </Link>
 
                   {/* Email */}
-                  <div className="flex flex-col items-center">
-                    <div className="mb-3 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
-                      <Mail className="size-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        Email
-                      </p>
-                      <Link
-                        href="mailto:info@indanga.com"
-                        className="mt-1 text-sm text-primary hover:text-primary/80"
-                      >
+                  <Link
+                    href="mailto:info@indanga.com"
+                    className="mt-1 text-sm text-primary hover:text-primary/80"
+                  >
+                    <div className="flex flex-col items-center">
+                      <div className="mb-3 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                        <Mail className="size-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          Email
+                        </p>
                         info@indanga.com
-                      </Link>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Phone */}
-                  <div className="flex flex-col items-center">
-                    <div className="mb-3 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
-                      <Phone className="size-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        Phone
-                      </p>
-                      <Link
-                        href="tel:+250788765547"
-                        className="mt-1 text-sm text-primary hover:text-primary/80"
-                      >
+                  <Link
+                    href="tel:+250788765547"
+                    className="mt-1 text-sm text-primary hover:text-primary/80"
+                  >
+                    <div className="flex flex-col items-center">
+                      <div className="mb-3 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                        <Phone className="size-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          Phone
+                        </p>
                         +250 788 765 547
-                      </Link>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 </div>
 
                 {/* CTA Button */}
