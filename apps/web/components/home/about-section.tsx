@@ -109,7 +109,7 @@ Ikuzwe Shema Elie is a skilled backend developer with expertise in building robu
     name: "RUDASINGWA Bienvenue",
     position: "Frontend Developer",
     department: "Engineering",
-    image: "/Rudasingwa.png",
+    image: "/Rudasingwa.jpeg",
     bio: `
 RUDASINGWA Bienvenue is a talented frontend developer with a passion for creating engaging and user-friendly web experiences. He has a strong foundation in modern web technologies and a keen eye for design.`,
     socialLinks: defaultSocialLinks,
