@@ -40,7 +40,8 @@ export class PaymentsService {
         if (!house) {
           throw new NotFoundException("Property not found");
         }
-        if (house.status !== HouseStatus.AVAILABLE) {
+        const dated = isDatedProperty(house.propertyType);
+        if (!dated && house.status !== HouseStatus.AVAILABLE) {
           throw new ConflictException("Property is already booked");
         }
 
@@ -49,11 +50,10 @@ export class PaymentsService {
         let nights: number | undefined;
         let amount = house.price;
 
-        if (isDatedProperty(house.propertyType)) {
+        if (dated) {
           if (!data.checkIn || !data.checkOut) {
             throw new BadRequestException("Check-in and check-out dates are required");
-          }
-          checkIn = new Date(data.checkIn);
+          }          checkIn = new Date(data.checkIn);
           checkOut = new Date(data.checkOut);
           if (Number.isNaN(checkIn.getTime()) || Number.isNaN(checkOut.getTime())) {
             throw new BadRequestException("Invalid check-in or check-out date");
@@ -68,6 +68,17 @@ export class PaymentsService {
           nights = differenceInCalendarDays(checkOut, checkIn);
           if (nights < 1) {
             throw new BadRequestException("Check-out date must be after check-in date");
+          }
+          const overlapping = await tx.booking.count({
+            where: {
+              houseId: house.id,
+              status: BookingStatus.APPROVED,
+              checkIn: { lt: checkOut },
+              checkOut: { gt: checkIn },
+            },
+          });
+          if (overlapping > 0) {
+            throw new ConflictException("Property is already booked for those dates");
           }
           amount = house.price * nights;
         }
@@ -161,16 +172,20 @@ export class PaymentsService {
     }
 
     if (status === "SUCCESSFULL") {
+      const stayStarted =
+        !booking.checkIn || startOfDay(booking.checkIn).getTime() <= startOfDay(new Date()).getTime();
       await this.db.$transaction(async (tx) => {
         await tx.payment.update({ where: { transactionReference }, data: { status: "COMPLETED" } });
         await tx.booking.update({
           where: { id: booking.id },
           data: { status: BookingStatus.APPROVED },
         });
-        await tx.house.update({
-          where: { id: booking.houseId },
-          data: { status: HouseStatus.BOOKED },
-        });
+        if (stayStarted) {
+          await tx.house.update({
+            where: { id: booking.houseId },
+            data: { status: HouseStatus.BOOKED },
+          });
+        }
       });
       this.ws.emitPaymentUpdate(payment.id, "successful");
 

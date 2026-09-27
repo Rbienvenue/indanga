@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { BookingStatus, HouseStatus } from "@indanga/db";
+import { BookingStatus, HouseStatus, Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
 import { NotificationsService } from "src/notifications/notifications.service";
 import { env } from "src/lib/env";
@@ -7,6 +7,16 @@ import { env } from "src/lib/env";
 function startOfTodayUTC(): Date {
   const now = new Date();
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
+
+function currentStay(today: Date): Prisma.BookingWhereInput {
+  return {
+    status: BookingStatus.APPROVED,
+    AND: [
+      { OR: [{ checkIn: null }, { checkIn: { lte: today } }] },
+      { OR: [{ checkOut: null }, { checkOut: { gte: today } }] },
+    ],
+  };
 }
 
 @Injectable()
@@ -19,7 +29,8 @@ export class CronService {
   async expireBookings() {
     const completed = await this.completeExpiredBookings();
     const staleCancelled = await this.cancelStalePendingBookings();
-    return { completed, staleCancelled };
+    const { markedBooked, markedAvailable } = await this.reconcileHouseAvailability();
+    return { completed, staleCancelled, markedBooked, markedAvailable };
   }
 
   private async completeExpiredBookings(): Promise<number> {
@@ -82,6 +93,38 @@ export class CronService {
       count += 1;
     }
     return count;
+  }
+
+  private async reconcileHouseAvailability(): Promise<{
+    markedBooked: number;
+    markedAvailable: number;
+  }> {
+    const today = startOfTodayUTC();
+    const stay = currentStay(today);
+
+    const toBook = await this.db.house.findMany({
+      where: { status: HouseStatus.AVAILABLE, bookings: { some: stay } },
+      select: { id: true },
+    });
+    const toFree = await this.db.house.findMany({
+      where: { status: HouseStatus.BOOKED, bookings: { none: stay } },
+      select: { id: true },
+    });
+
+    if (toBook.length > 0) {
+      await this.db.house.updateMany({
+        where: { id: { in: toBook.map((h) => h.id) } },
+        data: { status: HouseStatus.BOOKED },
+      });
+    }
+    if (toFree.length > 0) {
+      await this.db.house.updateMany({
+        where: { id: { in: toFree.map((h) => h.id) } },
+        data: { status: HouseStatus.AVAILABLE },
+      });
+    }
+
+    return { markedBooked: toBook.length, markedAvailable: toFree.length };
   }
 
   private async cancelStalePendingBookings(): Promise<number> {
