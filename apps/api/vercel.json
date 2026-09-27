@@ -2,5 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nestjs",
   "buildCommand": "pnpm --filter api... build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "crons": [
+    {
+      "path": "/v1/cron/expire-bookings",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }

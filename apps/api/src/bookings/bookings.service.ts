@@ -98,6 +98,20 @@ export class BookingsService {
       throw new ForbiddenException("Only the property owner can update booking status");
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const otherCurrentStays = await this.db.booking.count({
+      where: {
+        houseId: booking.houseId,
+        id: { not: booking.id },
+        status: BookingStatus.APPROVED,
+        AND: [
+          { OR: [{ checkIn: null }, { checkIn: { lte: today } }] },
+          { OR: [{ checkOut: null }, { checkOut: { gte: today } }] },
+        ],
+      },
+    });
+
     const updated = await this.db.$transaction(async (tx) => {
       const updated = await tx.booking.update({
         where: { id },
@@ -105,10 +119,12 @@ export class BookingsService {
         include: { house: true, client: true },
       });
 
-      await tx.house.update({
-        where: { id: booking.houseId },
-        data: { status: HouseStatus.AVAILABLE },
-      });
+      if (otherCurrentStays === 0) {
+        await tx.house.update({
+          where: { id: booking.houseId },
+          data: { status: HouseStatus.AVAILABLE },
+        });
+      }
 
       return updated;
     });

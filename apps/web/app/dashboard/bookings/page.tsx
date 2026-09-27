@@ -9,7 +9,8 @@ import { useState } from "react";
 
 import type { PaginationResponse } from "@/@types";
 import { useSession } from "@/components/providers/session-provider";
-import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
+import { BookingPropertyCard } from "@/components/bookings/booking-property-card";
+import { ProductCardSkeleton } from "@/components/product-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
@@ -20,8 +21,12 @@ const PAGE_SIZE = 6;
 
 type BookingWithHouse = {
   id: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
   createdAt: string;
+  checkIn?: string | null;
+  checkOut?: string | null;
+  nights?: number | null;
+  totalAmount?: number | null;
   house: House;
   client: {
     id: string;
@@ -31,11 +36,17 @@ type BookingWithHouse = {
   };
 };
 
+function formatStayDates(checkIn?: string | null, checkOut?: string | null): string | null {
+  if (!checkIn || !checkOut) return null;
+  return `${new Date(checkIn).toLocaleDateString()} → ${new Date(checkOut).toLocaleDateString()}`;
+}
+
 const statusColors: Record<string, string> = {
   PENDING: "bg-amber-100 text-amber-700",
   APPROVED: "bg-green-100 text-green-700",
   REJECTED: "bg-red-100 text-red-700",
   CANCELLED: "bg-gray-100 text-gray-700",
+  COMPLETED: "bg-sky-100 text-sky-700",
 };
 
 function EmptyBookings({ isAgent }: { isAgent: boolean }) {
@@ -88,11 +99,32 @@ const agentColumns: ColumnDef<BookingWithHouse>[] = [
   },
   {
     id: "price",
-    header: "Price",
-    accessorFn: (row) => row.house.price,
-    cell: ({ row }) => (
-      <span className="text-muted-foreground">{formatPrice(row.original.house.price)}/mo</span>
-    ),
+    header: "Total",
+    accessorFn: (row) => row.totalAmount,
+    cell: ({ row }) =>
+      row.original.totalAmount != null ? (
+        <span className="font-medium">{formatPrice(row.original.totalAmount)}</span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
+  },
+  {
+    id: "stay",
+    header: "Stay",
+    cell: ({ row }) => {
+      const stay = formatStayDates(row.original.checkIn, row.original.checkOut);
+      if (!stay) return <span className="text-muted-foreground">—</span>;
+      return (
+        <div>
+          <p className="text-sm">{stay}</p>
+          {row.original.nights ? (
+            <p className="text-xs text-muted-foreground">
+              {row.original.nights} night{row.original.nights > 1 ? "s" : ""}
+            </p>
+          ) : null}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "createdAt",
@@ -238,21 +270,8 @@ export default function BookingsPage() {
       ) : (
         <>
           <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {bookings.map(({ id, house }) => (
-              <ProductCard
-                key={id}
-                id={house.id}
-                href={`/properties/${house.id}`}
-                name={house.name}
-                location={house.location}
-                price={house.price}
-                media={house.media}
-                bedrooms={house.bedrooms}
-                bathrooms={house.bathrooms}
-                propertyType={house.propertyType}
-                badge={house.propertyType}
-                verificationStatus={house.verificationStatus}
-              />
+            {bookings.map((booking) => (
+              <BookingPropertyCard key={booking.id} booking={booking} />
             ))}
           </section>
           {meta && (
