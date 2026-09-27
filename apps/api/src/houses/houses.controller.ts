@@ -64,7 +64,6 @@ export class HousesController {
   }
 
   @Get("favorites")
-  @Roles(["tenant"])
   async getFavorites(@Session() session: UserSession, @Query() query: FavoriteFilterDto) {
     const result = await this.houseService.getFavorites(session.user.id, query);
     return new PaginationResponse(result.data, result.meta);
@@ -140,14 +139,12 @@ export class HousesController {
   }
 
   @Post(":id/favorites")
-  @Roles(["tenant"])
   async toggleFavorite(@Param("id") id: string, @Session() session: UserSession) {
     const favorite = await this.houseService.toggleFavorite(session.user.id, id);
     return new ApiResponse(favorite, "favorite toggled");
   }
 
   @Post(":id/reviews")
-  @Roles(["tenant"])
   async leaveReview(
     @Param("id") id: string,
     @Session() session: UserSession,
