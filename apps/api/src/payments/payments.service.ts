@@ -81,6 +81,7 @@ export class PaymentsService {
             checkOut,
             nights,
             unitPrice: nights ? house.price : undefined,
+            totalAmount: amount,
           },
           include: {
             house: true,

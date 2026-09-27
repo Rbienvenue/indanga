@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { fetcher } from "@/lib/fetcher";
+import { formatPrice } from "@/lib/utils";
 
 type BookingWithDetails = {
   id: string;
@@ -17,6 +18,7 @@ type BookingWithDetails = {
   checkIn?: string | null;
   checkOut?: string | null;
   nights?: number | null;
+  totalAmount?: number | null;
   house: { id: string; name: string; location: string; price: number };
   client: { id: string; name: string; email: string };
 };
@@ -59,6 +61,17 @@ const columns: ColumnDef<BookingWithDetails>[] = [
         {new Date(row.original.createdAt).toLocaleDateString()}
       </span>
     ),
+  },
+  {
+    id: "total",
+    header: "Total",
+    accessorFn: (row) => row.totalAmount,
+    cell: ({ row }) =>
+      row.original.totalAmount != null ? (
+        <span className="font-medium">{formatPrice(row.original.totalAmount)}</span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
   },
   {
     id: "stay",

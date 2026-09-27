@@ -136,6 +136,7 @@ model Booking {
   checkOut      DateTime?
   nights        Int?
   unitPrice     Int?
+  totalAmount   Int?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   client        User           @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)

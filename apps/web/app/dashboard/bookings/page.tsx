@@ -9,7 +9,8 @@ import { useState } from "react";
 
 import type { PaginationResponse } from "@/@types";
 import { useSession } from "@/components/providers/session-provider";
-import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
+import { BookingPropertyCard } from "@/components/bookings/booking-property-card";
+import { ProductCardSkeleton } from "@/components/product-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
@@ -25,6 +26,7 @@ type BookingWithHouse = {
   checkIn?: string | null;
   checkOut?: string | null;
   nights?: number | null;
+  totalAmount?: number | null;
   house: House;
   client: {
     id: string;
@@ -96,11 +98,14 @@ const agentColumns: ColumnDef<BookingWithHouse>[] = [
   },
   {
     id: "price",
-    header: "Price",
-    accessorFn: (row) => row.house.price,
-    cell: ({ row }) => (
-      <span className="text-muted-foreground">{formatPrice(row.original.house.price)}/mo</span>
-    ),
+    header: "Total",
+    accessorFn: (row) => row.totalAmount,
+    cell: ({ row }) =>
+      row.original.totalAmount != null ? (
+        <span className="font-medium">{formatPrice(row.original.totalAmount)}</span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
   },
   {
     id: "stay",
@@ -264,33 +269,9 @@ export default function BookingsPage() {
       ) : (
         <>
           <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {bookings.map((booking) => {
-              const stay = formatStayDates(booking.checkIn, booking.checkOut);
-              return (
-                <div key={booking.id}>
-                  <ProductCard
-                    id={booking.house.id}
-                    href={`/properties/${booking.house.id}`}
-                    name={booking.house.name}
-                    location={booking.house.location}
-                    price={booking.house.price}
-                    media={booking.house.media}
-                    bedrooms={booking.house.bedrooms}
-                    bathrooms={booking.house.bathrooms}
-                    propertyType={booking.house.propertyType}
-                    badge={booking.house.propertyType}
-                  />
-                  {stay ? (
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {stay}
-                      {booking.nights
-                        ? ` · ${booking.nights} night${booking.nights > 1 ? "s" : ""}`
-                        : ""}
-                    </p>
-                  ) : null}
-                </div>
-              );
-            })}
+            {bookings.map((booking) => (
+              <BookingPropertyCard key={booking.id} booking={booking} />
+            ))}
           </section>
           {meta && (
             <Pagination
