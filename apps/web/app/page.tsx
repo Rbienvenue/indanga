@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/home/navbar";
 import { Hero } from "@/components/home/hero";
 import { SearchBar } from "@/components/home/search-bar";
+import { TrustSignals } from "@/components/home/trust-signals";
 import { Categories } from "@/components/home/categories";
 import { Recommended } from "@/components/home/recommended";
 import { WhyChoose } from "@/components/home/why-choose";
@@ -16,6 +17,7 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <SearchBar redirectTo="/properties" />
+        <TrustSignals />
         <Categories />
         <Recommended />
         <HowItWorks />

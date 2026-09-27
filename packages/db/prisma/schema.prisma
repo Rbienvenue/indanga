@@ -99,6 +99,10 @@ enum BookingStatus {
   REJECTED
   CANCELLED
 }
+enum VerificationStatus { 
+  ReviewedByIndanga
+  VerifiedByIndanga
+}
 
 // Alias Property
 model House {
@@ -123,6 +127,8 @@ model House {
   bookings     Booking[]
   reviews      Review[]
   favorites    Favorite[]
+  verifications VerificationStatus @default(ReviewedByIndanga)
+
 
   @@index([ownerId])
   @@map("house")
