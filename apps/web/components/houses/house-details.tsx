@@ -7,20 +7,24 @@ import {
   Bath,
   BedDouble,
   Building2,
+  BadgeCheck,
   ChevronRight,
   Heart,
   Home,
   KeyRound,
+  LockKeyhole,
   MapPin,
   Maximize2,
   MessageCircle,
+  RotateCcw,
   ShieldCheck,
   Share2,
+  WalletCards,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
@@ -36,7 +40,7 @@ import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
 import { amenityIcons, parseAmenities } from "@/lib/amenities";
 import { propertyAmenityLabels } from "@/lib/validations/house";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 
 function Gallery({ house }: { house: House }) {
   const media = house.media.length > 0 ? house.media : [];
@@ -395,6 +399,8 @@ export function HouseDetails({ houseId }: { houseId: string }) {
             </section>
 
             <Separator className="bg-slate-900/10 dark:bg-white/10" />
+
+            <ListingInformation house={house} bookingKind={bookingKind} isAvailable={isAvailable} />
           </div>
 
           <aside className="sticky top-24 hidden lg:block">
@@ -412,6 +418,98 @@ export function HouseDetails({ houseId }: { houseId: string }) {
         />
       </div>
     </div>
+  );
+}
+
+function ListingInformation({
+  house,
+  bookingKind,
+  isAvailable,
+}: {
+  house: House;
+  bookingKind: "home" | "hotel" | "car";
+  isAvailable: boolean;
+}) {
+  const priceUnit = bookingKind === "hotel" ? "night" : bookingKind === "car" ? "day" : "month";
+  const verificationLabel =
+    house.verificationStatus === "VerifiedByIndanga"
+      ? "Verified by INDANGA"
+      : "Reviewed by INDANGA";
+
+  return (
+    <section className="divide-y divide-slate-900/10 border-b border-slate-900/10 dark:divide-white/10 dark:border-white/10">
+      <AccordionRow icon={Home} title="About this listing">
+        <p>{house.description}</p>
+        <p className="mt-3">
+          Located in {house.location}, this {house.propertyType.toLowerCase()} has {house.bedrooms}{" "}
+          {house.bedrooms === 1 ? "bedroom" : "bedrooms"} and {house.bathrooms}{" "}
+          {house.bathrooms === 1 ? "bathroom" : "bathrooms"}.
+        </p>
+      </AccordionRow>
+      <AccordionRow icon={WalletCards} title="Price details">
+        <p>
+          {formatPrice(house.price)} per {priceUnit}. The displayed price is the listing rate;
+          confirm the total at booking.
+        </p>
+        <p className="mt-3">
+          INDANGA keeps payment inside the platform so your booking record stays connected to your
+          account.
+        </p>
+      </AccordionRow>
+      <AccordionRow icon={BadgeCheck} title="Verification and listing information">
+        <p>
+          {verificationLabel}. The listing information was submitted by the provider and is reviewed
+          before publication.
+        </p>
+        <p className="mt-3">
+          Availability: {isAvailable ? "available to book now" : "currently unavailable"}.
+        </p>
+      </AccordionRow>
+      <AccordionRow icon={RotateCcw} title="Cancellation and refunds">
+        <p>
+          Cancellation and refund eligibility depends on the booking status and the provider&apos;s
+          terms.
+        </p>
+        <p className="mt-3">
+          Contact INDANGA support before cancelling if you need help reviewing your booking.
+        </p>
+      </AccordionRow>
+      <AccordionRow icon={LockKeyhole} title="Stay safe">
+        <p>
+          Your safety matters Keep all booking details, payment instructions, and receipts. Confirm the listing, provider, price, and cancellation terms before paying. INDANGA will never ask you to hide a payment or bypass the official booking process. 
+        </p>
+        <p className="mt-3">Report suspicious activity to &nbsp;
+          
+          <Link href="mailto:support@indanga.com" className="text-primary underline">
+            support@indanga.com
+          </Link>
+          .
+        </p>
+      </AccordionRow>
+    </section>
+  );
+}
+
+function AccordionRow({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: typeof Home;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <details className="group py-5">
+      <summary className="flex cursor-pointer list-none items-center gap-4 text-sm font-bold [&::-webkit-details-marker]:hidden">
+        <Icon className="size-5 shrink-0 text-slate-700 dark:text-slate-300" />
+        <span className="flex-1">{title}</span>
+        <ChevronRight className="size-4 shrink-0 text-slate-500 transition-transform group-open:rotate-90" />
+      </summary>
+      <div className="ml-9 max-w-3xl pt-4 text-sm leading-6 text-slate-600 dark:text-slate-400">
+        {children}
+      </div>
+    </details>
   );
 }
 
