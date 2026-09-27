@@ -13,7 +13,7 @@ import { formatPrice } from "@/lib/utils";
 
 type BookingWithDetails = {
   id: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
   createdAt: string;
   checkIn?: string | null;
   checkOut?: string | null;
@@ -28,6 +28,7 @@ const statusColors: Record<string, string> = {
   APPROVED: "bg-green-100 text-green-700",
   REJECTED: "bg-red-100 text-red-700",
   CANCELLED: "bg-gray-100 text-gray-700",
+  COMPLETED: "bg-sky-100 text-sky-700",
 };
 
 const columns: ColumnDef<BookingWithDetails>[] = [
@@ -145,6 +146,7 @@ export default function AdminBookingsPage() {
               { label: "Approved", value: "APPROVED" },
               { label: "Rejected", value: "REJECTED" },
               { label: "Cancelled", value: "CANCELLED" },
+              { label: "Completed", value: "COMPLETED" },
             ],
           },
         ]}

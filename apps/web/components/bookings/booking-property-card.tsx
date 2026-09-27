@@ -9,13 +9,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getBookingKind } from "@/lib/booking-kind";
 import { cn, formatPrice } from "@/lib/utils";
 
-export type BookingCardStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+export type BookingCardStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
 
 const statusStyles: Record<BookingCardStatus, string> = {
   PENDING: "bg-amber-500 text-white",
   APPROVED: "bg-green-600 text-white",
   REJECTED: "bg-red-600 text-white",
   CANCELLED: "bg-slate-500 text-white",
+  COMPLETED: "bg-sky-600 text-white",
 };
 
 const statusLabels: Record<BookingCardStatus, string> = {
@@ -23,6 +24,7 @@ const statusLabels: Record<BookingCardStatus, string> = {
   APPROVED: "Active",
   REJECTED: "Rejected",
   CANCELLED: "Cancelled",
+  COMPLETED: "Completed",
 };
 
 export interface BookingPropertyCardBooking {

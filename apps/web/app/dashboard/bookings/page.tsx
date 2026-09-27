@@ -21,7 +21,7 @@ const PAGE_SIZE = 6;
 
 type BookingWithHouse = {
   id: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
   createdAt: string;
   checkIn?: string | null;
   checkOut?: string | null;
@@ -46,6 +46,7 @@ const statusColors: Record<string, string> = {
   APPROVED: "bg-green-100 text-green-700",
   REJECTED: "bg-red-100 text-red-700",
   CANCELLED: "bg-gray-100 text-gray-700",
+  COMPLETED: "bg-sky-100 text-sky-700",
 };
 
 function EmptyBookings({ isAgent }: { isAgent: boolean }) {

@@ -245,7 +245,9 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
                   name="checkIn"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <Label className="text-sm font-semibold">Check-in</Label>
+                      <Label className="text-sm font-semibold">
+                        {bookingKind === "car" ? "Pick date" : "Check-in"}
+                      </Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -295,7 +297,9 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
                   name="checkOut"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <Label className="text-sm font-semibold">Check-out</Label>
+                      <Label className="text-sm font-semibold">
+                        {bookingKind === "car" ? "Return date" : "Check-out"}
+                      </Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
