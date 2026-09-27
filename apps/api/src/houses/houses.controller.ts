@@ -84,6 +84,23 @@ export class HousesController {
     return new ApiResponse(house, "property fetched");
   }
 
+  @Get(":id/availability")
+  @AllowAnonymous()
+  async getRoomAvailability(
+    @Param("id") id: string,
+    @Query("roomTypeId") roomTypeId?: string,
+    @Query("checkIn") checkIn?: string,
+    @Query("checkOut") checkOut?: string,
+  ) {
+    const availability = await this.houseService.getRoomAvailability(
+      id,
+      roomTypeId,
+      checkIn,
+      checkOut,
+    );
+    return new ApiResponse(availability, "availability fetched");
+  }
+
   @Patch(":id")
   @Roles(["landlord", "admin"])
   @UseInterceptors(FilesInterceptor("media", 10))

@@ -27,7 +27,8 @@ export type ProductCardProps = {
   id: string;
   name: string;
   location: string;
-  price: number;
+  price: number | null;
+  rooms?: { price: number }[];
   media?: string[];
   bedrooms: number;
   bathrooms: number;
@@ -50,6 +51,7 @@ export function ProductCard({
   name,
   location,
   price,
+  rooms,
   media,
   bedrooms,
   bathrooms,
@@ -65,6 +67,9 @@ export function ProductCard({
   verificationStatus,
 }: ProductCardProps) {
   const resolvedPriceUnit = priceUnit ?? getPriceUnit(propertyType);
+  const roomPrices = (rooms ?? []).map((room) => room.price).filter((value) => value > 0);
+  const fromRooms = price == null && roomPrices.length > 0;
+  const displayPrice = price ?? (roomPrices.length > 0 ? Math.min(...roomPrices) : null);
   const queryClient = useQueryClient();
   const session = useSession();
   const isLoggedIn = !!session?.user;
@@ -255,8 +260,21 @@ export function ProductCard({
 
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-1">
-            <span className="text-lg font-bold text-primary">{formatPrice(price)}</span>
-            <span className="text-sm text-muted-foreground">{resolvedPriceUnit}</span>
+            {displayPrice != null ? (
+              <>
+                {fromRooms ? (
+                  <span className="text-sm text-muted-foreground">From</span>
+                ) : null}
+                <span className="text-lg font-bold text-primary">
+                  {formatPrice(displayPrice)}
+                </span>
+                <span className="text-sm text-muted-foreground">{resolvedPriceUnit}</span>
+              </>
+            ) : (
+              <span className="text-sm font-semibold text-muted-foreground">
+                Contact for price
+              </span>
+            )}
           </div>
           {status && <PropertyStatusBadge status={status} />}
         </div>

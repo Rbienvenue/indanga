@@ -235,7 +235,8 @@ const columns: ColumnDef<HouseWithOwner>[] = [
   {
     accessorKey: "price",
     header: "Price",
-    cell: ({ row }) => formatPrice(row.original.price),
+    cell: ({ row }) =>
+      row.original.price != null ? formatPrice(row.original.price) : "—",
   },
   {
     id: "verificationStatus",

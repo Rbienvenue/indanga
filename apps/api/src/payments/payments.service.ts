@@ -12,7 +12,8 @@ import { randomUUID } from "node:crypto";
 import { NotificationsService } from "src/notifications/notifications.service";
 import { ITECService } from "./itec";
 import { WsGateway } from "src/ws/ws.gateway";
-import { isDatedProperty } from "src/houses/booking-kind.util";
+import { getBookingKind, isDatedProperty } from "src/houses/booking-kind.util";
+import { countOverlappingRooms } from "src/houses/houses.service";
 
 function startOfDay(date: Date): Date {
   const d = new Date(date);
@@ -48,7 +49,14 @@ export class PaymentsService {
         let checkIn: Date | undefined;
         let checkOut: Date | undefined;
         let nights: number | undefined;
-        let amount = house.price;
+        let roomTypeId: string | undefined;
+        let roomCount = 1;
+        let unitPrice: number | undefined;
+        const isHotel = getBookingKind(house.propertyType) === "hotel";
+        if (house.price == null && !isHotel) {
+          throw new BadRequestException("This property has no price set");
+        }
+        let amount = house.price ?? 0;
 
         if (dated) {
           if (!data.checkIn || !data.checkOut) {
@@ -69,18 +77,39 @@ export class PaymentsService {
           if (nights < 1) {
             throw new BadRequestException("Check-out date must be after check-in date");
           }
-          const overlapping = await tx.booking.count({
-            where: {
-              houseId: house.id,
-              status: BookingStatus.APPROVED,
-              checkIn: { lt: checkOut },
-              checkOut: { gt: checkIn },
-            },
-          });
-          if (overlapping > 0) {
-            throw new ConflictException("Property is already booked for those dates");
+          if (isHotel) {
+            if (!data.roomTypeId) {
+              throw new BadRequestException("Selecting a room type is required for hotels");
+            }
+            roomCount = data.roomCount ?? 1;
+            if (!Number.isInteger(roomCount) || roomCount < 1) {
+              throw new BadRequestException("Room count must be at least 1");
+            }
+            const room = await tx.roomType.findUnique({ where: { id: data.roomTypeId } });
+            if (!room || room.houseId !== house.id) {
+              throw new BadRequestException("Selected room type is not part of this hotel");
+            }
+            const booked = await countOverlappingRooms(tx, room.id, checkIn, checkOut);
+            if (roomCount > room.totalRooms - booked) {
+              throw new ConflictException("Not enough rooms available for those dates");
+            }
+            roomTypeId = room.id;
+            unitPrice = room.price;
+            amount = room.price * roomCount * nights;
+          } else {
+            const overlapping = await tx.booking.count({
+              where: {
+                houseId: house.id,
+                status: BookingStatus.APPROVED,
+                checkIn: { lt: checkOut },
+                checkOut: { gt: checkIn },
+              },
+            });
+            if (overlapping > 0) {
+              throw new ConflictException("Property is already booked for those dates");
+            }
+            amount = (house.price ?? 0) * nights;
           }
-          amount = house.price * nights;
         }
 
         const booking = await tx.booking.create({
@@ -91,7 +120,9 @@ export class PaymentsService {
             checkIn,
             checkOut,
             nights,
-            unitPrice: nights ? house.price : undefined,
+            roomTypeId,
+            roomCount: isHotel ? roomCount : undefined,
+            unitPrice: nights ? (unitPrice ?? house.price ?? undefined) : undefined,
             totalAmount: amount,
           },
           include: {
@@ -136,6 +167,8 @@ export class PaymentsService {
       method: data.method,
       nights: booking.nights ?? undefined,
       unitPrice: booking.unitPrice ?? undefined,
+      roomTypeId: booking.roomTypeId ?? undefined,
+      roomCount: booking.roomCount ?? undefined,
       checkIn: booking.checkIn ?? undefined,
       checkOut: booking.checkOut ?? undefined,
       ...result,
@@ -174,13 +207,15 @@ export class PaymentsService {
     if (status === "SUCCESSFULL") {
       const stayStarted =
         !booking.checkIn || startOfDay(booking.checkIn).getTime() <= startOfDay(new Date()).getTime();
+      // Hotels manage capacity per room type over dates; never flip the whole hotel.
+      const isHotel = getBookingKind(booking.house.propertyType) === "hotel";
       await this.db.$transaction(async (tx) => {
         await tx.payment.update({ where: { transactionReference }, data: { status: "COMPLETED" } });
         await tx.booking.update({
           where: { id: booking.id },
           data: { status: BookingStatus.APPROVED },
         });
-        if (stayStarted) {
+        if (stayStarted && !isHotel) {
           await tx.house.update({
             where: { id: booking.houseId },
             data: { status: HouseStatus.BOOKED },
@@ -245,7 +280,7 @@ export class PaymentsService {
         take: limit,
         include: {
           booking: {
-            include: { house: true, client: true },
+            include: { house: true, roomType: true, client: true },
           },
         },
       }),

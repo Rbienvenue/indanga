@@ -47,7 +47,7 @@ export class CronService {
     for (const booking of expired) {
       const full = await this.db.booking.findUnique({
         where: { id: booking.id },
-        include: { house: true, client: true },
+        include: { house: { include: { rooms: true } }, client: true },
       });
       if (!full || full.status !== BookingStatus.APPROVED) continue;
 
@@ -66,7 +66,7 @@ export class CronService {
           data: { status: BookingStatus.COMPLETED },
           include: { house: true, client: true },
         });
-        if (stillActive === 0) {
+        if (stillActive === 0 && full.house.rooms.length === 0) {
           await tx.house.update({
             where: { id: full.houseId },
             data: { status: HouseStatus.AVAILABLE },
@@ -102,12 +102,14 @@ export class CronService {
     const today = startOfTodayUTC();
     const stay = currentStay(today);
 
+    // Room-based hotels manage capacity per room type; only flip whole-property listings.
+    const wholeProperty = { rooms: { none: {} } };
     const toBook = await this.db.house.findMany({
-      where: { status: HouseStatus.AVAILABLE, bookings: { some: stay } },
+      where: { status: HouseStatus.AVAILABLE, bookings: { some: stay }, ...wholeProperty },
       select: { id: true },
     });
     const toFree = await this.db.house.findMany({
-      where: { status: HouseStatus.BOOKED, bookings: { none: stay } },
+      where: { status: HouseStatus.BOOKED, bookings: { none: stay }, ...wholeProperty },
       select: { id: true },
     });
 

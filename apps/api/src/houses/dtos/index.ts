@@ -1,7 +1,16 @@
 import { HouseStatus } from "@indanga/db";
 import { PartialType } from "@nestjs/mapped-types";
 import { Transform, Type } from "class-transformer";
-import { IsArray, IsEnum, IsInt, IsOptional, IsPositive, IsString } from "class-validator";
+import {
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsPositive,
+  IsString,
+  Min,
+  ValidateNested,
+} from "class-validator";
 
 function toStringArray(value: unknown) {
   if (Array.isArray(value)) return value;
@@ -15,6 +24,38 @@ function toStringArray(value: unknown) {
     return value ? [value] : [];
   }
   return value;
+}
+
+function toObjectArray(value: unknown) {
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    try {
+      const parsed: unknown = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      // not JSON, leave for validation to reject
+    }
+  }
+  return value;
+}
+
+export class RoomTypeInputDto {
+  @IsOptional()
+  @IsString()
+  id?: string;
+
+  @IsString()
+  name: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  price: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  totalRooms: number;
 }
 
 export class CreateHouseDto {
@@ -41,9 +82,18 @@ export class CreateHouseDto {
   @IsString()
   address?: string;
 
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
-  price: number;
+  @IsPositive()
+  price?: number;
+
+  @IsOptional()
+  @Transform(({ value }) => toObjectArray(value))
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RoomTypeInputDto)
+  rooms?: RoomTypeInputDto[];
 
   @IsOptional()
   @Transform(({ value }) => toStringArray(value))

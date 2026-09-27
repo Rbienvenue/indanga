@@ -56,21 +56,56 @@ export const propertyAmenityLabels: Record<PropertyAmenity, string> = {
   balcony: "Balcony",
 };
 
-export const createHouseSchema = z.object({
-  name: z.string().trim().min(2, "Property name must be at least 2 characters"),
-  propertyType: z.enum(propertyTypes, { message: "Select a property type" }),
-  subType: z.string().trim().optional(),
+export const roomTypeSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(2, "Room name must be at least 2 characters"),
   price: z.coerce.number<number>().positive("Enter a valid price"),
-  bedrooms: z.coerce.number<number>().min(0, "Bedrooms cannot be negative").optional(),
-  bathrooms: z.coerce.number<number>().min(0, "Bathrooms cannot be negative").optional(),
-  province: z.string().trim().optional(),
-  district: z.string().trim().min(1, "District is required"),
-  sector: z.string().trim().min(1, "Sector is required"),
-  cell: z.string().trim().min(1, "Cell is required"),
-  village: z.string().trim().min(1, "Village is required"),
-  address: z.string().trim().optional(),
-  description: z.string().trim().min(10, "Description must be at least 10 characters"),
-  metadata: z.array(z.enum(propertyAmenities)).optional(),
+  totalRooms: z.coerce.number<number>().int().min(1, "At least 1 room"),
 });
+
+export type RoomTypeValues = z.infer<typeof roomTypeSchema>;
+
+const optionalPrice = z.preprocess(
+  (value) => (value === "" || value === undefined || value === null ? undefined : value),
+  z.coerce.number<number>().positive("Enter a valid price").optional(),
+);
+
+export const createHouseSchema = z
+  .object({
+    name: z.string().trim().min(2, "Property name must be at least 2 characters"),
+    propertyType: z.enum(propertyTypes, { message: "Select a property type" }),
+    subType: z.string().trim().optional(),
+    price: optionalPrice,
+    rooms: z.array(roomTypeSchema).optional(),
+    bedrooms: z.coerce.number<number>().min(0, "Bedrooms cannot be negative").optional(),
+    bathrooms: z.coerce.number<number>().min(0, "Bathrooms cannot be negative").optional(),
+    province: z.string().trim().optional(),
+    district: z.string().trim().min(1, "District is required"),
+    sector: z.string().trim().min(1, "Sector is required"),
+    cell: z.string().trim().min(1, "Cell is required"),
+    village: z.string().trim().min(1, "Village is required"),
+    address: z.string().trim().optional(),
+    description: z.string().trim().min(10, "Description must be at least 10 characters"),
+    metadata: z.array(z.enum(propertyAmenities)).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.propertyType === "Hotel") {
+      if (!data.rooms || data.rooms.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["rooms"],
+          message: "Add at least one room type",
+        });
+      }
+      return;
+    }
+    if (data.price === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["price"],
+        message: "Enter a valid price",
+      });
+    }
+  });
 
 export type CreateHouseValues = z.infer<typeof createHouseSchema>;

@@ -1,13 +1,44 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { Prisma, type KycStatus, type UserRole } from "@indanga/db";
-import { PrismaService } from "src/prisma/prisma.service";
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { BookingStatus, Prisma, type KycStatus, type UserRole } from "@indanga/db";
+import { PrismaService, type PrismaTx } from "src/prisma/prisma.service";
 import {
   CreateHouseDto,
   CreateReviewDto,
   FavoriteFilterDto,
   FilterDto,
+  RoomTypeInputDto,
   UpdateHouseDto,
 } from "./dtos";
+import { getBookingKind } from "./booking-kind.util";
+
+function isHotelProperty(propertyType?: string | null): boolean {
+  return getBookingKind(propertyType) === "hotel";
+}
+
+/** Rooms booked for a room type overlapping [checkIn, checkOut). Date-based inventory. */
+export async function countOverlappingRooms(
+  db: PrismaTx,
+  roomTypeId: string,
+  checkIn: Date,
+  checkOut: Date,
+) {
+  const bookings = await db.booking.findMany({
+    where: {
+      roomTypeId,
+      status: BookingStatus.APPROVED,
+      OR: [{ checkIn: null }, { checkIn: { lt: checkOut } }],
+      AND: [{ OR: [{ checkOut: null }, { checkOut: { gt: checkIn } }] }],
+    },
+    select: { roomCount: true },
+  });
+  return bookings.reduce((sum, b) => sum + (b.roomCount ?? 1), 0);
+}
 
 @Injectable()
 export class HousesService {
@@ -22,10 +53,13 @@ export class HousesService {
       cell,
       village,
       ownerId: _ownerId,
+      rooms,
       ...rest
     } = data as CreateHouseDto & {
       ownerId?: string;
     };
+
+    this.assertRoomsAndPrice(data.propertyType, data.price, rooms);
 
     const house = await this.db.house.create({
       data: {
@@ -34,9 +68,37 @@ export class HousesService {
         bedrooms: data.bedrooms ?? 0,
         bathrooms: data.bathrooms ?? 0,
         location: `${province}, ${district}, ${sector}, ${cell} ${village}`,
+        ...(rooms && rooms.length > 0
+          ? {
+              rooms: {
+                create: rooms.map((room) => ({
+                  name: room.name,
+                  price: room.price,
+                  totalRooms: room.totalRooms,
+                })),
+              },
+            }
+          : {}),
       },
+      include: { rooms: true },
     });
     return house;
+  }
+
+  private assertRoomsAndPrice(
+    propertyType: string,
+    price: number | undefined,
+    rooms: RoomTypeInputDto[] | undefined,
+  ) {
+    if (isHotelProperty(propertyType)) {
+      if (!rooms || rooms.length === 0) {
+        throw new BadRequestException("Hotels must define at least one room type");
+      }
+      return;
+    }
+    if (price === undefined || price === null) {
+      throw new BadRequestException("Price is required for this property type");
+    }
   }
 
   async getHouses(data: FilterDto) {
@@ -85,15 +147,22 @@ export class HousesService {
       }
     }
     if (minPrice !== undefined || maxPrice !== undefined) {
-      where.price = {
+      const priceRange = {
         gte: minPrice,
         lte: maxPrice,
       };
+      // Match either the base price or any room price so null-priced hotels still filter.
+      where.AND = [
+        {
+          OR: [{ price: priceRange }, { rooms: { some: { price: priceRange } } }],
+        },
+      ];
     }
 
     const [houses, total] = await Promise.all([
       this.db.house.findMany({
         where,
+        include: { rooms: true },
         orderBy: {
           createdAt: "desc",
         },
@@ -115,11 +184,51 @@ export class HousesService {
   }
 
   async getHouseById(id: string) {
-    const house = await this.db.house.findUnique({ where: { id } });
+    const house = await this.db.house.findUnique({ where: { id }, include: { rooms: true } });
     if (!house) {
       throw new NotFoundException("Property not found");
     }
     return house;
+  }
+
+  async getRoomAvailability(houseId: string, roomTypeId?: string, checkIn?: string, checkOut?: string) {
+    await this.getHouseById(houseId);
+    const rooms = await this.db.roomType.findMany({
+      where: { houseId, ...(roomTypeId ? { id: roomTypeId } : {}) },
+      orderBy: { price: "asc" },
+    });
+    if (roomTypeId && rooms.length === 0) {
+      throw new NotFoundException("Room type not found for this property");
+    }
+
+    let checkInDate: Date | undefined;
+    let checkOutDate: Date | undefined;
+    if (checkIn || checkOut) {
+      if (!checkIn || !checkOut) {
+        throw new BadRequestException("Both check-in and check-out dates are required");
+      }
+      checkInDate = new Date(checkIn);
+      checkOutDate = new Date(checkOut);
+      if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime())) {
+        throw new BadRequestException("Invalid check-in or check-out date");
+      }
+    }
+
+    const availability = await Promise.all(
+      rooms.map(async (room) => {
+        const booked =
+          checkInDate && checkOutDate
+            ? await countOverlappingRooms(this.db, room.id, checkInDate, checkOutDate)
+            : 0;
+        return {
+          roomType: room,
+          totalRooms: room.totalRooms,
+          bookedRooms: booked,
+          availableRooms: Math.max(room.totalRooms - booked, 0),
+        };
+      }),
+    );
+    return availability;
   }
 
   async updateHouse(
@@ -141,10 +250,17 @@ export class HousesService {
       village,
       existingMedia,
       ownerId: _ownerId,
+      rooms,
       ...rest
     } = data as UpdateHouseDto & {
       ownerId?: string;
     };
+
+    const effectiveType = data.propertyType ?? house.propertyType;
+    const effectivePrice = data.price ?? house.price ?? undefined;
+    if (rooms !== undefined || data.propertyType !== undefined || data.price !== undefined) {
+      this.assertRoomsAndPrice(effectiveType, effectivePrice, rooms ?? house.rooms);
+    }
 
     const updateData: Prisma.HouseUpdateInput = { ...rest };
 
@@ -162,11 +278,73 @@ export class HousesService {
       updateData.location = `${province}, ${district}, ${sector}, ${cell} ${village}`;
     }
 
-    const updatedHouse = await this.db.house.update({
-      where: { id },
-      data: updateData,
+    const updatedHouse = await this.db.$transaction(async (tx) => {
+      if (rooms !== undefined) {
+        await this.syncRooms(tx, id, rooms);
+      }
+      return tx.house.update({
+        where: { id },
+        data: updateData,
+        include: { rooms: true },
+      });
     });
     return updatedHouse;
+  }
+
+  /** Diff incoming rooms against stored ones with guards for active bookings. */
+  private async syncRooms(tx: PrismaTx, houseId: string, rooms: RoomTypeInputDto[]) {
+    const existing = await tx.roomType.findMany({ where: { houseId } });
+    const existingIds = new Set(existing.map((r) => r.id));
+    const incomingIds = new Set(rooms.filter((r) => r.id).map((r) => r.id as string));
+
+    for (const room of rooms) {
+      if (!room.id) {
+        await tx.roomType.create({
+          data: { houseId, name: room.name, price: room.price, totalRooms: room.totalRooms },
+        });
+        continue;
+      }
+      if (!existingIds.has(room.id)) {
+        throw new BadRequestException("Unknown room type id");
+      }
+      const current = existing.find((r) => r.id === room.id)!;
+      if (room.totalRooms < current.totalRooms) {
+        const active = await this.countActiveRoomBookings(tx, room.id);
+        if (room.totalRooms < active) {
+          throw new ConflictException(
+            `Cannot reduce rooms below ${active} currently booked`,
+          );
+        }
+      }
+      await tx.roomType.update({
+        where: { id: room.id },
+        data: { name: room.name, price: room.price, totalRooms: room.totalRooms },
+      });
+    }
+
+    for (const room of existing) {
+      if (!incomingIds.has(room.id)) {
+        const active = await this.countActiveRoomBookings(tx, room.id);
+        if (active > 0) {
+          throw new ConflictException("Cannot remove a room type with active bookings");
+        }
+        await tx.roomType.delete({ where: { id: room.id } });
+      }
+    }
+  }
+
+  private async countActiveRoomBookings(db: PrismaTx, roomTypeId: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const active = await db.booking.findMany({
+      where: {
+        roomTypeId,
+        status: { in: [BookingStatus.PENDING, BookingStatus.APPROVED] },
+        OR: [{ checkOut: null }, { checkOut: { gte: today } }],
+      },
+      select: { roomCount: true },
+    });
+    return active.reduce((sum, b) => sum + (b.roomCount ?? 1), 0);
   }
 
   async deleteHouse(id: string, userId: string, role: UserRole, kycStatus: KycStatus) {
@@ -228,7 +406,7 @@ export class HousesService {
         skip: (page - 1) * limit,
         take: limit,
         include: {
-          house: true,
+          house: { include: { rooms: true } },
         },
       }),
       this.db.favorite.count({ where }),

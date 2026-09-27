@@ -98,7 +98,7 @@ export default function CarsPage() {
               <div className="mt-5 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">From</p>
-                  <p className="text-xl font-semibold text-foreground">{formatPrice(car.price)}</p>
+                  <p className="text-xl font-semibold text-foreground">{car.price != null ? formatPrice(car.price) : "Contact for price"}</p>
                 </div>
                 <Button asChild size="sm">
                   <Link href="#">Reserve now</Link>

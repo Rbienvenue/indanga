@@ -1,12 +1,12 @@
 "use client";
 
-import type { House } from "@indanga/db";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import type { PaginationResponse } from "@/@types";
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 import { fetcher } from "@/lib/fetcher";
+import type { HouseWithRooms } from "@/lib/booking-kind";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,7 @@ interface Props {
   className?: string;
 }
 export function Recommended({ className }: Props) {
-  const { data, isLoading, isError } = useQuery<PaginationResponse<House>>({
+  const { data, isLoading, isError } = useQuery<PaginationResponse<HouseWithRooms>>({
     queryKey: ["properties", "recommended"],
     queryFn: () => fetcher("/properties?limit=6&type=featured"),
   });
@@ -72,6 +72,7 @@ export function Recommended({ className }: Props) {
                   name={house.name}
                   location={house.location}
                   price={house.price}
+                  rooms={house.rooms}
                   media={house.media}
                   bedrooms={house.bedrooms}
                   bathrooms={house.bathrooms}

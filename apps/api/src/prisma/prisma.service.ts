@@ -3,6 +3,11 @@ import { PrismaClient, PrismaPg } from "@indanga/db";
 
 import { env } from "src/lib/env";
 
+export type PrismaTx = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleDestroy, OnModuleInit {
   constructor() {

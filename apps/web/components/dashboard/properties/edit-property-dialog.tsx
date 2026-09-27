@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Pencil } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
@@ -45,7 +45,7 @@ function buildPropertyFormData(values: CreateHouseValues) {
 
   formData.append("name", values.name);
   formData.append("propertyType", values.propertyType);
-  formData.append("price", String(values.price));
+  if (values.price != null) formData.append("price", String(values.price));
   formData.append("province", values.province ?? "");
   formData.append("district", values.district);
   formData.append("sector", values.sector);
@@ -77,7 +77,7 @@ export function EditPropertyDialog({ house }: { house: HouseData }) {
   const locationParts = parseLocation(house.location);
 
   const form = useForm<CreateHouseValues>({
-    resolver: zodResolver(createHouseSchema),
+    resolver: zodResolver(createHouseSchema) as unknown as Resolver<CreateHouseValues>,
     defaultValues: {
       name: house.name,
       propertyType: house.propertyType as CreateHouseValues["propertyType"],

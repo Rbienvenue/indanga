@@ -111,7 +111,7 @@ model House {
   name         String
   location     String
   address      String?
-  price        Int
+  price        Int?
   media        String[]
   ownerId      String
   description  String
@@ -126,6 +126,7 @@ model House {
   updatedAt    DateTime    @updatedAt
   owner        User        @relation("HouseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   bookings     Booking[]
+  rooms        RoomType[]
   reviews      Review[]
   favorites    Favorite[]
   verificationStatus VerificationStatus @default(ReviewedByIndanga)
@@ -134,10 +135,26 @@ model House {
   @@index([ownerId])
   @@map("house")
 }
+model RoomType {
+  id         String   @id @default(cuid())
+  houseId    String
+  name       String
+  price      Int
+  totalRooms Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  house      House    @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  bookings   Booking[]
+
+  @@index([houseId])
+  @@map("room_type")
+}
 model Booking {
   id            String         @id @default(cuid())
   clientId      String
   houseId       String
+  roomTypeId    String?
+  roomCount     Int?           @default(1)
   status        BookingStatus  @default(PENDING)
   checkIn       DateTime?
   checkOut      DateTime?
@@ -148,11 +165,13 @@ model Booking {
   updatedAt     DateTime       @updatedAt
   client        User           @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)
   house         House          @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  roomType      RoomType?      @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
   payments      Payment[]
   notifications Notification[]
 
   @@index([clientId])
   @@index([houseId])
+  @@index([roomTypeId])
   @@map("booking")
 }
 model Payment {
