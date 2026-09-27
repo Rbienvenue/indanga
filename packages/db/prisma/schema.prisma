@@ -128,7 +128,7 @@ model House {
   bookings     Booking[]
   reviews      Review[]
   favorites    Favorite[]
-  verifications VerificationStatus @default(ReviewedByIndanga)
+  verificationStatus VerificationStatus @default(ReviewedByIndanga)
 
 
   @@index([ownerId])

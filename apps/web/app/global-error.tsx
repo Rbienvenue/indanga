@@ -27,8 +27,8 @@ export default function GlobalError({
                 The application failed to load
               </h1>
               <p className="max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Something went wrong at the application level. Please refresh
-                the page or return home.
+                Something went wrong at the application level. Please refresh the page or return
+                home.
               </p>
             </div>
 

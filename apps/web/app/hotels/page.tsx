@@ -131,6 +131,7 @@ export default function HotelsPage() {
                 bathrooms={hotel.bathrooms}
                 propertyType={hotel.propertyType}
                 badge="Hotel room"
+                verificationStatus={hotel.verificationStatus}
               />
             ))}
           </section>

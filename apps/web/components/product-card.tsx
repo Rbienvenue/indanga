@@ -7,7 +7,9 @@ import Link from "next/link";
 import { Bath, BedDouble, ChevronLeft, ChevronRight, Heart, MapPin, Pencil } from "lucide-react";
 
 import type { ApiResponse } from "@/@types";
+import type { House } from "@indanga/db";
 import { DeletePropertyDialog } from "@/components/dashboard/properties/delete-property-dialog";
+import { PropertyVerificationBadge } from "@/components/properties/property-verification-badge";
 import {
   PropertyStatusBadge,
   type PropertyStatus,
@@ -40,6 +42,7 @@ export type ProductCardProps = {
   isFavorite?: boolean;
   showManageActions?: boolean;
   status?: PropertyStatus;
+  verificationStatus?: House["verificationStatus"] | null;
 };
 
 export function ProductCard({
@@ -50,8 +53,6 @@ export function ProductCard({
   media,
   bedrooms,
   bathrooms,
-  description = "",
-  address,
   propertyType = "House",
   badge,
   badgeClassName = "bg-primary text-primary-foreground",
@@ -61,6 +62,7 @@ export function ProductCard({
   isFavorite = false,
   showManageActions = false,
   status,
+  verificationStatus,
 }: ProductCardProps) {
   const resolvedPriceUnit = priceUnit ?? getPriceUnit(propertyType);
   const queryClient = useQueryClient();
@@ -211,6 +213,12 @@ export function ProductCard({
           >
             {badge}
           </Badge>
+        )}
+        {verificationStatus && (
+          <PropertyVerificationBadge
+            status={verificationStatus}
+            className="absolute bottom-3 left-3 z-10 shadow-md"
+          />
         )}
         {showManageActions ? (
           <div className="absolute top-3 right-3 z-10 flex gap-1.5">

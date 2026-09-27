@@ -10,13 +10,8 @@ import { toast } from "sonner";
 import { CheckCircle2, Clock, Loader2, ShieldCheck, Upload } from "lucide-react";
 
 import type { ApiResponse } from "@/@types";
-import { Button } from "@/components/ui/button";import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -50,13 +45,7 @@ type KycMe = {
   kycDocuments: KycDocument[];
 };
 
-const KYC_ACCEPT = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/avif",
-  "application/pdf",
-];
+const KYC_ACCEPT = ["image/jpeg", "image/png", "image/webp", "image/avif", "application/pdf"];
 
 function DocumentPreview({ document }: { document: KycDocument }) {
   const isImage = document.mimeType.startsWith("image/");
@@ -72,11 +61,7 @@ function DocumentPreview({ document }: { document: KycDocument }) {
   }
   if (isPdf) {
     return (
-      <iframe
-        src={document.url}
-        title="ID document"
-        className="h-96 w-full rounded-md border"
-      />
+      <iframe src={document.url} title="ID document" className="h-96 w-full rounded-md border" />
     );
   }
   return (
@@ -154,9 +139,7 @@ function UploadForm({ onSuccess }: { onSuccess: () => void }) {
             </FormItem>
           )}
         />
-        <p className="text-xs text-muted-foreground">
-          JPG, PNG, WebP, AVIF or PDF. Max 5 MB.
-        </p>
+        <p className="text-xs text-muted-foreground">JPG, PNG, WebP, AVIF or PDF. Max 5 MB.</p>
         <Button type="submit" disabled={submitMutation.isPending}>
           {submitMutation.isPending && <Loader2 className="animate-spin" />}
           <Upload />
@@ -225,8 +208,8 @@ export default function KycPage() {
           <CardHeader>
             <CardTitle>Upload your ID document</CardTitle>
             <CardDescription>
-              Upload a clear photo or scan of your national ID for review 
-              before you can create, edit or delete properties.
+              Upload a clear photo or scan of your national ID for review before you can create,
+              edit or delete properties.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -270,9 +253,7 @@ export default function KycPage() {
           <Card>
             <CardHeader>
               <CardTitle>Re-upload your ID document</CardTitle>
-              <CardDescription>
-                Address the reason above and submit a new document.
-              </CardDescription>
+              <CardDescription>Address the reason above and submit a new document.</CardDescription>
             </CardHeader>
             <CardContent>
               <UploadForm onSuccess={() => setResubmitting(!resubmitting)} />
@@ -288,9 +269,7 @@ export default function KycPage() {
               <CheckCircle2 className="size-5" />
               Verification approved
             </CardTitle>
-            <CardDescription>
-              You can now create, edit and delete properties.
-            </CardDescription>
+            <CardDescription>You can now create, edit and delete properties.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild>

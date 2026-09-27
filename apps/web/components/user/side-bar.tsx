@@ -43,7 +43,7 @@ const tenantItems = [
   { title: "My Bookings", href: "/dashboard/bookings", icon: Calendar },
   { title: "My Favorites", href: "/dashboard/favorites", icon: Heart },
   { title: "Search", href: "/dashboard/search", icon: Search },
-  { title: "Payments", href: "/dashboard/payments", icon: CreditCard }, 
+  { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
   { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { title: "Profile Settings", href: "/dashboard/profile", icon: User },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
@@ -55,7 +55,7 @@ const agentItems = [
   { title: "Add Property", href: "/dashboard/properties/new", icon: PlusCircle },
   { title: "Bookings", href: "/dashboard/bookings", icon: Calendar },
   { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
-  { title: "Profile Settings", href: "/dashboard/profile", icon: User }, 
+  { title: "Profile Settings", href: "/dashboard/profile", icon: User },
   { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
 ];
@@ -88,8 +88,17 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border p-2">
-        <Link href="/dashboard" className="flex h-12 items-center justify-center px-2 group-data-[collapsible=icon]:px-0">
-          <Image src="/logo.png" alt="Indanga" className="rounded-xl group-data-[collapsible=icon]:size-8 size-[54px]" width={54} height={54} />
+        <Link
+          href="/dashboard"
+          className="flex h-12 items-center justify-center px-2 group-data-[collapsible=icon]:px-0"
+        >
+          <Image
+            src="/logo.png"
+            alt="Indanga"
+            className="rounded-xl group-data-[collapsible=icon]:size-8 size-[54px]"
+            width={54}
+            height={54}
+          />
         </Link>
       </SidebarHeader>
       <SidebarContent>

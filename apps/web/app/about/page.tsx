@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
-import { FaEnvelope, FaInstagram, FaLinkedinIn } from "react-icons/fa6";
 import {
   ArrowRight,
   BadgeCheck,
@@ -79,10 +77,9 @@ export default function About() {
                   </h1>
 
                   <p className="mt-5">
-                    Discover homes, stays, vehicles, and local services in one
-                    convenient place. Explore your options, connect with
-                    providers, and make your next move with less searching and
-                    more confidence.
+                    Discover homes, stays, vehicles, and local services in one convenient place.
+                    Explore your options, connect with providers, and make your next move with less
+                    searching and more confidence.
                   </p>
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                     <Link href="/properties">
@@ -115,9 +112,7 @@ export default function About() {
                     aria-label={`Go to slide ${index + 1}`}
                     onClick={() => setActiveSlide(index)}
                     className={`h-2.5 rounded-full transition-all duration-300 ${
-                      activeSlide === index
-                        ? "w-8 bg-white"
-                        : "w-2.5 bg-white/50 hover:bg-white/80"
+                      activeSlide === index ? "w-8 bg-white" : "w-2.5 bg-white/50 hover:bg-white/80"
                     }`}
                   />
                 ))}
@@ -145,14 +140,12 @@ export default function About() {
               {/* Right Content */}
               <div>
                 <p className="text-lg leading-relaxed text-muted-foreground">
-                  Indanga was established from a simple observation: many of the
-                  resources people need already exist, but finding and accessing
-                  them efficiently remains a challenge. The platform was built
-                  to connect people with homes, apartments, cars, services,
-                  skills, and opportunities that are often scattered across
-                  fragmented channels and hard to discover.
+                  Indanga was established from a simple observation: many of the resources people
+                  need already exist, but finding and accessing them efficiently remains a
+                  challenge. The platform was built to connect people with homes, apartments, cars,
+                  services, skills, and opportunities that are often scattered across fragmented
+                  channels and hard to discover.
                 </p>
-
               </div>
             </div>
           </div>
@@ -177,14 +170,11 @@ export default function About() {
                   <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary">
                     Our Mission
                   </div>
-                  <h3 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl">
-                    Mission
-                  </h3>
+                  <h3 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl">Mission</h3>
                   <p className="leading-relaxed text-muted-foreground">
-                    To reduce search time, unnecessary movement, and information
-                    gaps by creating a more organized and accessible digital
-                    environment where people can discover and connect with the
-                    resources, services, and opportunities that already exist
+                    To reduce search time, unnecessary movement, and information gaps by creating a
+                    more organized and accessible digital environment where people can discover and
+                    connect with the resources, services, and opportunities that already exist
                     around them.
                   </p>
                 </div>
@@ -197,15 +187,12 @@ export default function About() {
                   <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary">
                     Our Vision
                   </div>
-                  <h3 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl">
-                    Vision
-                  </h3>
+                  <h3 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl">Vision</h3>
                   <p className="leading-relaxed text-muted-foreground">
-                    To become the leading digital ecosystem for discovery and
-                    connection, where people, assets, services, skills, and
-                    opportunities are easier to find, access, and
-                    utilize—turning fragmented information into a more efficient
-                    and connected economy.
+                    To become the leading digital ecosystem for discovery and connection, where
+                    people, assets, services, skills, and opportunities are easier to find, access,
+                    and utilize—turning fragmented information into a more efficient and connected
+                    economy.
                   </p>
                 </div>
               </div>
@@ -241,9 +228,7 @@ export default function About() {
                 <div className="mb-4 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
                   <Users className="size-6 text-primary" />
                 </div>
-                <h3 className="mb-2 font-bold text-foreground">
-                  Connected Experience
-                </h3>
+                <h3 className="mb-2 font-bold text-foreground">Connected Experience</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   Connect customers with property and service providers.
                 </p>
@@ -265,12 +250,9 @@ export default function About() {
                 <div className="mb-4 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
                   <Building2 className="size-6 text-primary" />
                 </div>
-                <h3 className="mb-2 font-bold text-foreground">
-                  Digital Convenience
-                </h3>
+                <h3 className="mb-2 font-bold text-foreground">Digital Convenience</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  Discovery, booking, and payment made easier through
-                  technology.
+                  Discovery, booking, and payment made easier through technology.
                 </p>
               </div>
             </div>
@@ -287,9 +269,8 @@ export default function About() {
                 Our Operations
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-                From property registration to ongoing support, INDANGA makes
-                renting simpler and more transparent for tenants, owners, and
-                agents.
+                From property registration to ongoing support, INDANGA makes renting simpler and
+                more transparent for tenants, owners, and agents.
               </p>
             </div>
 
@@ -300,17 +281,13 @@ export default function About() {
                   <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
                     <ClipboardList className="size-6 text-primary" />
                   </div>
-                  <span className="text-sm font-bold text-muted-foreground/60">
-                    01
-                  </span>
+                  <span className="text-sm font-bold text-muted-foreground/60">01</span>
                 </div>
-                <h3 className="mb-2 font-bold text-foreground">
-                  Property Registration
-                </h3>
+                <h3 className="mb-2 font-bold text-foreground">Property Registration</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  Property owners and authorized agents register their houses
-                  or apartments on INDANGA by providing accurate property
-                  details, location, pricing, photos, and availability.
+                  Property owners and authorized agents register their houses or apartments on
+                  INDANGA by providing accurate property details, location, pricing, photos, and
+                  availability.
                 </p>
               </div>
 
@@ -320,16 +297,12 @@ export default function About() {
                   <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
                     <BadgeCheck className="size-6 text-primary" />
                   </div>
-                  <span className="text-sm font-bold text-muted-foreground/60">
-                    02
-                  </span>
+                  <span className="text-sm font-bold text-muted-foreground/60">02</span>
                 </div>
-                <h3 className="mb-2 font-bold text-foreground">
-                  Property Verification
-                </h3>
+                <h3 className="mb-2 font-bold text-foreground">Property Verification</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  INDANGA works to verify property information and improve
-                  transparency, helping users access reliable rental listings.
+                  INDANGA works to verify property information and improve transparency, helping
+                  users access reliable rental listings.
                 </p>
               </div>
 
@@ -339,17 +312,13 @@ export default function About() {
                   <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
                     <LayoutList className="size-6 text-primary" />
                   </div>
-                  <span className="text-sm font-bold text-muted-foreground/60">
-                    03
-                  </span>
+                  <span className="text-sm font-bold text-muted-foreground/60">03</span>
                 </div>
-                <h3 className="mb-2 font-bold text-foreground">
-                  Property Listing
-                </h3>
+                <h3 className="mb-2 font-bold text-foreground">Property Listing</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  Verified or approved properties are published on the platform
-                  with clear information, allowing potential tenants to easily
-                  discover available houses and apartments.
+                  Verified or approved properties are published on the platform with clear
+                  information, allowing potential tenants to easily discover available houses and
+                  apartments.
                 </p>
               </div>
 
@@ -359,16 +328,12 @@ export default function About() {
                   <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
                     <Search className="size-6 text-primary" />
                   </div>
-                  <span className="text-sm font-bold text-muted-foreground/60">
-                    04
-                  </span>
+                  <span className="text-sm font-bold text-muted-foreground/60">04</span>
                 </div>
-                <h3 className="mb-2 font-bold text-foreground">
-                  Search &amp; Discovery
-                </h3>
+                <h3 className="mb-2 font-bold text-foreground">Search &amp; Discovery</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  Tenants can search for properties based on their preferred
-                  location, price, property type, size, and other requirements.
+                  Tenants can search for properties based on their preferred location, price,
+                  property type, size, and other requirements.
                 </p>
               </div>
 
@@ -378,17 +343,12 @@ export default function About() {
                   <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
                     <MessageSquareText className="size-6 text-primary" />
                   </div>
-                  <span className="text-sm font-bold text-muted-foreground/60">
-                    05
-                  </span>
+                  <span className="text-sm font-bold text-muted-foreground/60">05</span>
                 </div>
-                <h3 className="mb-2 font-bold text-foreground">
-                  Property Inquiry
-                </h3>
+                <h3 className="mb-2 font-bold text-foreground">Property Inquiry</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  Interested tenants can contact the property owner or agent
-                  through the platform to ask questions, request more
-                  information, or arrange a viewing.
+                  Interested tenants can contact the property owner or agent through the platform to
+                  ask questions, request more information, or arrange a viewing.
                 </p>
               </div>
 
@@ -398,16 +358,12 @@ export default function About() {
                   <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
                     <Eye className="size-6 text-primary" />
                   </div>
-                  <span className="text-sm font-bold text-muted-foreground/60">
-                    06
-                  </span>
+                  <span className="text-sm font-bold text-muted-foreground/60">06</span>
                 </div>
-                <h3 className="mb-2 font-bold text-foreground">
-                  Viewing &amp; Selection
-                </h3>
+                <h3 className="mb-2 font-bold text-foreground">Viewing &amp; Selection</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  Tenants can visit suitable properties, evaluate their
-                  options, and select the property that meets their needs.
+                  Tenants can visit suitable properties, evaluate their options, and select the
+                  property that meets their needs.
                 </p>
               </div>
 
@@ -417,18 +373,13 @@ export default function About() {
                   <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
                     <KeyRound className="size-6 text-primary" />
                   </div>
-                  <span className="text-sm font-bold text-muted-foreground/60">
-                    07
-                  </span>
+                  <span className="text-sm font-bold text-muted-foreground/60">07</span>
                 </div>
-                <h3 className="mb-2 font-bold text-foreground">
-                  Rental Process
-                </h3>
+                <h3 className="mb-2 font-bold text-foreground">Rental Process</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  Once the tenant and property owner/agent agree on the terms,
-                  INDANGA facilitates the next steps of the rental process,
-                  including available digital payment solutions where
-                  applicable.
+                  Once the tenant and property owner/agent agree on the terms, INDANGA facilitates
+                  the next steps of the rental process, including available digital payment
+                  solutions where applicable.
                 </p>
               </div>
 
@@ -438,17 +389,12 @@ export default function About() {
                   <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary/10">
                     <LifeBuoy className="size-6 text-primary" />
                   </div>
-                  <span className="text-sm font-bold text-muted-foreground/60">
-                    08
-                  </span>
+                  <span className="text-sm font-bold text-muted-foreground/60">08</span>
                 </div>
-                <h3 className="mb-2 font-bold text-foreground">
-                  Ongoing Support
-                </h3>
+                <h3 className="mb-2 font-bold text-foreground">Ongoing Support</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  INDANGA continues to connect tenants, property owners, and
-                  agents while providing a platform for managing
-                  property-related interactions and improving the rental
+                  INDANGA continues to connect tenants, property owners, and agents while providing
+                  a platform for managing property-related interactions and improving the rental
                   experience.
                 </p>
               </div>
@@ -466,8 +412,7 @@ export default function About() {
                 Let's connect.
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
-                Have a question, partnership idea, or need assistance? We'd love
-                to hear from you.
+                Have a question, partnership idea, or need assistance? We'd love to hear from you.
               </p>
 
               <div className="mt-12 space-y-6">
@@ -484,12 +429,8 @@ export default function About() {
                         <MapPin className="size-6 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          Location
-                        </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          Kigali, Rwanda
-                        </p>
+                        <p className="text-sm font-semibold text-foreground">Location</p>
+                        <p className="mt-1 text-sm text-muted-foreground">Kigali, Rwanda</p>
                       </div>
                     </div>
                   </Link>
@@ -504,9 +445,7 @@ export default function About() {
                         <Mail className="size-6 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          Email
-                        </p>
+                        <p className="text-sm font-semibold text-foreground">Email</p>
                         info@indanga.com
                       </div>
                     </div>
@@ -522,9 +461,7 @@ export default function About() {
                         <Phone className="size-6 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          Phone
-                        </p>
+                        <p className="text-sm font-semibold text-foreground">Phone</p>
                         +250 788 765 547
                       </div>
                     </div>

@@ -7,6 +7,7 @@ import {
   AdminPropertiesFilterDto,
   AdminReviewsFilterDto,
   AdminUsersFilterDto,
+  UpdatePropertyVerificationDto,
 } from "./dtos";
 
 const MONTH_LABELS = [
@@ -259,6 +260,14 @@ export class AdminService {
     return this.db.house.update({
       where: { id },
       data: { status: "PENDING" },
+    });
+  }
+
+  async updatePropertyVerificationStatus(id: string, data: UpdatePropertyVerificationDto) {
+    await this.getProperty(id);
+    return this.db.house.update({
+      where: { id },
+      data: { verificationStatus: data.verificationStatus },
     });
   }
 

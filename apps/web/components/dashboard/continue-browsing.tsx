@@ -60,6 +60,7 @@ export function ContinueBrowsing() {
               bathrooms={house.bathrooms}
               propertyType={house.propertyType}
               badge="Featured"
+              verificationStatus={house.verificationStatus}
             />
           ))}
         </div>

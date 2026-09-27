@@ -13,8 +13,6 @@ const font = DM_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
-
-
 export const metadata: Metadata = {
   title: "INDANGA One Platform. Endless Possibilities.",
   description:
@@ -31,15 +29,7 @@ export default async function RootLayout({
   });
 
   return (
-    <html
-      lang="en"
-      className={cn(
-        "h-full",
-        "antialiased",
-        font.className,
-        "font-sans",
-      )}
-    >
+    <html lang="en" className={cn("h-full", "antialiased", font.className, "font-sans")}>
       <body className="min-h-full flex flex-col">
         <Providers session={session ?? null}>{children}</Providers>
         <Toaster richColors />

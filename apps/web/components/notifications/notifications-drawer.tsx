@@ -2,15 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import {
-  Bell,
-  BellRing,
-  CheckCheck,
-  CircleDollarSign,
-  Cog,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+import { Bell, BellRing, CheckCheck, CircleDollarSign, Cog, ShieldCheck, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";

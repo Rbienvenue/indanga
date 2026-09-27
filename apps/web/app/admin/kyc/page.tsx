@@ -45,10 +45,7 @@ const columns: ColumnDef<KycLandlord>[] = [
     accessorKey: "kycStatus",
     header: "Status",
     cell: ({ row }) => (
-      <Badge
-        variant="secondary"
-        className={statusBadgeVariant[row.original.kycStatus] ?? ""}
-      >
+      <Badge variant="secondary" className={statusBadgeVariant[row.original.kycStatus] ?? ""}>
         {row.original.kycStatus}
       </Badge>
     ),

@@ -31,31 +31,20 @@ export default function Error({
             We ran into an unexpected error
           </h1>
           <p className="max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Please try again. If the problem persists, return home or contact
-            support at support@indanga.com.
+            Please try again. If the problem persists, return home or contact support at
+            support@indanga.com.
           </p>
           {error.digest ? (
-            <p className="text-xs text-muted-foreground/70">
-              Error reference: {error.digest}
-            </p>
+            <p className="text-xs text-muted-foreground/70">Error reference: {error.digest}</p>
           ) : null}
         </div>
 
         <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Button
-            size="lg"
-            className="w-full font-semibold sm:w-auto"
-            onClick={() => reset()}
-          >
+          <Button size="lg" className="w-full font-semibold sm:w-auto" onClick={() => reset()}>
             <RotateCcw aria-hidden />
             Try again
           </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="w-full font-semibold sm:w-auto"
-            asChild
-          >
+          <Button size="lg" variant="outline" className="w-full font-semibold sm:w-auto" asChild>
             <Link href="/">
               <House aria-hidden />
               Back to home

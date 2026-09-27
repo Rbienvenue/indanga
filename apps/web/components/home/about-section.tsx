@@ -2,23 +2,9 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import {
-  Building2,
-  CheckCircle2,
-  ChevronRight,
-  HeartHandshake,
-  MapPin,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
-import {
-  FaFacebook,
-  FaInstagram,
-  FaLinkedin,
-  FaXTwitter,
-} from "react-icons/fa6";
+import { Building2, ChevronRight, HeartHandshake, MapPin, ShieldCheck } from "lucide-react";
+import { FaFacebook, FaInstagram, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import type { IconType } from "react-icons";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -266,12 +252,8 @@ function PersonCard({ person }: { person: Person }) {
           </div>
           <div className="space-y-4 p-6 sm:p-8">
             <div>
-              <DialogTitle className="text-2xl font-bold sm:text-3xl">
-                {person.name}
-              </DialogTitle>
-              <p className="mt-2 text-sm font-medium text-primary">
-                {person.position}
-              </p>
+              <DialogTitle className="text-2xl font-bold sm:text-3xl">{person.name}</DialogTitle>
+              <p className="mt-2 text-sm font-medium text-primary">{person.position}</p>
             </div>
             <DialogDescription className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
               {person.bio?.trim() || "Biography coming soon."}
@@ -284,9 +266,7 @@ function PersonCard({ person }: { person: Person }) {
 }
 
 export function AboutSection() {
-  const [activeSection, setActiveSection] = useState<string>(
-    sectionLinks[0].id,
-  );
+  const [activeSection, setActiveSection] = useState<string>(sectionLinks[0].id);
 
   const renderActiveSection = () => {
     switch (activeSection) {
@@ -314,23 +294,20 @@ export function AboutSection() {
         );
       case "organization-structure":
         return (
-          <section
-            id="organization-structure"
-            className="scroll-mt-28 pt-6 sm:pt-8"
-          >
+          <section id="organization-structure" className="scroll-mt-28 pt-6 sm:pt-8">
             <div className="max-w-4xl">
               <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
                 Organization Structure
               </p>
             </div>
-                  <Image
-                    src="/structure.jpeg"
-                    alt="Indanga organizational overview"
-                    width={1600}
-                    height={20000}
-                    className="h-auto  w-full rounded-xl border border-border/70  object-center"
-                    priority
-                  />
+            <Image
+              src="/structure.jpeg"
+              alt="Indanga organizational overview"
+              width={1600}
+              height={20000}
+              className="h-auto  w-full rounded-xl border border-border/70  object-center"
+              priority
+            />
           </section>
         );
       case "Executive-management":
@@ -344,20 +321,14 @@ export function AboutSection() {
 
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-2">
               {leadershipMembers.map((person) => (
-                <PersonCard
-                  key={`${person.name}-${person.position}`}
-                  person={person}
-                />
+                <PersonCard key={`${person.name}-${person.position}`} person={person} />
               ))}
             </div>
           </section>
         );
       case "board-of-directors":
         return (
-          <section
-            id="board-of-directors"
-            className="scroll-mt-28 pt-6 sm:pt-8"
-          >
+          <section id="board-of-directors" className="scroll-mt-28 pt-6 sm:pt-8">
             <div className="max-w-4xl">
               <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
                 Board Members
@@ -366,10 +337,7 @@ export function AboutSection() {
 
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {boardMembers.map((person) => (
-                <PersonCard
-                  key={`${person.name}-${person.position}`}
-                  person={person}
-                />
+                <PersonCard key={`${person.name}-${person.position}`} person={person} />
               ))}
             </div>
           </section>
@@ -422,32 +390,25 @@ export function AboutSection() {
 
             {activeSection === "overview" && (
               <section className="mt-6 grid gap-3 sm:grid-cols-3">
-                {institutionalValues.map(
-                  ({ icon: Icon, title, description }) => (
-                    <div
-                      key={title}
-                      className="rounded-xl border border-border/70 bg-card p-4 shadow-sm"
-                    >
-                      <div className="inline-flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Icon className="size-4" />
-                      </div>
-                      <h3 className="mt-3 text-sm font-semibold text-foreground">
-                        {title}
-                      </h3>
-                      <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                        {description}
-                      </p>
+                {institutionalValues.map(({ icon: Icon, title, description }) => (
+                  <div
+                    key={title}
+                    className="rounded-xl border border-border/70 bg-card p-4 shadow-sm"
+                  >
+                    <div className="inline-flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Icon className="size-4" />
                     </div>
-                  ),
-                )}
+                    <h3 className="mt-3 text-sm font-semibold text-foreground">{title}</h3>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{description}</p>
+                  </div>
+                ))}
               </section>
             )}
 
             {activeSection === "overview" && (
               <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="size-4 shrink-0 text-primary" />
-                Building a more connected, accessible, and trustworthy digital
-                economy.
+                Building a more connected, accessible, and trustworthy digital economy.
               </div>
             )}
           </main>

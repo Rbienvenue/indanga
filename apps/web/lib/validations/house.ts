@@ -17,7 +17,7 @@ export const subTypesByPropertyType: Record<PropertyType, readonly string[]> = {
     "House",
   ],
   Hotel: ["Hotel", "Lodge", "Guesthouse", "Resort", "Motel"],
-  Car: ["Sedan", "SUV", "Pickup", "Bus","Van"],
+  Car: ["Sedan", "SUV", "Pickup", "Bus", "Van"],
 };
 
 const typesWithRooms: PropertyType[] = ["House", "Hotel"];
