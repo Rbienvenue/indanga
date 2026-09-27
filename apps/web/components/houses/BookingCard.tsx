@@ -3,20 +3,17 @@
 import type { House } from "@indanga/db";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-<<<<<<< HEAD
 import {
   AlertTriangle,
   ArrowRight,
   CalendarDays,
+  CalendarIcon,
   Headphones,
   Loader2,
   MapPin,
   MessageSquare,
   Star,
 } from "lucide-react";
-=======
-import { ArrowRight, CalendarIcon, Loader2 } from "lucide-react";
->>>>>>> 9312b2391d294572b37ef09112a758dc07ca5368
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -29,24 +26,22 @@ import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-<<<<<<< HEAD
-import { PropertyVerificationBadge } from "@/components/properties/property-verification-badge";
-=======
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
->>>>>>> 9312b2391d294572b37ef09112a758dc07ca5368
 import { fetcher } from "@/lib/fetcher";
 import { useSocketIo } from "@/components/providers/socket-io-provider";
 import { getBookingKind } from "@/lib/booking-kind";
 import { cn, formatPrice } from "@/lib/utils";
+
 import {
   bookingSchema,
+  BookingValues,
   datedBookingSchema,
+  Gateway,
   getNights,
   requiresPhone,
-  type BookingValues,
-  type Gateway,
 } from "@/lib/validations/booking";
 import { addDays, format, startOfDay } from "date-fns";
+import { PropertyVerificationBadge } from "../properties/property-verification-badge";
 
 type PaymentMethod = {
   method: "MOMO" | "AIRTEL" | "CARD";
