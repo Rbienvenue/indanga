@@ -12,6 +12,18 @@ import { randomUUID } from "node:crypto";
 import { NotificationsService } from "src/notifications/notifications.service";
 import { ITECService } from "./itec";
 import { WsGateway } from "src/ws/ws.gateway";
+import { isDatedProperty } from "src/houses/booking-kind.util";
+
+function startOfDay(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function differenceInCalendarDays(end: Date, start: Date): number {
+  const msPerDay = 24 * 60 * 60 * 1000;
+  return Math.round((startOfDay(end).getTime() - startOfDay(start).getTime()) / msPerDay);
+}
 
 @Injectable()
 export class PaymentsService {
@@ -22,7 +34,7 @@ export class PaymentsService {
     private readonly ws: WsGateway,
   ) {}
   async initiatePayment(clientId: string, data: CreateOrderDto) {
-    const { payment, result } = await this.db.$transaction(
+    const { booking, payment, result } = await this.db.$transaction(
       async (tx) => {
         const house = await tx.house.findUnique({ where: { id: data.houseId } });
         if (!house) {
@@ -32,11 +44,43 @@ export class PaymentsService {
           throw new ConflictException("Property is already booked");
         }
 
+        let checkIn: Date | undefined;
+        let checkOut: Date | undefined;
+        let nights: number | undefined;
+        let amount = house.price;
+
+        if (isDatedProperty(house.propertyType)) {
+          if (!data.checkIn || !data.checkOut) {
+            throw new BadRequestException("Check-in and check-out dates are required");
+          }
+          checkIn = new Date(data.checkIn);
+          checkOut = new Date(data.checkOut);
+          if (Number.isNaN(checkIn.getTime()) || Number.isNaN(checkOut.getTime())) {
+            throw new BadRequestException("Invalid check-in or check-out date");
+          }
+          const today = startOfDay(new Date());
+          if (startOfDay(checkIn) < today) {
+            throw new BadRequestException("Check-in date cannot be in the past");
+          }
+          if (startOfDay(checkOut) <= startOfDay(checkIn)) {
+            throw new BadRequestException("Check-out date must be after check-in date");
+          }
+          nights = differenceInCalendarDays(checkOut, checkIn);
+          if (nights < 1) {
+            throw new BadRequestException("Check-out date must be after check-in date");
+          }
+          amount = house.price * nights;
+        }
+
         const booking = await tx.booking.create({
           data: {
             clientId,
             houseId: data.houseId,
             status: BookingStatus.PENDING,
+            checkIn,
+            checkOut,
+            nights,
+            unitPrice: nights ? house.price : undefined,
           },
           include: {
             house: true,
@@ -46,7 +90,7 @@ export class PaymentsService {
 
         const payment = await tx.payment.create({
           data: {
-            amount: house.price,
+            amount,
             bookingId: booking.id,
             status: "PENDING",
             method: data.method,
@@ -78,6 +122,10 @@ export class PaymentsService {
       amount: Number(payment.amount),
       phone: data.phone,
       method: data.method,
+      nights: booking.nights ?? undefined,
+      unitPrice: booking.unitPrice ?? undefined,
+      checkIn: booking.checkIn ?? undefined,
+      checkOut: booking.checkOut ?? undefined,
       ...result,
     };
   }

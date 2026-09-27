@@ -14,6 +14,9 @@ type BookingWithDetails = {
   id: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
   createdAt: string;
+  checkIn?: string | null;
+  checkOut?: string | null;
+  nights?: number | null;
   house: { id: string; name: string; location: string; price: number };
   client: { id: string; name: string; email: string };
 };
@@ -56,6 +59,26 @@ const columns: ColumnDef<BookingWithDetails>[] = [
         {new Date(row.original.createdAt).toLocaleDateString()}
       </span>
     ),
+  },
+  {
+    id: "stay",
+    header: "Stay",
+    cell: ({ row }) => {
+      const { checkIn, checkOut, nights } = row.original;
+      if (!checkIn || !checkOut) return <span className="text-muted-foreground">—</span>;
+      return (
+        <div>
+          <p className="text-sm">
+            {new Date(checkIn).toLocaleDateString()} → {new Date(checkOut).toLocaleDateString()}
+          </p>
+          {nights ? (
+            <p className="text-xs text-muted-foreground">
+              {nights} night{nights > 1 ? "s" : ""}
+            </p>
+          ) : null}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "status",

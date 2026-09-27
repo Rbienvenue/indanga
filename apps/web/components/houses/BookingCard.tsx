@@ -3,7 +3,7 @@
 import type { House } from "@indanga/db";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, CalendarIcon, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,19 +12,24 @@ import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { fetcher } from "@/lib/fetcher";
 import { useSocketIo } from "@/components/providers/socket-io-provider";
 import { getBookingKind } from "@/lib/booking-kind";
 import { cn, formatPrice } from "@/lib/utils";
 import {
   bookingSchema,
+  datedBookingSchema,
+  getNights,
   requiresPhone,
   type BookingValues,
   type Gateway,
 } from "@/lib/validations/booking";
+import { addDays, format, startOfDay } from "date-fns";
 
 type PaymentMethod = {
   method: "MOMO" | "AIRTEL" | "CARD";
@@ -58,23 +63,38 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
   const [payment, setPayment] = useState<{ id: string; status: PaymentStatus } | null>(null);
   const { socket } = useSocketIo();
   const router = useRouter();
+  const bookingKind = getBookingKind(house.propertyType);
+  const isDated = bookingKind === "hotel" || bookingKind === "car";
   const form = useForm<BookingValues>({
-    resolver: zodResolver(bookingSchema),
-    defaultValues: { houseId: house.id, gateway: "momo", phone: "" },
+    resolver: zodResolver(isDated ? datedBookingSchema : bookingSchema),
+    defaultValues: { houseId: house.id, gateway: "momo", phone: "", checkIn: "", checkOut: "" },
   });
   const gateway = useWatch({ control: form.control, name: "gateway" });
+  const checkIn = useWatch({ control: form.control, name: "checkIn" });
+  const checkOut = useWatch({ control: form.control, name: "checkOut" });
   const paymentId = payment?.id;
-  const bookingKind = getBookingKind(house.propertyType);
+  const nights = isDated ? getNights(checkIn, checkOut) : 0;
+  const total = isDated && nights > 0 ? house.price * nights : house.price;
+  const dayLabel = bookingKind === "car" ? "day" : "night";
+  const today = startOfDay(new Date());
+  const checkInDate = checkIn ? new Date(`${checkIn}T00:00:00`) : undefined;
+  const checkOutDate = checkOut ? new Date(`${checkOut}T00:00:00`) : undefined;
+  const checkOutMinDate = checkInDate ? addDays(checkInDate, 1) : addDays(today, 1);
   const bookThisLabel = `Book this ${bookingKind}`;
   const priceUnitLabel =
     bookingKind === "hotel" ? "per night" : bookingKind === "car" ? "per day" : "per month";
 
   const paymentMutation = useMutation({
-    mutationFn: async ({ houseId, gateway, phone }: BookingValues) => {
+    mutationFn: async ({ houseId, gateway, phone, checkIn, checkOut }: BookingValues) => {
       const method = paymentMethods.find((item) => item.gateway === gateway)!.method;
       return fetcher<ApiResponse<PaymentResponse>>("/payments", {
         method: "POST",
-        body: JSON.stringify({ houseId, method, phone: phone?.replace(/\D/g, "") }),
+        body: JSON.stringify({
+          houseId,
+          method,
+          phone: phone?.replace(/\D/g, ""),
+          ...(isDated ? { checkIn, checkOut } : {}),
+        }),
       });
     },
     onSuccess: ({ data }, values) => {
@@ -184,8 +204,14 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xl font-black tracking-tight">{formatPrice(house.price)}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{priceUnitLabel}</p>
+          <p className="text-xl font-black tracking-tight">
+            {formatPrice(isDated && nights > 0 ? total : house.price)}
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {isDated && nights > 0
+              ? `${nights} ${dayLabel}${nights > 1 ? "s" : ""} × ${formatPrice(house.price)} ${priceUnitLabel}`
+              : priceUnitLabel}
+          </p>
         </div>
       </div>
 
@@ -212,6 +238,104 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
             onSubmit={form.handleSubmit((values) => paymentMutation.mutate(values))}
             className="mt-5 space-y-4"
           >
+            {isDated ? (
+              <div className="grid grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name="checkIn"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <Label className="text-sm font-semibold">Check-in</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              disabled={submitting}
+                              className={cn(
+                                "mt-2 h-11 justify-start px-3 text-left font-normal",
+                                !field.value && "text-muted-foreground",
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 size-4" />
+                              {checkInDate ? (
+                                format(checkInDate, "LLL dd, y")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={checkInDate}
+                            disabled={{ before: today }}
+                            onSelect={(date) => {
+                              field.onChange(date ? format(date, "yyyy-MM-dd") : "");
+                              const nextCheckOut = form.getValues("checkOut");
+                              if (
+                                date &&
+                                nextCheckOut &&
+                                new Date(`${nextCheckOut}T00:00:00`) <= startOfDay(date)
+                              ) {
+                                form.setValue("checkOut", "", { shouldValidate: true });
+                              }
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="checkOut"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <Label className="text-sm font-semibold">Check-out</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              disabled={submitting}
+                              className={cn(
+                                "mt-2 h-11 justify-start px-3 text-left font-normal",
+                                !field.value && "text-muted-foreground",
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 size-4" />
+                              {checkOutDate ? (
+                                format(checkOutDate, "LLL dd, y")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={checkOutDate}
+                            disabled={{ before: checkOutMinDate }}
+                            onSelect={(date) =>
+                              field.onChange(date ? format(date, "yyyy-MM-dd") : "")
+                            }
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ) : null}
+
+
             <FormField
               control={form.control}
               name="gateway"
@@ -289,7 +413,15 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
                 </>
               ) : (
                 <>
-                  Continue to payment <ArrowRight className="size-4" />
+                  {isDated && nights > 0 ? (
+                    <>
+                      Pay {formatPrice(total)} <ArrowRight className="size-4" />
+                    </>
+                  ) : (
+                    <>
+                      Continue to payment <ArrowRight className="size-4" />
+                    </>
+                  )}
                 </>
               )}
             </Button>

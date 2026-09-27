@@ -132,6 +132,10 @@ model Booking {
   clientId      String
   houseId       String
   status        BookingStatus  @default(PENDING)
+  checkIn       DateTime?
+  checkOut      DateTime?
+  nights        Int?
+  unitPrice     Int?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   client        User           @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)

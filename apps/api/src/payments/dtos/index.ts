@@ -1,5 +1,13 @@
 import { Type } from "class-transformer";
-import { IsEnum, IsInt, IsOptional, IsString, ValidateIf, ValidateNested } from "class-validator";
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  ValidateIf,
+  ValidateNested,
+} from "class-validator";
 import { PaymentStatus } from "@indanga/db";
 
 export class FilterPaymentsDto {
@@ -29,6 +37,14 @@ export class CreateOrderDto {
 
   @IsEnum(paymentMethods)
   method: (typeof paymentMethods)[number];
+
+  @IsOptional()
+  @IsDateString()
+  checkIn?: string;
+
+  @IsOptional()
+  @IsDateString()
+  checkOut?: string;
 }
 
 class PaymentCallbackDataDto {

@@ -22,6 +22,9 @@ type BookingWithHouse = {
   id: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
   createdAt: string;
+  checkIn?: string | null;
+  checkOut?: string | null;
+  nights?: number | null;
   house: House;
   client: {
     id: string;
@@ -30,6 +33,11 @@ type BookingWithHouse = {
     image: string | null;
   };
 };
+
+function formatStayDates(checkIn?: string | null, checkOut?: string | null): string | null {
+  if (!checkIn || !checkOut) return null;
+  return `${new Date(checkIn).toLocaleDateString()} → ${new Date(checkOut).toLocaleDateString()}`;
+}
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-amber-100 text-amber-700",
@@ -93,6 +101,24 @@ const agentColumns: ColumnDef<BookingWithHouse>[] = [
     cell: ({ row }) => (
       <span className="text-muted-foreground">{formatPrice(row.original.house.price)}/mo</span>
     ),
+  },
+  {
+    id: "stay",
+    header: "Stay",
+    cell: ({ row }) => {
+      const stay = formatStayDates(row.original.checkIn, row.original.checkOut);
+      if (!stay) return <span className="text-muted-foreground">—</span>;
+      return (
+        <div>
+          <p className="text-sm">{stay}</p>
+          {row.original.nights ? (
+            <p className="text-xs text-muted-foreground">
+              {row.original.nights} night{row.original.nights > 1 ? "s" : ""}
+            </p>
+          ) : null}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "createdAt",
@@ -238,21 +264,33 @@ export default function BookingsPage() {
       ) : (
         <>
           <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {bookings.map(({ id, house }) => (
-              <ProductCard
-                key={id}
-                id={house.id}
-                href={`/properties/${house.id}`}
-                name={house.name}
-                location={house.location}
-                price={house.price}
-                media={house.media}
-                bedrooms={house.bedrooms}
-                bathrooms={house.bathrooms}
-                propertyType={house.propertyType}
-                badge={house.propertyType}
-              />
-            ))}
+            {bookings.map((booking) => {
+              const stay = formatStayDates(booking.checkIn, booking.checkOut);
+              return (
+                <div key={booking.id}>
+                  <ProductCard
+                    id={booking.house.id}
+                    href={`/properties/${booking.house.id}`}
+                    name={booking.house.name}
+                    location={booking.house.location}
+                    price={booking.house.price}
+                    media={booking.house.media}
+                    bedrooms={booking.house.bedrooms}
+                    bathrooms={booking.house.bathrooms}
+                    propertyType={booking.house.propertyType}
+                    badge={booking.house.propertyType}
+                  />
+                  {stay ? (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {stay}
+                      {booking.nights
+                        ? ` · ${booking.nights} night${booking.nights > 1 ? "s" : ""}`
+                        : ""}
+                    </p>
+                  ) : null}
+                </div>
+              );
+            })}
           </section>
           {meta && (
             <Pagination
