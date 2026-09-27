@@ -5,6 +5,7 @@ import { TrustSignals } from "@/components/home/trust-signals";
 import { Categories } from "@/components/home/categories";
 import { Recommended } from "@/components/home/recommended";
 import { HowItWorks } from "@/components/home/how-it-works";
+import { ProviderCTA } from "@/components/home/provider-cta";
 import { Footer } from "@/components/home/footer";
 
 export default function Home() {
@@ -18,6 +19,7 @@ export default function Home() {
         <Categories />
         <Recommended />
         <HowItWorks />
+        <ProviderCTA />
       </main>
       <Footer />
     </div>
