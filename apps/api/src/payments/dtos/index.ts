@@ -45,6 +45,15 @@ export class CreateOrderDto {
   @IsOptional()
   @IsDateString()
   checkOut?: string;
+
+  @IsOptional()
+  @IsString()
+  roomTypeId?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  roomCount?: number;
 }
 
 class PaymentCallbackDataDto {

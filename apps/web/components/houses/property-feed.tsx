@@ -1,6 +1,6 @@
 "use client";
 
-import type { House } from "@indanga/db";
+import { getPriceUnit, type HouseWithRooms } from "@/lib/booking-kind";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Home } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
@@ -54,7 +54,7 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
       const url = buildPropertiesUrl(pageParam, filters, { status });
       const separator = url.includes("?") ? "&" : "?";
       const ownerParam = ownerId ? `${separator}ownerId=${ownerId}` : "";
-      return fetcher<PaginationResponse<House>>(`${url}${ownerParam}`);
+      return fetcher<PaginationResponse<HouseWithRooms>>(`${url}${ownerParam}`);
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
@@ -110,6 +110,7 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
                 name={house.name}
                 location={house.location}
                 price={house.price}
+                rooms={house.rooms}
                 media={house.media}
                 bedrooms={house.bedrooms}
                 bathrooms={house.bathrooms}

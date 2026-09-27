@@ -27,6 +27,9 @@ type BookingWithHouse = {
   checkOut?: string | null;
   nights?: number | null;
   totalAmount?: number | null;
+  unitPrice?: number | null;
+  roomCount?: number | null;
+  roomType?: { id: string; name: string; price: number } | null;
   house: House;
   client: {
     id: string;
@@ -94,6 +97,14 @@ const agentColumns: ColumnDef<BookingWithHouse>[] = [
           {row.original.house.name}
         </Link>
         <p className="text-xs text-muted-foreground">{row.original.house.location}</p>
+        {row.original.roomType ? (
+          <p className="text-xs text-muted-foreground">
+            {row.original.roomType.name}
+            {row.original.roomCount && row.original.roomCount > 1
+              ? ` × ${row.original.roomCount}`
+              : ""}
+          </p>
+        ) : null}
       </div>
     ),
   },

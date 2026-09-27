@@ -34,11 +34,14 @@ export interface BookingPropertyCardBooking {
   checkOut?: string | null;
   nights?: number | null;
   totalAmount?: number | null;
+  unitPrice?: number | null;
+  roomCount?: number | null;
+  roomType?: { id: string; name: string; price: number } | null;
   house: {
     id: string;
     name: string;
     location: string;
-    price: number;
+    price: number | null;
     media?: string[];
     bedrooms: number;
     bathrooms: number;
@@ -97,6 +100,14 @@ export function BookingPropertyCard({ booking }: { booking: BookingPropertyCardB
             <span className="text-sm text-muted-foreground">total</span>
           </div>
         )}
+
+        {booking.roomType ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            {booking.roomType.name}
+            {booking.roomCount && booking.roomCount > 1 ? ` × ${booking.roomCount} rooms` : ""}
+            {booking.unitPrice != null ? ` · ${formatPrice(booking.unitPrice)} / night` : ""}
+          </p>
+        ) : null}
 
         {hasStay && (
           <div className="mt-3 flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-3 py-2.5">

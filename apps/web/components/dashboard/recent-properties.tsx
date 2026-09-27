@@ -72,7 +72,9 @@ export function RecentProperties() {
                   <TableCell className="font-medium">{property.name}</TableCell>
                   <TableCell>{property.propertyType}</TableCell>
                   <TableCell className="text-muted-foreground">{property.location}</TableCell>
-                  <TableCell>{formatPrice(property.price)}</TableCell>
+                  <TableCell>
+                    {property.price != null ? formatPrice(property.price) : "—"}
+                  </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className={statusColors[property.status]}>
                       {property.status}

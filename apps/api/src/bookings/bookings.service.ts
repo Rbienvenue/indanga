@@ -36,7 +36,8 @@ export class BookingsService {
         skip: (page - 1) * limit,
         take: limit,
         include: {
-          house: true,
+          house: { include: { rooms: true } },
+          roomType: true,
           client: true,
         },
       }),
@@ -58,7 +59,8 @@ export class BookingsService {
     const booking = await this.db.booking.findUnique({
       where: { id },
       include: {
-        house: true,
+        house: { include: { rooms: true } },
+        roomType: true,
         client: true,
         payments: true,
       },
@@ -87,7 +89,7 @@ export class BookingsService {
 
     const booking = await this.db.booking.findUnique({
       where: { id },
-      include: { house: true },
+      include: { house: { include: { rooms: true } } },
     });
 
     if (!booking) {
@@ -119,7 +121,8 @@ export class BookingsService {
         include: { house: true, client: true },
       });
 
-      if (otherCurrentStays === 0) {
+      // Room-based hotels free capacity via dates; only flip whole-property listings.
+      if (otherCurrentStays === 0 && booking.house.rooms.length === 0) {
         await tx.house.update({
           where: { id: booking.houseId },
           data: { status: HouseStatus.AVAILABLE },

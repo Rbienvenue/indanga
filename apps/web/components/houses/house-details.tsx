@@ -1,6 +1,6 @@
 "use client";
 
-import type { House } from "@indanga/db";
+import type { House, RoomType } from "@indanga/db";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -204,6 +204,9 @@ export function HouseDetails({ houseId }: { houseId: string }) {
   }
 
   const house = houseQuery.data.data;
+  const rooms: RoomType[] = (house as House & { rooms?: RoomType[] }).rooms ?? [];
+  const roomPrices = rooms.map((room) => room.price);
+  const fromPrice = roomPrices.length > 0 ? Math.min(...roomPrices) : null;
   const isAvailable = house.status === "AVAILABLE";
   const bookingKind = getBookingKind(house.propertyType);
   const amenities = parseAmenities(house.metadata);
@@ -292,7 +295,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
 
         <Gallery house={house} />
 
-        <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-16">
+        <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_28rem] lg:gap-12">
           <div>
             <div className="flex flex-col gap-5 border-b border-slate-900/10 pb-8 dark:border-white/10 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -365,6 +368,33 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                         </li>
                       );
                     })}
+                  </ul>
+                </section>
+
+                <Separator className="bg-slate-900/10 dark:bg-white/10" />
+              </>
+            ) : null}
+
+            {bookingKind === "hotel" && rooms.length > 0 ? (
+              <>
+                <section className="py-9">
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                    Rooms{fromPrice != null ? ` · from ${fromPrice.toLocaleString("en-US")} RWF` : ""}
+                  </h2>
+                  <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+                    {rooms.map((room) => (
+                      <li
+                        key={room.id}
+                        className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card/55 p-5"
+                      >
+                        <div>
+                          <p className="font-bold">{room.name}</p>
+                        </div>
+                        <p className="text-lg font-black text-primary">
+                          {room.price.toLocaleString("en-US")} RWF
+                        </p>
+                      </li>
+                    ))}
                   </ul>
                 </section>
 
@@ -448,8 +478,7 @@ function ListingInformation({
       </AccordionRow>
       <AccordionRow icon={WalletCards} title="Price details">
         <p>
-          {formatPrice(house.price)} per {priceUnit}. The displayed price is the listing rate;
-          confirm the total at booking.
+          {house.price ? `${formatPrice(house.price)} per ${priceUnit}.` : ""} The displayed price is the listing rate; confirm the total at booking.
         </p>
         <p className="mt-3">
           INDANGA keeps payment inside the platform so your booking record stays connected to your
@@ -562,7 +591,7 @@ function HouseDetailsSkeleton() {
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Skeleton className="mb-5 h-5 w-40" />
         <Skeleton className="h-72 w-full rounded-2xl sm:h-88 lg:h-96" />
-        <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_23rem]">
+        <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_28rem]">
           <div>
             <Skeleton className="h-5 w-32" />
             <Skeleton className="mt-4 h-12 w-3/4" />
