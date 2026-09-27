@@ -1,7 +1,6 @@
+import { useEffect, useState } from "react";
 
-import { useEffect, useState } from 'react';
-
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 export interface LocationData {
   provinces: string[];
@@ -23,28 +22,29 @@ export function useLocations() {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await fetch('/data/villages.csv', {
-          cache: 'force-cache',
+        const response = await fetch("/data/villages.csv", {
+          cache: "force-cache",
         });
         const csvText = await response.text();
 
-        const rows = csvText.split('\n').slice(1);
+        const rows = csvText.split("\n").slice(1);
         const locationMap = new Map<string, Set<string>>();
         const districtMap = new Map<string, Set<string>>();
         const sectorMap = new Map<string, Set<string>>();
         const cellMap = new Map<string, Set<string>>();
 
         rows.forEach((row) => {
-          const [province_name, , district_name, , sector_name, , cell_name, , village_name] = row.split(',');
+          const [province_name, , district_name, , sector_name, , cell_name, , village_name] =
+            row.split(",");
           if (!province_name || !district_name || !sector_name || !cell_name || !village_name) {
             return;
           }
 
-          const cleanProvince = province_name.replace(/"/g, '').trim();
-          const cleanDistrict = district_name.replace(/"/g, '').trim();
-          const cleanSector = sector_name.replace(/"/g, '').trim();
-          const cleanCell = cell_name.replace(/"/g, '').trim();
-          const cleanVillage = village_name.replace(/"/g, '').trim();
+          const cleanProvince = province_name.replace(/"/g, "").trim();
+          const cleanDistrict = district_name.replace(/"/g, "").trim();
+          const cleanSector = sector_name.replace(/"/g, "").trim();
+          const cleanCell = cell_name.replace(/"/g, "").trim();
+          const cleanVillage = village_name.replace(/"/g, "").trim();
           if (!cleanProvince || !cleanDistrict || !cleanSector || !cleanCell || !cleanVillage) {
             return;
           }
@@ -83,31 +83,29 @@ export function useLocations() {
             },
             {} as Record<string, string[]>,
           ),
-          sectors: Array.from(districtMap.entries()).reduce<Record<string, Record<string, string[]>>>(
-            (acc, [key, sectors]) => {
-              const [province, district] = key.split('-');
-              if (!province || !district) return acc;
-              if (!acc[province]) acc[province] = {};
-              acc[province][district] = Array.from(sectors);
-              return acc;
-            },
-            {},
-          ),
-          cells: Array.from(sectorMap.entries()).reduce<Record<string, Record<string, Record<string, string[]>>>>(
-            (acc, [key, cells]) => {
-              const [province, district, sector] = key.split('-');
-              if (!province || !district || !sector) return acc;
-              if (!acc[province]) acc[province] = {};
-              if (!acc[province][district]) acc[province][district] = {};
-              acc[province][district][sector] = Array.from(cells);
-              return acc;
-            },
-            {},
-          ),
+          sectors: Array.from(districtMap.entries()).reduce<
+            Record<string, Record<string, string[]>>
+          >((acc, [key, sectors]) => {
+            const [province, district] = key.split("-");
+            if (!province || !district) return acc;
+            if (!acc[province]) acc[province] = {};
+            acc[province][district] = Array.from(sectors);
+            return acc;
+          }, {}),
+          cells: Array.from(sectorMap.entries()).reduce<
+            Record<string, Record<string, Record<string, string[]>>>
+          >((acc, [key, cells]) => {
+            const [province, district, sector] = key.split("-");
+            if (!province || !district || !sector) return acc;
+            if (!acc[province]) acc[province] = {};
+            if (!acc[province][district]) acc[province][district] = {};
+            acc[province][district][sector] = Array.from(cells);
+            return acc;
+          }, {}),
           villages: Array.from(cellMap.entries()).reduce<
             Record<string, Record<string, Record<string, Record<string, string[]>>>>
           >((acc, [key, villages]) => {
-            const [province, district, sector, cell] = key.split('-');
+            const [province, district, sector, cell] = key.split("-");
             if (!province || !district || !sector || !cell) return acc;
             if (!acc[province]) acc[province] = {};
             if (!acc[province][district]) acc[province][district] = {};
@@ -116,8 +114,8 @@ export function useLocations() {
             return acc;
           }, {}),
         });
-      } catch  {
-        toast.error('Failed to load location data');
+      } catch {
+        toast.error("Failed to load location data");
       } finally {
         setIsLoading(false);
       }

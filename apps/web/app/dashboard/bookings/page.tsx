@@ -251,6 +251,7 @@ export default function BookingsPage() {
                 bathrooms={house.bathrooms}
                 propertyType={house.propertyType}
                 badge={house.propertyType}
+                verificationStatus={house.verificationStatus}
               />
             ))}
           </section>

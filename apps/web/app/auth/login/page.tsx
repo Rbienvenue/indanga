@@ -52,9 +52,7 @@ export default function LoginPage() {
   return (
     <>
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight  sm:text-4xl">
-          Sign in to continue
-        </h1>
+        <h1 className="text-3xl font-semibold tracking-tight  sm:text-4xl">Sign in to continue</h1>
         <p className="mt-3 max-w-sm leading-6 text-muted-foreground">
           Access your saved homes, bookings, and conversations.
         </p>

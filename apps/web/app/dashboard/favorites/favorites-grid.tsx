@@ -76,6 +76,7 @@ export function FavoritesGrid({ favorites, isLoading, isError }: FavoritesGridPr
           bathrooms={house.bathrooms}
           propertyType={house.propertyType}
           badge={house.propertyType}
+          verificationStatus={house.verificationStatus}
           isFavorite
         />
       ))}

@@ -151,7 +151,7 @@ export function KycReviewDialog({ landlord }: { landlord: KycLandlord }) {
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>
-            Review {landlord.name}  {landlord.email}
+            Review {landlord.name} {landlord.email}
           </DialogTitle>
         </DialogHeader>
 

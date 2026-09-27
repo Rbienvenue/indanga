@@ -1,17 +1,16 @@
-import { useLocations } from '@/hooks/use-locations';
-import { useEffect } from 'react';
-import { Skeleton } from './ui/skeleton';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { cn } from '@/lib/utils';
-
+import { useLocations } from "@/hooks/use-locations";
+import { useEffect } from "react";
+import { Skeleton } from "./ui/skeleton";
+import { Label } from "./ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { cn } from "@/lib/utils";
 
 const provinceMap = {
-  'Kigali City': 'Umujyi wa kigali',
-  Northern: 'Amajyaruguru',
-  Southern: 'Amajyepfo',
-  Eastern: 'Iburasirazuba',
-  Western: 'Iburengerazuba',
+  "Kigali City": "Umujyi wa kigali",
+  Northern: "Amajyaruguru",
+  Southern: "Amajyepfo",
+  Eastern: "Iburasirazuba",
+  Western: "Iburengerazuba",
 };
 
 interface LocationSelectorProps {
@@ -48,7 +47,7 @@ interface LocationSelectorProps {
     cell?: string;
     village?: string;
   };
-  locale?: 'en' | 'rw';
+  locale?: "en" | "rw";
 }
 
 export function LocationSelector({
@@ -63,57 +62,57 @@ export function LocationSelector({
   onCellChange,
   onVillageChange,
   errors,
-  className = '',
-  styles = '',
+  className = "",
+  styles = "",
   labels = {
-    province: 'Province',
-    district: 'District',
-    sector: 'Sector',
-    cell: 'Cell',
-    village: 'Village',
+    province: "Province",
+    district: "District",
+    sector: "Sector",
+    cell: "Cell",
+    village: "Village",
   },
   placeholders = {
-    province: 'Select province',
-    district: 'Select district',
-    sector: 'Select sector',
-    cell: 'Select cell',
-    village: 'Select village',
+    province: "Select province",
+    district: "Select district",
+    sector: "Select sector",
+    cell: "Select cell",
+    village: "Select village",
   },
-  locale = 'en',
+  locale = "en",
 }: LocationSelectorProps) {
   const { locations, isLoading } = useLocations();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: callback props are intentionally omitted to avoid rerunning resets when parent handlers are recreated.
   useEffect(() => {
     if (!province) {
-      onDistrictChange('');
-      onSectorChange('');
-      onCellChange('');
-      onVillageChange('');
+      onDistrictChange("");
+      onSectorChange("");
+      onCellChange("");
+      onVillageChange("");
     }
   }, [province]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: callback props are intentionally omitted to avoid rerunning resets when parent handlers are recreated.
   useEffect(() => {
     if (!district) {
-      onSectorChange('');
-      onCellChange('');
-      onVillageChange('');
+      onSectorChange("");
+      onCellChange("");
+      onVillageChange("");
     }
   }, [district]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: callback props are intentionally omitted to avoid rerunning resets when parent handlers are recreated.
   useEffect(() => {
     if (!sector) {
-      onCellChange('');
-      onVillageChange('');
+      onCellChange("");
+      onVillageChange("");
     }
   }, [sector]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: callback props are intentionally omitted to avoid rerunning resets when parent handlers are recreated.
   useEffect(() => {
     if (!cell) {
-      onVillageChange('');
+      onVillageChange("");
     }
   }, [cell]);
 
@@ -134,16 +133,16 @@ export function LocationSelector({
       <div className="grid  grid-cols-1 md:grid-cols-2 gap-4 ">
         <div className="space-y-2">
           <Label className={className}>
-            {labels?.province ?? 'Province'} <span className="text-red-500">*</span>
+            {labels?.province ?? "Province"} <span className="text-red-500">*</span>
           </Label>
           <Select value={province} onValueChange={onProvinceChange}>
-            <SelectTrigger className={cn(styles, errors?.province && 'border-red-500')}>
+            <SelectTrigger className={cn(styles, errors?.province && "border-red-500")}>
               <SelectValue placeholder={placeholders?.province} />
             </SelectTrigger>
             <SelectContent>
               {locations.provinces.map((p) => (
                 <SelectItem key={p} value={p}>
-                  {locale === 'en' ? p : provinceMap[p as keyof typeof provinceMap]}
+                  {locale === "en" ? p : provinceMap[p as keyof typeof provinceMap]}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -152,10 +151,13 @@ export function LocationSelector({
         </div>
         <div className="space-y-2">
           <Label className={className}>
-            {labels?.district ?? 'District'} <span className="text-red-500">*</span>
+            {labels?.district ?? "District"} <span className="text-red-500">*</span>
           </Label>
           <Select value={district} onValueChange={onDistrictChange}>
-            <SelectTrigger disabled={!province} className={cn(styles, errors?.district && 'border-red-500')}>
+            <SelectTrigger
+              disabled={!province}
+              className={cn(styles, errors?.district && "border-red-500")}
+            >
               <SelectValue placeholder={placeholders?.district} />
             </SelectTrigger>
             <SelectContent>
@@ -174,10 +176,13 @@ export function LocationSelector({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className={className}>
-            {labels?.sector ?? 'Sector'} <span className="text-red-500">*</span>
+            {labels?.sector ?? "Sector"} <span className="text-red-500">*</span>
           </Label>
           <Select value={sector} onValueChange={onSectorChange}>
-            <SelectTrigger disabled={!district} className={cn(styles, errors?.sector && 'border-red-500')}>
+            <SelectTrigger
+              disabled={!district}
+              className={cn(styles, errors?.sector && "border-red-500")}
+            >
               <SelectValue placeholder={placeholders?.sector} />
             </SelectTrigger>
             <SelectContent>
@@ -194,10 +199,13 @@ export function LocationSelector({
 
         <div className="space-y-2">
           <Label className={className}>
-            {labels?.cell ?? 'Cell'} <span className="text-red-500">*</span>
+            {labels?.cell ?? "Cell"} <span className="text-red-500">*</span>
           </Label>
           <Select value={cell} onValueChange={onCellChange}>
-            <SelectTrigger disabled={!sector} className={cn(styles, errors?.cell && 'border-red-500')}>
+            <SelectTrigger
+              disabled={!sector}
+              className={cn(styles, errors?.cell && "border-red-500")}
+            >
               <SelectValue placeholder={placeholders?.cell} />
             </SelectTrigger>
             <SelectContent>
@@ -215,10 +223,13 @@ export function LocationSelector({
 
       <div className="space-y-2">
         <Label className={className}>
-          {labels?.village ?? 'Village'} <span className="text-red-500">*</span>
+          {labels?.village ?? "Village"} <span className="text-red-500">*</span>
         </Label>
         <Select value={village} onValueChange={onVillageChange}>
-          <SelectTrigger disabled={!cell} className={cn(styles, errors?.village && 'border-red-500')}>
+          <SelectTrigger
+            disabled={!cell}
+            className={cn(styles, errors?.village && "border-red-500")}
+          >
             <SelectValue placeholder={placeholders?.village} />
           </SelectTrigger>
           <SelectContent>

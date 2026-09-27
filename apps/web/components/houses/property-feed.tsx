@@ -38,7 +38,13 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
   }
 
   const effectiveLocation =
-    sector !== "all" ? sector : district !== "all" ? district : province !== "all" ? province : "all";
+    sector !== "all"
+      ? sector
+      : district !== "all"
+        ? district
+        : province !== "all"
+          ? province
+          : "all";
   const filters = { propertyType, subType, budget, location: effectiveLocation };
   const status = ownerId ? null : "AVAILABLE";
 
@@ -113,6 +119,7 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
                 badge={house.propertyType}
                 showManageActions={!!ownerId}
                 status={ownerId ? house.status : undefined}
+                verificationStatus={house.verificationStatus}
               />
             ))}
           </section>

@@ -29,9 +29,8 @@ export default function NotFound() {
               We couldn&rsquo;t find that page
             </h1>
             <p className="max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-              The link you followed may be broken, or the page may have been
-              removed. Let&rsquo;s get you back to finding your next home,
-              hotel, or car.
+              The link you followed may be broken, or the page may have been removed. Let&rsquo;s
+              get you back to finding your next home, hotel, or car.
             </p>
           </div>
 
@@ -42,12 +41,7 @@ export default function NotFound() {
                 Back to home
               </Link>
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full font-semibold sm:w-auto"
-              asChild
-            >
+            <Button size="lg" variant="outline" className="w-full font-semibold sm:w-auto" asChild>
               <Link href="/properties">
                 <ArrowLeft aria-hidden />
                 Explore properties

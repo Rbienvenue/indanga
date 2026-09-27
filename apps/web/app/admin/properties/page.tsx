@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
+import type { VerificationStatus } from "@indanga/db";
 import { ExternalLink, Loader2, Pencil, PlusCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -26,6 +27,13 @@ import {
 } from "@/components/properties/property-status-badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { fetcher } from "@/lib/fetcher";
 import { formatPrice } from "@/lib/utils";
 
@@ -36,6 +44,7 @@ type HouseWithOwner = {
   price: number;
   propertyType: string;
   status: PropertyStatus;
+  verificationStatus: VerificationStatus;
   createdAt: string;
   owner: {
     id: string;
@@ -43,6 +52,44 @@ type HouseWithOwner = {
     email: string;
   };
 };
+
+function PropertyVerificationControl({ property }: { property: HouseWithOwner }) {
+  const queryClient = useQueryClient();
+
+  const verificationMutation = useMutation({
+    mutationFn: (verificationStatus: VerificationStatus) =>
+      fetcher<ApiResponse<HouseWithOwner>>(
+        `/admin/properties/${property.id}/verification-status`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ verificationStatus }),
+        },
+      ),
+    onSuccess: () => {
+      toast.success("Verification status updated");
+      void queryClient.invalidateQueries({ queryKey: ["properties", "admin"] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message ?? "Failed to update verification status");
+    },
+  });
+
+  return (
+    <Select
+      value={property.verificationStatus}
+      onValueChange={(value) => verificationMutation.mutate(value as VerificationStatus)}
+      disabled={verificationMutation.isPending}
+    >
+      <SelectTrigger className="w-47.5">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="ReviewedByIndanga">Reviewed by INDANGA</SelectItem>
+        <SelectItem value="VerifiedByIndanga">Verified by INDANGA</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
 
 function PropertyActions({ property }: { property: HouseWithOwner }) {
   const queryClient = useQueryClient();
@@ -189,6 +236,11 @@ const columns: ColumnDef<HouseWithOwner>[] = [
     accessorKey: "price",
     header: "Price",
     cell: ({ row }) => formatPrice(row.original.price),
+  },
+  {
+    id: "verificationStatus",
+    header: "Verification",
+    cell: ({ row }) => <PropertyVerificationControl property={row.original} />,
   },
   {
     accessorKey: "status",

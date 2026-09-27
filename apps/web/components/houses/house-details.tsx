@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import type { ApiResponse } from "@/@types";
 import { BookingCard } from "@/components/houses/BookingCard";
 import { HousePhotoSlideshow } from "@/components/houses/house-photo-slideshow";
+import { PropertyVerificationBadge } from "@/components/properties/property-verification-badge";
 import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -295,6 +296,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                   <span className="rounded-full bg-[#17174a] px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
                     {house.propertyType}
                   </span>
+                  <PropertyVerificationBadge status={house.verificationStatus} />
                   <span
                     className={cn(
                       "rounded-full px-3 py-1 text-xs font-bold",
@@ -346,9 +348,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
             {amenities.length > 0 ? (
               <>
                 <section className="py-9">
-                  <h2 className="mt-2 text-2xl font-bold tracking-tight">
-                    What this place offers
-                  </h2>
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight">What this place offers</h2>
                   <ul className="mt-6 grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2">
                     {amenities.map((amenity) => {
                       const Icon = amenityIcons[amenity];

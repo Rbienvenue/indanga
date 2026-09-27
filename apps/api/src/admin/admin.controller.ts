@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Patch, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Query } from "@nestjs/common";
 import { Roles } from "@thallesp/nestjs-better-auth";
 import { ApiResponse, PaginationResponse } from "src/@types";
 import { AdminService } from "./admin.service";
@@ -8,6 +8,7 @@ import {
   AdminPropertiesFilterDto,
   AdminReviewsFilterDto,
   AdminUsersFilterDto,
+  UpdatePropertyVerificationDto,
 } from "./dtos";
 
 @Controller("admin")
@@ -55,6 +56,15 @@ export class AdminController {
   async unpublishProperty(@Param("id") id: string) {
     const property = await this.adminService.unpublishProperty(id);
     return new ApiResponse(property, "property unpublished");
+  }
+
+  @Patch("properties/:id/verification-status")
+  async updatePropertyVerificationStatus(
+    @Param("id") id: string,
+    @Body() data: UpdatePropertyVerificationDto,
+  ) {
+    const property = await this.adminService.updatePropertyVerificationStatus(id, data);
+    return new ApiResponse(property, "property verification status updated");
   }
 
   @Delete("properties/:id")

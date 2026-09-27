@@ -7,7 +7,7 @@ const slides = [
   { image: "/family-house.jpg", alt: "A welcoming home" },
   { image: "/slide-4.jpg", alt: "A modern living space" },
   { image: "/hotel room 1.jpg", alt: "A modern living space" },
-  { image: "/hotel room 2.jpg", alt: "A modern living space" }
+  { image: "/hotel room 2.jpg", alt: "A modern living space" },
 ];
 
 const words = ["Stay", "Home", "Ride"];
@@ -46,7 +46,7 @@ export function Hero() {
         setDisplayText(
           isDeleting
             ? currentWord.slice(0, displayText.length - 1)
-            : currentWord.slice(0, displayText.length + 1)
+            : currentWord.slice(0, displayText.length + 1),
         );
       }
     }, delay);
@@ -84,10 +84,7 @@ export function Hero() {
         <h1 className="text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
           Find Your Perfect
           <br />
-          <span
-            aria-live="polite"
-            className="inline-block min-h-[1.2em] min-w-[4ch]"
-          >
+          <span aria-live="polite" className="inline-block min-h-[1.2em] min-w-[4ch]">
             {displayText}
             <span
               aria-hidden="true"
@@ -96,7 +93,7 @@ export function Hero() {
           </span>
         </h1>
         <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/70 sm:text-base">
-          Search verified homes, hotels, and cars  all in one place.
+          Search verified homes, hotels, and cars all in one place.
         </p>
       </div>
     </section>
