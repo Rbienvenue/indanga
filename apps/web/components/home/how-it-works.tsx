@@ -1,68 +1,60 @@
-import { Search, ListChecks, CreditCard, Smile } from "lucide-react";
+import { CheckCircle2, ChevronRight, FileText, ListChecks, Search } from "lucide-react";
 
 const steps = [
   {
     icon: Search,
     step: "1",
-    title: "Search",
-    description: "Choose what you need and search easily.",
+    title: "Discover",
+    description: "Search for homes, hotels or cars in your preferred location.",
   },
   {
     icon: ListChecks,
     step: "2",
-    title: "Choose",
-    description: "Select the best option that fits you.",
+    title: "Compare",
+    description: "View photos, prices, amenities and reviews.",
   },
   {
-    icon: CreditCard,
+    icon: FileText,
     step: "3",
-    title: "Book & Pay",
-    description: "Book securely and make payment.",
+    title: "Check the details",
+    description: "Read listing information, policies and provider details.",
   },
   {
-    icon: Smile,
+    icon: CheckCircle2,
     step: "4",
-    title: "Enjoy",
-    description: "Enjoy your stay, home or ride.",
+    title: "Continue",
+    description: "Contact the provider or book directly through INDANGA.",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="bg-muted/30 px-4 py-20 sm:px-6 lg:px-8">
+    <section id="how-it-works" className="border-t bg-background px-4 py-7 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        {/* Section Heading */}
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            How It Works
-          </h2>
-        </div>
-
-        {/* Steps */}
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <h2 className="text-base font-semibold text-foreground">How it works</h2>
+        <ol className="mt-4 grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((item, index) => (
-            <div key={item.title} className="group relative text-center">
-              {/* Connector line (except last) */}
-              {index < steps.length - 1 && (
-                <div className="absolute top-10 left-[calc(50%+2rem)] hidden h-px w-[calc(100%-4rem)] bg-border lg:block" />
-              )}
-
-              {/* Step Number Circle */}
-              <div className="relative mx-auto mb-5 inline-flex size-20 items-center justify-center rounded-2xl bg-[#0A0A2C]/10 text-primary transition-all duration-300 group-hover:bg-[#0A0A2C] group-hover:text-primary-foreground group-hover:shadow-lg group-hover:shadow-primary/20">
-                <item.icon className="size-8" />
-                <span className="absolute -top-1.5 -right-1.5 inline-flex size-7 items-center justify-center rounded-full bg-foreground text-xs font-bold text-background">
-                  {item.step}
-                </span>
+            <li key={item.title} className="relative flex items-start gap-3">
+              <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-sky-100 text-primary">
+                <item.icon className="size-5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-xs font-semibold text-foreground">
+                  {item.step}. {item.title}
+                </h3>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  {item.description}
+                </p>
               </div>
-
-              {/* Content */}
-              <h3 className="text-base font-semibold text-foreground">{item.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {item.description}
-              </p>
-            </div>
+              {index < steps.length - 1 && (
+                <ChevronRight
+                  className="absolute top-2 -right-6 hidden size-4 text-primary/60 lg:block"
+                  aria-hidden="true"
+                />
+              )}
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );

@@ -1,31 +1,38 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
+import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { Separator } from "@/components/ui/separator";
-import ThemeToggle from "@/components/providers/theme-toggle";
 
-const quickLinks = [
-  { label: "Home", href: "/" },
-  { label: "Explore", href: "/properties" },
-  { label: "About Us", href: "/about" },
-  { label: "Our Operations", href: "/about#our-operations" },
-  { label: "How it works", href: "/#how-it-works" },
+const exploreLinks = [
+  { label: "Homes", href: "/properties?type=homes" },
+  { label: "Hotels", href: "/properties?type=hotels" },
+  { label: "Cars", href: "/properties?type=cars" },
 ];
 
-const supportLinks = [
-  { label: "Help Center", href: "/dashboard/support" },
-  { label: "FAQs", href: "/dashboard/support#faqs" },
-  { label: "Email Support", href: "mailto:support@indanga.com" },
-  { label: "Call for Support", href: "tel:+250788765547" },
+
+const companyLinks = [
+  { label: "About", href: "/about" },
+
+  { label: "Contact", href: "/about#contact" },
+  { label: "Help center", href: "/support" },
+  { label: "Terms of use", href: "/#" },
+];
+
+const socialLinks = [
+  { label: "Facebook", icon: FaFacebookF },
+  { label: "Instagram", icon: FaInstagram },
+  { label: "X", icon: FaXTwitter },
+  { label: "LinkedIn", icon: FaLinkedinIn },
+  { label: "YouTube", icon: FaYoutube },
 ];
 
 export function Footer() {
   return (
-    <footer id="contact" className="border-t ">
-      <div className="mx-auto max-w-7xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Brand */}
-          <div className="sm:col-span-2 lg:col-span-1">
+    <footer id="contact" className="border-t bg-muted/60">
+      <div className="mx-auto max-w-7xl px-4 pt-6 pb-3 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-7 sm:grid-cols-3 lg:grid-cols-[1.35fr_0.65fr_1.2fr_0.75fr_1fr]">
+          <div className="col-span-2 sm:col-span-3 lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5">
               <Image
                 src="/logo.png"
@@ -36,20 +43,31 @@ export function Footer() {
               />
               <span className="text-xl font-bold text-primary">INDANGA</span>
             </Link>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-background/50">
-              Your all-in-one platform for homes, hotels, and car rentals in Rwanda.
+            <p className="mt-2 text-xs text-muted-foreground">
+              Homes. Hotels. Cars. Rwanda.
             </p>
+            <nav aria-label="Social media" className="mt-3 flex items-center gap-3">
+              {socialLinks.map(({ label, icon: Icon }) => (
+                <a
+                  key={label}
+                  href="#"
+                  aria-label={label}
+                  className="text-muted-foreground transition-colors hover:text-primary"
+                >
+                  <Icon className="size-3.5" aria-hidden="true" />
+                </a>
+              ))}
+            </nav>
           </div>
 
-          {/* Quick Links */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold">Quick Links</h3>
-            <ul className="flex flex-col gap-2.5">
-              {quickLinks.map((link) => (
+            <h3 className="mb-2 text-xs font-semibold">Explore</h3>
+            <ul className="flex flex-col gap-1.5">
+              {exploreLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                    className="text-xs text-muted-foreground transition-colors hover:text-primary"
                   >
                     {link.label}
                   </Link>
@@ -58,15 +76,14 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Support */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold">Support</h3>
-            <ul className="flex flex-col gap-2.5">
-              {supportLinks.map((link) => (
+            <h3 className="mb-2 text-xs font-semibold">Company</h3>
+            <ul className="flex flex-col gap-1.5">
+              {companyLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                    className="text-xs text-muted-foreground transition-colors hover:text-primary"
                   >
                     {link.label}
                   </Link>
@@ -75,38 +92,43 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold">Contact Us</h3>
-            <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+            <h3 className="mb-2 text-xs font-semibold">Contact</h3>
+            <div className="flex flex-col gap-2 text-xs text-muted-foreground">
               <a
                 href="mailto:support@indanga.com"
                 className="inline-flex items-center gap-2 transition-colors hover:text-primary"
               >
-                <Mail className="size-4" />
+                <Mail className="size-3.5 shrink-0" aria-hidden="true" />
                 support@indanga.com
               </a>
               <a
                 href="tel:+250788765547"
                 className="inline-flex items-center gap-2 transition-colors hover:text-primary"
               >
-                <Phone className="size-4" />
+                <Phone className="size-3.5 shrink-0" aria-hidden="true" />
                 +250 788 765 547
               </a>
+              <a
+                href="tel:+250788886315"
+                className="inline-flex items-center gap-2 transition-colors hover:text-primary"
+              >
+                <Phone className="size-3.5 shrink-0" aria-hidden="true" />
+                +250 788 886 315
+              </a>
+              <span className="inline-flex items-center gap-2">
+                <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
+                Kigali, Rwanda
+              </span>
             </div>
           </div>
         </div>
 
-        <Separator className="my-8 bg-background/10" />
+        <Separator className="my-3" />
 
-        {/* Bottom Bar */}
-        <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <p className="text-xs text-muted-foreground/40">
-            &copy; {new Date().getFullYear()} INDANGA. All rights reserved.
-          </p>
-          <div className="flex items-center">
-            <ThemeToggle />
-          </div>
+        <div className="flex flex-col justify-between gap-1 text-[10px] text-muted-foreground sm:flex-row sm:items-center">
+          <p>&copy; {new Date().getFullYear()} INDANGA. All rights reserved.</p>
+          <p>Building a more connected Rwanda.</p>
         </div>
       </div>
     </footer>
