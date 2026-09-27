@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetcher } from "@/lib/fetcher";
 import { getPriceUnit } from "@/lib/booking-kind";
+import { getDisplayPrice } from "@/lib/room-pricing";
 import { cn, formatPrice } from "@/lib/utils";
 import { useSession } from "./providers/session-provider";
 
@@ -67,9 +68,7 @@ export function ProductCard({
   verificationStatus,
 }: ProductCardProps) {
   const resolvedPriceUnit = priceUnit ?? getPriceUnit(propertyType);
-  const roomPrices = (rooms ?? []).map((room) => room.price).filter((value) => value > 0);
-  const fromRooms = price == null && roomPrices.length > 0;
-  const displayPrice = price ?? (roomPrices.length > 0 ? Math.min(...roomPrices) : null);
+  const { displayPrice, fromRooms } = getDisplayPrice(price, rooms);
   const queryClient = useQueryClient();
   const session = useSession();
   const isLoggedIn = !!session?.user;

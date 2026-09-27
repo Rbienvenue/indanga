@@ -2,7 +2,6 @@ import type { House, RoomType } from "@indanga/db";
 
 export type BookingKind = "home" | "hotel" | "car";
 
-/** House as returned by the API list/detail endpoints (rooms included). */
 export type HouseWithRooms = House & { rooms?: RoomType[] };
 
 export function getBookingKind(propertyType?: string): BookingKind {

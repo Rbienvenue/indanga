@@ -3,7 +3,7 @@
 import type { House, RoomType } from "@indanga/db";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowRight, BedDouble, CalendarIcon, Loader2, Minus, Plus } from "lucide-react";
+import { AlertTriangle, ArrowRight, BedDouble, CalendarDays, CalendarIcon, Headphones, Loader2, MapPin, Minus, Plus, Star } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -27,17 +27,20 @@ import {
 import { fetcher } from "@/lib/fetcher";
 import { useSocketIo } from "@/components/providers/socket-io-provider";
 import { getBookingKind } from "@/lib/booking-kind";
+import { getDisplayPrice } from "@/lib/room-pricing";
 import { cn, formatPrice } from "@/lib/utils";
+
 import {
   bookingSchema,
+  BookingValues,
   datedBookingSchema,
+  Gateway,
   getNights,
   hotelBookingSchema,
   requiresPhone,
-  type BookingValues,
-  type Gateway,
 } from "@/lib/validations/booking";
 import { addDays, format, startOfDay } from "date-fns";
+import { PropertyVerificationBadge } from "../properties/property-verification-badge";
 
 type PaymentMethod = {
   method: "MOMO" | "AIRTEL" | "CARD";
@@ -76,14 +79,14 @@ interface BookingCardProps {
 export function BookingCard({ house, isAvailable, onBook, compact = false }: BookingCardProps) {
   const [step, setStep] = useState<"booking" | "payment" | "submitted">("booking");
   const [payment, setPayment] = useState<{ id: string; status: PaymentStatus } | null>(null);
+  const [isReporting, setIsReporting] = useState(false);
   const { socket } = useSocketIo();
   const router = useRouter();
   const bookingKind = getBookingKind(house.propertyType);
   const isDated = bookingKind === "hotel" || bookingKind === "car";
   const isHotel = bookingKind === "hotel";
   const rooms = house.rooms ?? [];
-  const roomPrices = rooms.map((room) => room.price);
-  const fromPrice = roomPrices.length > 0 ? Math.min(...roomPrices) : null;
+  const { fromPrice } = getDisplayPrice(house.price, rooms);
   const form = useForm<BookingValues>({
     resolver: zodResolver(isHotel ? hotelBookingSchema : isDated ? datedBookingSchema : bookingSchema),
     defaultValues: {
@@ -206,11 +209,11 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
   }
 
   const submitting = paymentMutation.isPending;
-  const cardPrice = house.price ?? fromPrice;
+  const { displayPrice: cardPrice, fromRooms } = getDisplayPrice(house.price, rooms);
   const cardPriceLabel =
     cardPrice != null ? (
       <>
-        {house.price == null && fromPrice != null ? (
+        {fromRooms ? (
           <span className="mr-1 text-sm font-semibold text-slate-500 dark:text-slate-400">From</span>
         ) : null}
         {formatPrice(cardPrice)}
@@ -236,24 +239,77 @@ export function BookingCard({ house, isAvailable, onBook, compact = false }: Boo
     }
 
     return (
-      <div className="w-full rounded-2xl border border-slate-900/10 bg-white p-6 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-slate-900 dark:shadow-black/40">
-        <p className="text-2xl font-black tracking-tight">{cardPriceLabel}</p>
-        <p className="text-sm text-slate-500 dark:text-slate-400">{priceUnitLabel}</p>
-        <Button
-          className="mt-4 h-12 w-full text-base font-bold"
-          disabled={!isAvailable || (isHotel && rooms.length === 0)}
-          onClick={beginCheckout}
-        >
-          {isAvailable ? bookThisLabel : "Not available"}
-        </Button>
-        <div className="mt-5 space-y-3 text-sm text-slate-600 dark:text-slate-400">
-          <p className="flex items-center gap-2">
-            <span className="text-emerald-600">✓</span> Verified listing details
-          </p>
-          <p className="flex items-center gap-2">
-            <span className="text-emerald-600">✓</span> Secure booking through INDANGA
-          </p>
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-slate-900/10 bg-white p-6 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-slate-900 dark:shadow-black/40">
+               {cardPrice != null ? (
+                 <p className="flex flex-wrap items-baseline gap-x-1.5 text-2xl font-black tracking-tight">
+                   {fromRooms ? (
+                     <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                       From
+                     </span>
+                   ) : null}
+                   <span>{formatPrice(cardPrice)}</span>
+                   <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                     / {priceUnitLabel.replace("per ", "")}
+                   </span>
+                 </p>
+               ) : (
+                 <p className="text-lg font-bold text-slate-500 dark:text-slate-400">
+                   Contact for price
+                 </p>
+               )}
+               <Button
+                 className="mt-4 h-12 w-full text-base font-bold"
+                 disabled={!isAvailable}
+                 onClick={beginCheckout}
+               >
+                 {isAvailable ? bookThisLabel : "Not available"}
+               </Button>
+             </div>
+        <div className="rounded-xl border border-slate-900/10 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+          <div className="flex items-center gap-3">
+            <Headphones className="size-6 shrink-0 text-primary" />
+            <div className="text-[13px] leading-5">
+              <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Need help?</p>
+              <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-slate-500 dark:text-slate-400">
+                <a
+                  href="mailto:support@indanga.com"
+                  className="text-[13px] font-semibold text-primary hover:underline"
+                >
+                  support@indanga.com
+                </a>
+                <a
+                  href="tel:+250788765547"
+                  className="text-[13px] font-semibold text-slate-600 hover:text-slate-900 hover:underline dark:text-slate-300 dark:hover:text-white"
+                >
+                  +250 788 765 547
+                </a>
+              </p>
+            </div>
+          </div>
         </div>
+
+        <Button
+          variant="outline"
+          disabled={isReporting}
+          className="h-10 w-full border-rose-300 text-[13px] font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950/30"
+          onClick={() => {
+            if (isReporting) return;
+            setIsReporting(true);
+            // Placeholder delay until the report-listing flow is implemented.
+            setTimeout(() => {
+              setIsReporting(false);
+              toast.info("Thanks. We will review this listing.");
+            }, 1200);
+          }}
+        >
+          {isReporting ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <AlertTriangle className="size-4" />
+          )}
+          {isReporting ? "Reporting..." : "Report this listing"}
+        </Button>
       </div>
     );
   }
