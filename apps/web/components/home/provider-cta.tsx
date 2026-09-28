@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 export function ProviderCTA() {
   return (
     <section className="px-4 py-2 sm:px-6 lg:px-8">
-      <div className="relative mx-auto flex min-h-24 max-w-7xl items-center overflow-hidden rounded-md bg-sky-100/80 px-5 py-4 sm:px-8">
+      <div className="relative mx-auto flex min-h-24 max-w-7xl items-center overflow-hidden rounded-md border border-border bg-muted px-5 py-4 sm:px-8">
         <div className="relative z-10 max-w-xl">
           <h2 className="text-sm font-semibold text-foreground sm:text-base">
             For property owners, hotels, and car providers
@@ -27,9 +27,9 @@ export function ProviderCTA() {
             alt="A member of the INDANGA team"
             fill
             sizes="(min-width: 768px) 42vw, 0px"
-            className="object-cover object-[center_30%]"
+            className="object-cover object-[center_30%] dark:opacity-80"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-sky-100/95 via-sky-100/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-muted via-muted/20 to-transparent" />
         </div>
       </div>
     </section>
