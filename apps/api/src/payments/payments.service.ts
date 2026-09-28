@@ -197,6 +197,7 @@ export class PaymentsService {
       }
       return this.markPaymentFailed(payment, booking, transactionReference);
     }
+    console.log(result);
 
     const status = result.data.status;
 
@@ -204,7 +205,7 @@ export class PaymentsService {
       return this.markPaymentFailed(payment, booking, transactionReference);
     }
 
-    if (status === "SUCCESSFULL") {
+    if (status === "SUCCESSFUL") {
       const stayStarted =
         !booking.checkIn || startOfDay(booking.checkIn).getTime() <= startOfDay(new Date()).getTime();
       // Hotels manage capacity per room type over dates; never flip the whole hotel.

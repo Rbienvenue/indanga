@@ -80,7 +80,7 @@ export type InitiatePaymentResponse = {
     transaction_id?: string;
     amount?: number;
     currency?: string;
-    status?: "PENDING" | "FAILED" | "SUCCESSFULL";
+    status?: "PENDING" | "FAILED";
     message?: string;
   };
 };
@@ -96,7 +96,7 @@ export type CardPaymentResponse = {
 export type CheckPaymentStatusResponse = {
   status: number;
   data: {
-    status?: "PENDING" | "FAILED" | "SUCCESSFULL";
+    status?: "PENDING" | "FAILED" | "SUCCESSFUL";
     message?: string;
     transaction_id?: string;
   };
