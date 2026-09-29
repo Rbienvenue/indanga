@@ -33,6 +33,9 @@ export const signupSchema = z
     email: z.email("Enter a valid email address"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Confirm your password"),
+      termsAccepted: z.boolean().refine((accepted) => accepted, {
+        message: "You must accept the Terms & Conditions to create an account",
+      }),
   })
   .superRefine((values, ctx) => {
     if (values.password !== values.confirmPassword) {

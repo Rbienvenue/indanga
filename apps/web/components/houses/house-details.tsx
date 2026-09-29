@@ -125,6 +125,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
   const queryClient = useQueryClient();
   const [isFavorite, setIsFavorite] = useState(false);
   const [notice, setNotice] = useState<string>();
+  const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
 
   const houseQuery = useQuery<ApiResponse<House>>({
     queryKey: ["properties", houseId],
@@ -166,6 +167,11 @@ export function HouseDetails({ houseId }: { houseId: string }) {
     }
 
     action();
+  }
+
+  function bookProperty() {
+    if (!hasAcceptedPolicy) return;
+    requireAuthentication(() => bookingMutation.mutate());
   }
 
   async function shareHouse() {
@@ -361,8 +367,10 @@ export function HouseDetails({ houseId }: { houseId: string }) {
               house={house}
               isAvailable={isAvailable}
               isPending={bookingMutation.isPending}
+              hasAcceptedPolicy={hasAcceptedPolicy}
+              onAcceptedPolicyChange={setHasAcceptedPolicy}
               notice={notice}
-              onBook={() => requireAuthentication(() => bookingMutation.mutate())}
+              onBook={bookProperty}
             />
           </aside>
         </div>
@@ -376,15 +384,22 @@ export function HouseDetails({ houseId }: { houseId: string }) {
           </div>
           <Button
             className="h-12 min-w-40 px-6 font-bold"
-            disabled={!isAvailable || bookingMutation.isPending}
-            onClick={() => requireAuthentication(() => bookingMutation.mutate())}
+            disabled={!isAvailable || !hasAcceptedPolicy || bookingMutation.isPending}
+            onClick={bookProperty}
           >
             {bookingMutation.isPending
               ? "Booking..."
               : isAvailable
-                ? "Book this home"
+                ? `Book this ${house.propertyType.toLowerCase()}`
                 : "Unavailable"}
           </Button>
+        </div>
+        <div className="mx-auto mt-3 max-w-2xl">
+          <PolicyAcceptance
+            id="mobile-policy-consent"
+            checked={hasAcceptedPolicy}
+            onCheckedChange={setHasAcceptedPolicy}
+          />
         </div>
         {notice ? (
           <p className="mt-2 text-center text-xs text-slate-600 dark:text-slate-400">{notice}</p>
@@ -440,12 +455,16 @@ function BookingCard({
   house,
   isAvailable,
   isPending,
+  hasAcceptedPolicy,
+  onAcceptedPolicyChange,
   notice,
   onBook,
 }: {
   house: House;
   isAvailable: boolean;
   isPending: boolean;
+  hasAcceptedPolicy: boolean;
+  onAcceptedPolicyChange: (checked: boolean) => void;
   notice?: string;
   onBook: () => void;
 }) {
@@ -463,9 +482,15 @@ function BookingCard({
         </div>
       </div>
 
+      <PolicyAcceptance
+        id="desktop-policy-consent"
+        checked={hasAcceptedPolicy}
+        onCheckedChange={onAcceptedPolicyChange}
+      />
+
       <Button
         className="h-12 w-full text-base font-bold"
-        disabled={!isAvailable || isPending}
+        disabled={!isAvailable || !hasAcceptedPolicy || isPending}
         onClick={onBook}
       >
         {isPending ? "Confirming..." : isAvailable ? label() : "Not available"}
@@ -487,6 +512,41 @@ function BookingCard({
         </p>
       </div>
     </div>
+  );
+}
+
+function PolicyAcceptance({
+  id,
+  checked,
+  onCheckedChange,
+}: {
+  id: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <label htmlFor={id} className="mb-4 flex cursor-pointer items-start gap-2 text-sm leading-5">
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onCheckedChange(event.target.checked)}
+        className="mt-1 size-4 shrink-0 accent-primary"
+      />
+      <span>
+        I have read and accept the{" "}
+        <Link
+          href="/refund-cancellation-policy"
+          target="_blank"
+          rel="noreferrer"
+          className="font-semibold text-primary underline underline-offset-2"
+          onClick={(event) => event.stopPropagation()}
+        >
+          Refund &amp; Cancellation Policy
+        </Link>
+        {" "}before booking this property.
+      </span>
+    </label>
   );
 }
 

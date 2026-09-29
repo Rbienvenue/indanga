@@ -31,15 +31,25 @@ export default function SignupPage() {
       email: "",
       password: "",
       confirmPassword: "",
+        termsAccepted: false,
     },
   });
 
   const selectedRole = form.watch("role");
 
-  const onSubmit = async ({ confirmPassword: _, nationalId, role, ...values }: SignupValues) => {
+  const onSubmit = async ({
+    confirmPassword: _,
+    nationalId,
+    role,
+    termsAccepted,
+    ...values
+  }: SignupValues) => {
     form.clearErrors("root");
+    if (!termsAccepted) return;
+
     const payload = {
       ...values,
+      termsAccepted,
       accountType: role,
       nationalId: nationalId?.trim() ? nationalId.trim() : undefined,
     };
@@ -218,6 +228,42 @@ export default function SignupPage() {
               )}
             />
           </div>
+          <FormField
+            control={form.control}
+            name="termsAccepted"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-start gap-2">
+                  <FormControl>
+                    <input
+                      id="terms-accepted"
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                      disabled={isPending}
+                      className="mt-1 size-4 shrink-0 accent-primary"
+                    />
+                  </FormControl>
+                  <FormLabel htmlFor="terms-accepted" className="font-normal leading-6">
+                    I have read and agree to the{" "}
+                    <Link
+                      href="/terms-and-conditions"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-primary underline underline-offset-2"
+                    >
+                      Terms &amp; Conditions
+                    </Link>
+                    .
+                  </FormLabel>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           {form.formState.errors.root?.message ? (
             <p

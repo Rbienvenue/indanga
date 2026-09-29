@@ -10,119 +10,60 @@ datasource db {
 model User {
   id                 String         @id
   name               String
-  email              String
+  email              String         @unique
   password           String?
-  phoneNumber        String?
+  phoneNumber        String?        @unique
   role               UserRole       @default(tenant)
-  nationalId         String?
+  nationalId         String?        @unique
   emailVerified      Boolean        @default(false)
   image              String?
   status             Status         @default(ACTIVE)
-  banned             Boolean        @default(false)
-  banReason          String?
-  banExpires         DateTime?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   twoFactorEnabled   Boolean?       @default(false)
-  kycStatus          KycStatus      @default(NOT_SUBMITTED)
+  banExpires         DateTime?
+  banReason          String?
+  banned             Boolean        @default(false)
   kycRejectionReason String?
-  kycSubmittedAt     DateTime?
   kycReviewedAt      DateTime?
-  kycDocuments       KycDocument[]
-  sessions           Session[]
+  kycStatus          KycStatus      @default(NOT_SUBMITTED)
+  kycSubmittedAt     DateTime?
   accounts           Account[]
-  twofactors         TwoFactor[]
-  houses             House[]        @relation("HouseOwner")
   bookings           Booking[]      @relation("BookingClient")
-  reviews            Review[]       @relation("ReviewTenant")
   favorites          Favorite[]
+  houses             House[]        @relation("HouseOwner")
+  kycDocuments       KycDocument[]
   notifications      Notification[]
+  reviews            Review[]       @relation("ReviewTenant")
+  sessions           Session[]
+  twofactors         TwoFactor[]
 
-  @@unique([email])
-  @@unique([phoneNumber])
-  @@unique([nationalId])
   @@map("user")
 }
 
-enum UserRole {
-  tenant
-  landlord
-  admin
-}
-
-enum Status {
-  ACTIVE
-  INACTIVE
-}
-
-enum KycStatus {
-  NOT_SUBMITTED
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum KycDocumentType {
-  ID_DOCUMENT
-}
-
-enum HouseStatus {
-  PENDING
-  AVAILABLE
-  BOOKED
-}
-
-enum PaymentStatus {
-  PENDING
-  FAILED
-  COMPLETED
-}
-
-enum NotificationType {
-  BOOKING_CREATED
-  BOOKING_CONFIRMED
-  BOOKING_CANCELLED
-  BOOKING_COMPLETED
-  BOOKING_REMINDER
-
-  PAYMENT_PENDING
-  PAYMENT_COMPLETED
-  PAYMENT_FAILED
-  PAYMENT_REFUNDED
-
-  SYSTEM
-}
-
-enum BookingStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  CANCELLED
-}
-
-// Alias Property
 model House {
-  id           String      @id @default(cuid())
-  name         String
-  location     String
-  address      String?
-  price        Int
-  media        String[]
-  ownerId      String
-  description  String
-  propertyType String
-  subType      String?
-  bedrooms     Int
-  bathrooms    Int
-  // features     String[]
-  // isFeatured   Boolean  @default(false)
-  status       HouseStatus @default(PENDING)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  owner        User        @relation("HouseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  bookings     Booking[]
-  reviews      Review[]
-  favorites    Favorite[]
+  id                 String             @id @default(cuid())
+  name               String
+  location           String
+  address            String?
+  price              Int?
+  media              String[]
+  ownerId            String
+  description        String
+  propertyType       String
+  bedrooms           Int
+  bathrooms          Int
+  status             HouseStatus        @default(PENDING)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  subType            String?
+  metadata           Json               @default("[]")
+  verificationStatus VerificationStatus @default(ReviewedByIndanga)
+  bookings           Booking[]
+  favorites          Favorite[]
+  owner              User               @relation("HouseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  reviews            Review[]
+  room_type          room_type[]
 
   @@index([ownerId])
   @@map("house")
@@ -132,16 +73,25 @@ model Booking {
   id            String         @id @default(cuid())
   clientId      String
   houseId       String
-  status        BookingStatus  @default(PENDING)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  status        BookingStatus  @default(PENDING)
+  checkIn       DateTime?
+  checkOut      DateTime?
+  nights        Int?
+  totalAmount   Int?
+  unitPrice     Int?
+  roomCount     Int?           @default(1)
+  roomTypeId    String?
   client        User           @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)
   house         House          @relation(fields: [houseId], references: [id], onDelete: Cascade)
-  payments      Payment[]
+  room_type     room_type?     @relation(fields: [roomTypeId], references: [id])
   notifications Notification[]
+  payments      Payment[]
 
   @@index([clientId])
   @@index([houseId])
+  @@index([roomTypeId])
   @@map("booking")
 }
 
@@ -154,8 +104,8 @@ model Payment {
   transactionReference String         @unique
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
-  booking              Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   notifications        Notification[]
+  booking              Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
   @@map("payment")
@@ -200,10 +150,9 @@ model Notification {
   bookingId String?
   paymentId String?
   createdAt DateTime         @default(now())
-
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  booking   Booking?         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  payment   Payment?         @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([userId, isRead])
@@ -230,7 +179,7 @@ model KycDocument {
 model Session {
   id             String   @id
   expiresAt      DateTime
-  token          String
+  token          String   @unique
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   ipAddress      String?
@@ -239,7 +188,6 @@ model Session {
   impersonatedBy String?
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@index([userId])
   @@map("session")
 }
@@ -249,7 +197,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -259,6 +206,7 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("account")
@@ -281,10 +229,84 @@ model TwoFactor {
   secret      String
   backupCodes String
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   verified    Boolean? @default(true)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([secret])
   @@index([userId])
   @@map("twoFactor")
+}
+
+model room_type {
+  id         String    @id
+  houseId    String
+  name       String
+  price      Int
+  totalRooms Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime
+  booking    Booking[]
+  house      House     @relation(fields: [houseId], references: [id], onDelete: Cascade)
+
+  @@index([houseId])
+}
+
+enum UserRole {
+  tenant
+  landlord
+  admin
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+enum KycStatus {
+  NOT_SUBMITTED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum KycDocumentType {
+  ID_DOCUMENT
+}
+
+enum HouseStatus {
+  BOOKED
+  AVAILABLE
+  PENDING
+}
+
+enum PaymentStatus {
+  PENDING
+  FAILED
+  COMPLETED
+}
+
+enum NotificationType {
+  BOOKING_CREATED
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  BOOKING_COMPLETED
+  BOOKING_REMINDER
+  PAYMENT_PENDING
+  PAYMENT_COMPLETED
+  PAYMENT_FAILED
+  PAYMENT_REFUNDED
+  SYSTEM
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum VerificationStatus {
+  ReviewedByIndanga
+  VerifiedByIndanga
 }

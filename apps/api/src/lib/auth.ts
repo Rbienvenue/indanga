@@ -64,6 +64,18 @@ export const auth = betterAuth({
     user: {
       create: {
         async before(user, ctx) {
+          if (ctx?.path === "/sign-up/email") {
+            const termsAccepted = (ctx.body as { termsAccepted?: unknown } | undefined)
+              ?.termsAccepted;
+
+            if (termsAccepted !== true) {
+              throw APIError.from("BAD_REQUEST", {
+                message: "You must accept the Terms & Conditions to create an account",
+                code: "TERMS_NOT_ACCEPTED",
+              });
+            }
+          }
+
           const accountType = (ctx?.body as { accountType?: unknown } | undefined)?.accountType;
 
           if (accountType !== undefined && accountType !== "tenant" && accountType !== "landlord") {

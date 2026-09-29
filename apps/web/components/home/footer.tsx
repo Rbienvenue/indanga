@@ -86,11 +86,11 @@ export function Footer() {
                 support@indanga.com
               </a>
               <a
-                href="tel:+250788765547"
+                href="tel:+250788766315"
                 className="inline-flex items-center gap-2 transition-colors hover:text-primary"
               >
                 <Phone className="size-4" />
-                +250 788 765 547
+                +250 788 886 315
               </a>
             </div>
           </div>

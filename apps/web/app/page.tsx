@@ -16,6 +16,7 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <SearchBar redirectTo="/properties" />
+        <HowItWorks />
         <Categories />
         <Recommended />
       </main>
