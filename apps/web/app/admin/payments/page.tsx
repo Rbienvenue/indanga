@@ -40,10 +40,10 @@ function RefreshPayment({ payment }: { payment: PaymentWithBooking }) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () =>
-      fetcher("/payments/callback", {
+      fetcher("/payments/refresh", {
         method: "POST",
         body: JSON.stringify({
-          data: { transaction_id: payment.transactionReference },
+          transactionReference: payment.transactionReference,
         }),
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-payments"] }),

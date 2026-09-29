@@ -16,7 +16,6 @@ export default function Home() {
         <Hero />
         <SearchBar redirectTo="/properties" />
         <TrustSignals />
-        <HowItWorks />
         <Categories />
         <Recommended />
         <HowItWorks />

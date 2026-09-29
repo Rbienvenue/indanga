@@ -16,6 +16,7 @@ const envSchema = z.object({
   NIDA_API_URL: z.url().default("https://example.com"),
   CRON_SECRET: z.string().default("dev-cron-secret"),
   STALE_PENDING_HOURS: z.coerce.number<number>().default(24),
+  ITEC_SERVER_ADDRESS:z.ipv4().default("109.106.244.115"),
   ITEC_API_URL: z.url().default("https://pay.itecpay.rw"),
   ITEC_MOMO_API_KEY: z.string(),
   ITEC_CARD_API_KEY: z.string(),

@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { BookingStatus, HouseStatus, Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
-import { CreateOrderDto, FilterPaymentsDto } from "./dtos";
+import { CardPaymentCallbackDto, CreateOrderDto, FilterPaymentsDto } from "./dtos";
 import { type UserSession } from "@thallesp/nestjs-better-auth";
 import { randomUUID } from "node:crypto";
 import { NotificationsService } from "src/notifications/notifications.service";
@@ -174,6 +174,26 @@ export class PaymentsService {
       ...result,
     };
   }
+  async handleCardCallback(body: CardPaymentCallbackDto) {
+    const payment = await this.db.payment.findFirst({
+      where: { transactionReference: body.PCODE },
+    });
+    if (!payment) throw new NotFoundException("Payment not found");
+    if (payment.method !== "CARD") {
+      throw new BadRequestException("Invalid callback for payment method");
+    }
+    const booking = await this.db.booking.findFirst({
+      where: { id: payment.bookingId },
+      include: { house: true, client: true },
+    });
+    if (!booking) throw new NotFoundException("Booking not found");
+    if (payment.status !== "PENDING") return payment;
+    if (Number(body.amount) !== Number(payment.amount)) {
+      throw new BadRequestException("Amount mismatch");
+    }
+    return this.markPaymentSuccessful(payment, booking, body.PCODE);
+  }
+
   async checkPaymentStatus(transactionReference: string) {
     const payment = await this.db.payment.findFirst({
       where: { transactionReference },
@@ -184,9 +204,13 @@ export class PaymentsService {
       include: { house: true, client: true },
     });
     if (!booking) throw new NotFoundException("Booking not found");
-
     if (payment.status !== "PENDING") return payment;
-    //ITEC deletes failed transactions
+    // Card has no MOMO status API; leave PENDING until card webhook arrives.
+    if (payment.method === "CARD") {
+      this.ws.emitPaymentUpdate(payment.id, "pending");
+      return payment;
+    }
+    // ITEC deletes failed mobile transactions
     let result: Awaited<ReturnType<ITECService["checkPaymentStatus"]>>;
     try {
       result = await this.itec.checkPaymentStatus(transactionReference);
@@ -197,53 +221,55 @@ export class PaymentsService {
       }
       return this.markPaymentFailed(payment, booking, transactionReference);
     }
-    console.log(result);
-
     const status = result.data.status;
-
     if (status === "FAILED") {
       return this.markPaymentFailed(payment, booking, transactionReference);
     }
-
     if (status === "SUCCESSFUL") {
-      const stayStarted =
-        !booking.checkIn || startOfDay(booking.checkIn).getTime() <= startOfDay(new Date()).getTime();
-      // Hotels manage capacity per room type over dates; never flip the whole hotel.
-      const isHotel = getBookingKind(booking.house.propertyType) === "hotel";
-      await this.db.$transaction(async (tx) => {
-        await tx.payment.update({ where: { transactionReference }, data: { status: "COMPLETED" } });
-        await tx.booking.update({
-          where: { id: booking.id },
-          data: { status: BookingStatus.APPROVED },
-        });
-        if (stayStarted && !isHotel) {
-          await tx.house.update({
-            where: { id: booking.houseId },
-            data: { status: HouseStatus.BOOKED },
-          });
-        }
-      });
-      this.ws.emitPaymentUpdate(payment.id, "successful");
-
-      await this.notifications.create({
-        userId: booking.house.ownerId,
-        type: "BOOKING_CONFIRMED",
-        title: "New booking confirmed",
-        message: `${booking.client.name} booked ${booking.house.name}.`,
-        bookingId: booking.id,
-      });
-      await this.notifications.create({
-        userId: booking.client.id,
-        type: "BOOKING_CONFIRMED",
-        title: "Booking confirmed",
-        message: `You booked ${booking.house.name}.`,
-        bookingId: booking.id,
-      });
-      return { ...payment, status: "COMPLETED" as const };
+      return this.markPaymentSuccessful(payment, booking, transactionReference);
     }
-
     this.ws.emitPaymentUpdate(payment.id, "pending");
     return payment;
+  }
+
+  private async markPaymentSuccessful(
+    payment: Prisma.PaymentGetPayload<{}>,
+    booking: Prisma.BookingGetPayload<{ include: { house: true; client: true } }>,
+    transactionReference: string,
+  ) {
+    const stayStarted =
+      !booking.checkIn || startOfDay(booking.checkIn).getTime() <= startOfDay(new Date()).getTime();
+    // Hotels manage capacity per room type over dates; never flip the whole hotel.
+    const isHotel = getBookingKind(booking.house.propertyType) === "hotel";
+    await this.db.$transaction(async (tx) => {
+      await tx.payment.update({ where: { transactionReference }, data: { status: "COMPLETED" } });
+      await tx.booking.update({
+        where: { id: booking.id },
+        data: { status: BookingStatus.APPROVED },
+      });
+      if (stayStarted && !isHotel) {
+        await tx.house.update({
+          where: { id: booking.houseId },
+          data: { status: HouseStatus.BOOKED },
+        });
+      }
+    });
+    this.ws.emitPaymentUpdate(payment.id, "successful");
+    await this.notifications.create({
+      userId: booking.house.ownerId,
+      type: "BOOKING_CONFIRMED",
+      title: "New booking confirmed",
+      message: `${booking.client.name} booked ${booking.house.name}.`,
+      bookingId: booking.id,
+    });
+    await this.notifications.create({
+      userId: booking.client.id,
+      type: "BOOKING_CONFIRMED",
+      title: "Booking confirmed",
+      message: `You booked ${booking.house.name}.`,
+      bookingId: booking.id,
+    });
+    return { ...payment, status: "COMPLETED" as const };
   }
 
   private async markPaymentFailed(

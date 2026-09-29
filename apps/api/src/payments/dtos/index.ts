@@ -61,10 +61,42 @@ class PaymentCallbackDataDto {
   transaction_id: string;
 }
 
-export class PaymentCallbackDto {
+export class MobilePaymentCallbackDto {
   @ValidateNested()
   @Type(() => PaymentCallbackDataDto)
   data: PaymentCallbackDataDto;
+}
+
+export class CardPaymentCallbackDto {
+  @IsString()
+  PCODE: string;
+
+  @IsString()
+  amount: string;
+
+  @IsString()
+  transID: string;
+}
+
+export class RefreshPaymentDto {
+  @IsString()
+  transactionReference: string;
+}
+
+export function isCardPaymentCallback(
+  body: Record<string, unknown>,
+) {
+  return typeof body.PCODE === "string";
+}
+
+export function isMobilePaymentCallback(
+  body: Record<string, unknown>,
+) {
+  return (
+    typeof body.data === "object" &&
+    body.data !== null &&
+    typeof (body.data as { transaction_id?: unknown }).transaction_id === "string"
+  );
 }
 
 export type InitiatePayment = {

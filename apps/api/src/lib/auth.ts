@@ -9,7 +9,7 @@ import { renderToString } from "../email/render";
 import { env } from "./env";
 
 export const auth = betterAuth({
-  appName: "ScriptyLabs",
+  appName: "Indanga",
   secret: env.BETTER_AUTH_SECRET,
   debug: true,
   baseURL: env.BETTER_AUTH_URL,
