@@ -1,6 +1,5 @@
 "use client";
 
-import type { House } from "@indanga/db";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Building2, Compass, Sparkles } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
@@ -10,6 +9,7 @@ import { SearchBar } from "@/components/home/search-bar";
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { fetcher } from "@/lib/fetcher";
+import type { HouseWithRooms } from "@/lib/booking-kind";
 
 function getBudgetRange(budget: string) {
   const [minimum, maximum] = budget.split("-");
@@ -49,7 +49,7 @@ export default function HotelsPage() {
   const hotelsQuery = useInfiniteQuery({
     queryKey: ["hotels", filters],
     queryFn: ({ pageParam }) =>
-      fetcher<PaginationResponse<House>>(buildHotelsUrl(pageParam, filters)),
+      fetcher<PaginationResponse<HouseWithRooms>>(buildHotelsUrl(pageParam, filters)),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.meta.page < lastPage.meta.totalPages ? lastPage.meta.page + 1 : undefined,
@@ -126,10 +126,13 @@ export default function HotelsPage() {
                 name={hotel.name}
                 location={hotel.location}
                 price={hotel.price}
+                rooms={hotel.rooms}
                 media={hotel.media}
                 bedrooms={hotel.bedrooms}
                 bathrooms={hotel.bathrooms}
+                propertyType={hotel.propertyType}
                 badge="Hotel room"
+                verificationStatus={hotel.verificationStatus}
               />
             ))}
           </section>

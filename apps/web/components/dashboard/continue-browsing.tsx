@@ -3,15 +3,15 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import type { House } from "@indanga/db";
 
 import type { PaginationResponse } from "@/@types";
 import { Button } from "@/components/ui/button";
 import { ProductCard, ProductCardSkeleton } from "../product-card";
 import { fetcher } from "@/lib/fetcher";
+import type { HouseWithRooms } from "@/lib/booking-kind";
 
 export function ContinueBrowsing() {
-  const { data, isLoading, isError } = useQuery<PaginationResponse<House>>({
+  const { data, isLoading, isError } = useQuery<PaginationResponse<HouseWithRooms>>({
     queryKey: ["properties", "continue-browsing"],
     queryFn: () => fetcher("/properties?limit=6"),
   });
@@ -55,10 +55,13 @@ export function ContinueBrowsing() {
               name={house.name}
               location={house.location}
               price={house.price}
+              rooms={house.rooms}
               media={house.media}
               bedrooms={house.bedrooms}
               bathrooms={house.bathrooms}
+              propertyType={house.propertyType}
               badge="Featured"
+              verificationStatus={house.verificationStatus}
             />
           ))}
         </div>

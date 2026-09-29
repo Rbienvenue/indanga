@@ -8,6 +8,15 @@ import FavoritesHeader from "@/components/dashboard/favorites/favorites-header";
 import { fetcher } from "@/lib/fetcher";
 import { FavoritesGrid, type FavoriteWithHouse } from "./favorites-grid";
 
+function effectivePrice(house: {
+  price: number | null;
+  rooms?: { price: number }[];
+}): number {
+  if (house.price != null) return house.price;
+  const prices = (house.rooms ?? []).map((room) => room.price);
+  return prices.length > 0 ? Math.min(...prices) : Number.MAX_SAFE_INTEGER;
+}
+
 export default function Page() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("recent");
@@ -26,8 +35,8 @@ export default function Page() {
     );
 
     return filtered.toSorted((a, b) => {
-      if (sort === "price-asc") return a.house.price - b.house.price;
-      if (sort === "price-desc") return b.house.price - a.house.price;
+      if (sort === "price-asc") return effectivePrice(a.house) - effectivePrice(b.house);
+      if (sort === "price-desc") return effectivePrice(b.house) - effectivePrice(a.house);
       if (sort === "alphabetical") return a.house.name.localeCompare(b.house.name);
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });

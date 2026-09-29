@@ -7,7 +7,9 @@ import Link from "next/link";
 import { Bath, BedDouble, ChevronLeft, ChevronRight, Heart, MapPin, Pencil } from "lucide-react";
 
 import type { ApiResponse } from "@/@types";
+import type { House } from "@indanga/db";
 import { DeletePropertyDialog } from "@/components/dashboard/properties/delete-property-dialog";
+import { PropertyVerificationBadge } from "@/components/properties/property-verification-badge";
 import {
   PropertyStatusBadge,
   type PropertyStatus,
@@ -17,14 +19,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetcher } from "@/lib/fetcher";
-import { cn } from "@/lib/utils";
+import { getPriceUnit } from "@/lib/booking-kind";
+import { getDisplayPrice } from "@/lib/room-pricing";
+import { cn, formatPrice } from "@/lib/utils";
 import { useSession } from "./providers/session-provider";
 
 export type ProductCardProps = {
   id: string;
   name: string;
   location: string;
-  price: number;
+  price: number | null;
+  rooms?: { price: number }[];
   media?: string[];
   bedrooms: number;
   bathrooms: number;
@@ -39,32 +44,31 @@ export type ProductCardProps = {
   isFavorite?: boolean;
   showManageActions?: boolean;
   status?: PropertyStatus;
+  verificationStatus?: House["verificationStatus"] | null;
 };
-
-function formatPrice(price: number) {
-  return `$${price.toLocaleString()}`;
-}
 
 export function ProductCard({
   id,
   name,
   location,
   price,
+  rooms,
   media,
   bedrooms,
   bathrooms,
-  description = "",
-  address,
   propertyType = "House",
   badge,
   badgeClassName = "bg-primary text-primary-foreground",
   href,
-  priceUnit = "/ month",
+  priceUnit,
   className,
   isFavorite = false,
   showManageActions = false,
   status,
+  verificationStatus,
 }: ProductCardProps) {
+  const resolvedPriceUnit = priceUnit ?? getPriceUnit(propertyType);
+  const { displayPrice, fromRooms } = getDisplayPrice(price, rooms);
   const queryClient = useQueryClient();
   const session = useSession();
   const isLoggedIn = !!session?.user;
@@ -214,6 +218,12 @@ export function ProductCard({
             {badge}
           </Badge>
         )}
+        {verificationStatus && (
+          <PropertyVerificationBadge
+            status={verificationStatus}
+            className="absolute bottom-3 left-3 z-10 shadow-md"
+          />
+        )}
         {showManageActions ? (
           <div className="absolute top-3 right-3 z-10 flex gap-1.5">
             <Button variant="outline" size="icon" className="size-8" asChild>
@@ -249,8 +259,21 @@ export function ProductCard({
 
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-1">
-            <span className="text-lg font-bold text-primary">{formatPrice(price)}</span>
-            <span className="text-sm text-muted-foreground">{priceUnit}</span>
+            {displayPrice != null ? (
+              <>
+                {fromRooms ? (
+                  <span className="text-sm text-muted-foreground">From</span>
+                ) : null}
+                <span className="text-lg font-bold text-primary">
+                  {formatPrice(displayPrice)}
+                </span>
+                <span className="text-sm text-muted-foreground">{resolvedPriceUnit}</span>
+              </>
+            ) : (
+              <span className="text-sm font-semibold text-muted-foreground">
+                Contact for price
+              </span>
+            )}
           </div>
           {status && <PropertyStatusBadge status={status} />}
         </div>

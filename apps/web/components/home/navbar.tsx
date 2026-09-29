@@ -17,10 +17,9 @@ const navLinks = [
 ];
 
 const aboutLinks = [
-  { label: "About Us", href: "/about" },
-  { label: "Our Purpose", href: "/about#our-purpose" },
-  { label: "What We Do", href: "/about#what-we-do" },
-  { label: "Leadership", href: "/about#leadership" },
+  { label: "Who we are", href: "/about" },
+  { label: "Our purpose", href: "/about#our-purpose" },
+  { label: "Our operations", href: "/about#our-operations" },
   { label: "Contact", href: "/about#contact" },
 ];
 
@@ -34,6 +33,7 @@ const socialLinks = [
 export function Navbar({ solid = false }: { solid?: boolean } = {}) {
   const [scrolled, setScrolled] = React.useState(solid);
   const [aboutOpen, setAboutOpen] = React.useState(false);
+  const [mobileAboutOpen, setMobileAboutOpen] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [activeHash, setActiveHash] = React.useState("");
   const pathname = usePathname();
@@ -55,19 +55,49 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
 
   const isActiveLink = (href: string) => {
     if (href === "/") return pathname === "/" && !activeHash && !searchParams.get("about");
-    if (href === "/#about") return pathname === "/" && (activeHash === "#about" || searchParams.has("about"));
+    if (href === "/#about")
+      return pathname === "/" && (activeHash === "#about" || searchParams.has("about"));
     if (href.startsWith("/#")) return pathname === "/" && activeHash === href.slice(1);
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  const closeTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openAboutMenu = () => {
+    if (closeTimeout.current) {
+      clearTimeout(closeTimeout.current);
+      closeTimeout.current = null;
+    }
+    setAboutOpen(true);
+  };
+
   const closeAboutMenu = () => setAboutOpen(false);
+
+  const scheduleCloseAboutMenu = () => {
+    if (closeTimeout.current) {
+      clearTimeout(closeTimeout.current);
+    }
+    closeTimeout.current = setTimeout(() => {
+      setAboutOpen(false);
+      closeTimeout.current = null;
+    }, 120);
+  };
+
+  React.useEffect(() => {
+    return () => {
+      if (closeTimeout.current) {
+        clearTimeout(closeTimeout.current);
+      }
+    };
+  }, []);
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${scrolled || solid
-        ? "bg-[#0A0A2C]/95 shadow-lg shadow-black/20 backdrop-blur-xl"
-        : "bg-transparent"
-        }`}
+      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${
+        scrolled || solid
+          ? "bg-[#0A0A2C]/95 shadow-lg shadow-black/20 backdrop-blur-xl"
+          : "bg-transparent"
+      }`}
     >
       <nav className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
@@ -80,7 +110,9 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
             className="size-9 rounded-lg object-contain bg-white shadow-xs"
             priority
           />
-          <span className="hidden text-xl font-bold tracking-tight text-white md:inline">INDANGA</span>
+          <span className="hidden text-xl font-bold tracking-tight text-white md:inline">
+            INDANGA
+          </span>
         </Link>
 
         <div className="flex items-center gap-4">
@@ -95,19 +127,39 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                 {link.label}
               </Link>
             ))}
-            <div className="relative">
+            <div
+              className="relative"
+              onMouseEnter={openAboutMenu}
+              onMouseLeave={scheduleCloseAboutMenu}
+              onFocus={openAboutMenu}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                  closeAboutMenu();
+                }
+              }}
+            >
               <button
                 type="button"
                 aria-expanded={aboutOpen}
-                onClick={() => setAboutOpen((open) => !open)}
+                aria-haspopup="menu"
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    closeAboutMenu();
+                  }
+                }}
                 className={`flex items-center gap-1 border-b-2 px-3.5 py-2 text-sm font-medium text-white/75 transition-colors hover:border-accent hover:text-accent ${pathname === "/about" ? "border-accent text-accent" : "border-transparent"}`}
               >
                 About Us
-                <ChevronDown className={`size-4 transition-transform ${aboutOpen ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`size-4 transition-transform ${aboutOpen ? "rotate-180" : ""}`}
+                />
               </button>
 
               {aboutOpen && (
-                <div className="absolute top-full left-1/2 z-50 mt-2 w-56 -translate-x-1/2 rounded-lg border border-primary/30 bg-[#0A0A2C] p-2 shadow-xl">
+                <div
+                  role="menu"
+                  className="absolute top-full left-1/2 z-50 mt-2 w-56 -translate-x-1/2 rounded-lg border border-primary/30 bg-[#0A0A2C] p-2 shadow-xl"
+                >
                   {aboutLinks.map((link) => (
                     <Link
                       key={link.href}
@@ -146,7 +198,12 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
             <UserAvatar />
           ) : (
             <>
-              <Button asChild size="sm" variant="ghost" className="px-2 text-white hover:text-accent">
+              <Button
+                asChild
+                size="sm"
+                variant="ghost"
+                className="px-2 text-white hover:text-accent"
+              >
                 <Link href="/auth/login">Login</Link>
               </Button>
               <Button asChild size="sm" variant="default" className="px-2.5">
@@ -167,7 +224,11 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
               className="h-svh w-full max-w-none gap-0 overflow-y-auto border-primary/30 bg-[#0A0A2C] p-0 text-white"
             >
               <SheetTitle className="flex min-h-20 items-center justify-between border-b border-primary/40 px-5 pr-16 text-primary">
-                <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2.5">
+                <Link
+                  href="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2.5"
+                >
                   <Image
                     src="/logo.png"
                     alt="INDANGA"
@@ -205,22 +266,24 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                 <div className="border-b-2 border-primary/30">
                   <button
                     type="button"
-                    aria-expanded={aboutOpen}
-                    onClick={() => setAboutOpen((open) => !open)}
+                    aria-expanded={mobileAboutOpen}
+                    onClick={() => setMobileAboutOpen((open) => !open)}
                     className={`flex min-h-20 w-full items-center justify-center gap-2 px-5 text-base font-semibold text-white/85 transition-colors hover:bg-[#101044] hover:text-accent ${pathname === "/about" ? "text-accent" : ""}`}
                   >
                     About Us
-                    <ChevronDown className={`size-5 transition-transform ${aboutOpen ? "rotate-180" : ""}`} />
+                    <ChevronDown
+                      className={`size-5 transition-transform ${mobileAboutOpen ? "rotate-180" : ""}`}
+                    />
                   </button>
 
-                  {aboutOpen && (
+                  {mobileAboutOpen && (
                     <div className="border-t border-primary/30 bg-[#101044] px-5 py-2">
                       {aboutLinks.map((link) => (
                         <Link
                           key={link.href}
                           href={link.href}
                           onClick={() => {
-                            closeAboutMenu();
+                            setMobileAboutOpen(false);
                             setMobileMenuOpen(false);
                           }}
                           className="block border-b border-white/10 px-3 py-3 text-center text-sm text-white/80 last:border-b-0 hover:text-accent"

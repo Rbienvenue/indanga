@@ -36,7 +36,8 @@ export class BookingsService {
         skip: (page - 1) * limit,
         take: limit,
         include: {
-          house: true,
+          house: { include: { rooms: true } },
+          roomType: true,
           client: true,
         },
       }),
@@ -58,7 +59,8 @@ export class BookingsService {
     const booking = await this.db.booking.findUnique({
       where: { id },
       include: {
-        house: true,
+        house: { include: { rooms: true } },
+        roomType: true,
         client: true,
         payments: true,
       },
@@ -87,7 +89,7 @@ export class BookingsService {
 
     const booking = await this.db.booking.findUnique({
       where: { id },
-      include: { house: true },
+      include: { house: { include: { rooms: true } } },
     });
 
     if (!booking) {
@@ -98,6 +100,20 @@ export class BookingsService {
       throw new ForbiddenException("Only the property owner can update booking status");
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const otherCurrentStays = await this.db.booking.count({
+      where: {
+        houseId: booking.houseId,
+        id: { not: booking.id },
+        status: BookingStatus.APPROVED,
+        AND: [
+          { OR: [{ checkIn: null }, { checkIn: { lte: today } }] },
+          { OR: [{ checkOut: null }, { checkOut: { gte: today } }] },
+        ],
+      },
+    });
+
     const updated = await this.db.$transaction(async (tx) => {
       const updated = await tx.booking.update({
         where: { id },
@@ -105,10 +121,13 @@ export class BookingsService {
         include: { house: true, client: true },
       });
 
-      await tx.house.update({
-        where: { id: booking.houseId },
-        data: { status: HouseStatus.AVAILABLE },
-      });
+      // Room-based hotels free capacity via dates; only flip whole-property listings.
+      if (otherCurrentStays === 0 && booking.house.rooms.length === 0) {
+        await tx.house.update({
+          where: { id: booking.houseId },
+          data: { status: HouseStatus.AVAILABLE },
+        });
+      }
 
       return updated;
     });

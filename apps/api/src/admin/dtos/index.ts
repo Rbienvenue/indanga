@@ -1,6 +1,12 @@
 import { Type } from "class-transformer";
 import { IsEnum, IsInt, IsOptional, IsString } from "class-validator";
-import { BookingStatus, HouseStatus, PaymentStatus, UserRole } from "@indanga/db";
+import {
+  BookingStatus,
+  HouseStatus,
+  PaymentStatus,
+  UserRole,
+  VerificationStatus,
+} from "@indanga/db";
 
 export class PaginationDto {
   @IsOptional()
@@ -40,6 +46,11 @@ export class AdminPropertiesFilterDto extends PaginationDto {
   @IsOptional()
   @IsEnum(HouseStatus)
   status?: HouseStatus;
+}
+
+export class UpdatePropertyVerificationDto {
+  @IsEnum(VerificationStatus)
+  verificationStatus: VerificationStatus;
 }
 
 export class AdminUsersFilterDto extends PaginationDto {

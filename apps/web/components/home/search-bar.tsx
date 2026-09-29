@@ -37,7 +37,7 @@ const subTypeOptions: Record<string, readonly { value: string; label: string }[]
   ],
   hotels: [
     { value: "all", label: "All Type" },
-    { value: "hotel", label: "Hotel" },   
+    { value: "hotel", label: "Hotel" },
     { value: "motel", label: "Motel" },
     { value: "lodge", label: "Lodge" },
     { value: "guesthouse", label: "Guesthouse" },
@@ -71,7 +71,14 @@ type SearchBarProps = {
 
 function buildSearchHref(
   pathname: string,
-  filters: { type: string; budget: string; subType: string; province: string; district: string; sector: string },
+  filters: {
+    type: string;
+    budget: string;
+    subType: string;
+    province: string;
+    district: string;
+    sector: string;
+  },
 ) {
   const params = new URLSearchParams();
   if (filters.type !== "all") params.set("type", filters.type);
@@ -221,8 +228,12 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
             </TabsList>
           </Tabs>
 
-          <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
-            <Select value={province} onValueChange={handleProvinceChange} disabled={isLoadingLocations}>
+          <div className="grid grid-cols-2 items-center gap-2 sm:gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
+            <Select
+              value={province}
+              onValueChange={handleProvinceChange}
+              disabled={isLoadingLocations}
+            >
               <SelectTrigger className="w-full">
                 <MapPin className="size-4 text-muted-foreground" />
                 <SelectValue placeholder={isLoadingLocations ? "Loading..." : "All provinces"} />
@@ -244,7 +255,9 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
             >
               <SelectTrigger className="w-full">
                 <MapPin className="size-4 text-muted-foreground" />
-                <SelectValue placeholder={province === "all" ? "Select province first" : "All districts"} />
+                <SelectValue
+                  placeholder={province === "all" ? "Select province first" : "All districts"}
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All districts</SelectItem>
@@ -263,7 +276,9 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
             >
               <SelectTrigger className="w-full">
                 <MapPin className="size-4 text-muted-foreground" />
-                <SelectValue placeholder={district === "all" ? "Select district first" : "All sectors"} />
+                <SelectValue
+                  placeholder={district === "all" ? "Select district first" : "All sectors"}
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All sectors</SelectItem>
@@ -301,7 +316,10 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
               </SelectContent>
             </Select>
 
-            <Button className="w-full font-semibold" onClick={handleSearch}>
+            <Button
+              className="col-span-2 w-full font-semibold lg:col-span-1"
+              onClick={handleSearch}
+            >
               <Search className="size-4" />
               Search
             </Button>

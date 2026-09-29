@@ -1,51 +1,67 @@
 "use client";
 
-import type { House } from "@indanga/db";
+import type { House, RoomType } from "@indanga/db";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Bath,
   BedDouble,
   Building2,
-  Check,
+  BadgeCheck,
   ChevronRight,
   Heart,
   Home,
   KeyRound,
+  LockKeyhole,
   MapPin,
   Maximize2,
   MessageCircle,
+  RotateCcw,
   ShieldCheck,
   Share2,
+  WalletCards,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
+import { BookingCard } from "@/components/houses/BookingCard";
+import { HousePhotoSlideshow } from "@/components/houses/house-photo-slideshow";
+import { PropertyVerificationBadge } from "@/components/properties/property-verification-badge";
 import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
+import { getBookingKind } from "@/lib/booking-kind";
+import { amenityIcons, parseAmenities } from "@/lib/amenities";
+import { propertyAmenityLabels } from "@/lib/validations/house";
 import { cn, formatPrice } from "@/lib/utils";
 
-type Booking = {
-  id: string;
-  houseId: string;
-};
 function Gallery({ house }: { house: House }) {
   const media = house.media.length > 0 ? house.media : [];
-  const images = Array.from({ length: 5 }, (_, index) => media[index % media.length]);
+  const images =
+    media.length > 0 ? Array.from({ length: 5 }, (_, index) => media[index % media.length]) : [];
+  const [open, setOpen] = useState(false);
+  const [initialIndex, setInitialIndex] = useState(0);
+
+  function openSlideshow(index: number) {
+    setInitialIndex(index);
+    setOpen(true);
+  }
 
   return (
-    <Dialog>
-      <div className="grid h-[22rem] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-2xl sm:h-[30rem] lg:h-[34rem]">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <div className="relative grid h-[18rem] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-2xl sm:h-[22rem] lg:h-[24rem]">
         {images.map((src, index) => (
-          <DialogTrigger
+          <button
             key={`${src}-${index}`}
+            type="button"
+            onClick={() => openSlideshow(index % media.length)}
             className={cn(
               "group relative overflow-hidden bg-muted text-left",
               index === 0 ? "col-span-4 row-span-2 sm:col-span-2" : "hidden sm:block",
@@ -60,37 +76,29 @@ function Gallery({ house }: { house: House }) {
               sizes={index === 0 ? "(max-width: 640px) 100vw, 50vw" : "25vw"}
             />
             <span className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
-          </DialogTrigger>
+          </button>
         ))}
-        <DialogTrigger asChild>
-          <Button
-            variant="secondary"
-            className="absolute right-4 bottom-4 z-10 h-10 border border-black/10 bg-white/95 px-4 text-slate-950 shadow-lg hover:bg-white"
-          >
-            <Maximize2 />
-            View all photos
-          </Button>
-        </DialogTrigger>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => openSlideshow(0)}
+          className="absolute right-4 bottom-4 z-10 h-10 border border-black/10 bg-white/95 px-4 text-slate-950 shadow-lg hover:bg-white"
+        >
+          <Maximize2 />
+          View all photos
+        </Button>
       </div>
 
       <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto bg-[#f7f5f0] p-5 dark:bg-slate-950 sm:max-w-5xl">
         <DialogTitle className="text-xl">{house.name}</DialogTitle>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {media.map((src, index) => (
-            <div
-              key={`${src}-dialog-${index}`}
-              className="relative aspect-[4/3] overflow-hidden rounded-xl"
-            >
-              <Image
-                src={src}
-                alt={`${house.name} photo ${index + 1}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 100vw, 50vw"
-              />
-            </div>
-          ))}
-        </div>
+        {open ? (
+          <HousePhotoSlideshow
+            key={initialIndex}
+            houseName={house.name}
+            media={media}
+            initialIndex={initialIndex}
+          />
+        ) : null}
       </DialogContent>
     </Dialog>
   );
@@ -124,7 +132,6 @@ export function HouseDetails({ houseId }: { houseId: string }) {
   const session = useSession();
   const queryClient = useQueryClient();
   const [isFavorite, setIsFavorite] = useState(false);
-  const [notice, setNotice] = useState<string>();
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
 
   const houseQuery = useQuery<ApiResponse<House>>({
@@ -139,39 +146,25 @@ export function HouseDetails({ houseId }: { houseId: string }) {
       }),
     onSuccess: ({ data }) => {
       setIsFavorite(data.isFavorite);
-      setNotice(data.isFavorite ? "Saved to your favorites." : "Removed from your favorites.");
+      toast.success(data.isFavorite ? "Saved to your favorites." : "Removed from your favorites.");
       void queryClient.invalidateQueries({ queryKey: ["properties", "favorites"] });
     },
-    onError: (error: Error) => setNotice(error.message),
+    onError: (error: Error) => toast.error(error.message),
   });
 
-  const bookingMutation = useMutation({
-    mutationFn: () =>
-      fetcher<ApiResponse<Booking>>("/payments", {
-        method: "POST",
-        body: JSON.stringify({ houseId }),
-      }),
-    onSuccess: () => {
-      setNotice("Your booking is confirmed. You can view it from your dashboard.");
-      void queryClient.invalidateQueries({ queryKey: ["properties", houseId] });
-      void queryClient.invalidateQueries({ queryKey: ["bookings"] });
-    },
-    onError: (error: Error) => setNotice(error.message),
-  });
-
-  function requireAuthentication(action: () => void) {
+  function requireAuthentication(): boolean {
     if (!session) {
       const callbackUrl = `/properties/${houseId}`;
       router.push(`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-      return;
+      return false;
     }
 
-    action();
+    return true;
   }
 
-  function bookProperty() {
-    if (!hasAcceptedPolicy) return;
-    requireAuthentication(() => bookingMutation.mutate());
+  function bookProperty(): boolean {
+    if (!hasAcceptedPolicy) return false;
+    return requireAuthentication();
   }
 
   async function shareHouse() {
@@ -187,7 +180,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
     }
 
     await navigator.clipboard.writeText(window.location.href);
-    setNotice("Link copied to your clipboard.");
+    toast.success("Link copied to your clipboard.");
   }
 
   if (houseQuery.isLoading) return <HouseDetailsSkeleton />;
@@ -217,7 +210,42 @@ export function HouseDetails({ houseId }: { houseId: string }) {
   }
 
   const house = houseQuery.data.data;
+  const rooms: RoomType[] = (house as House & { rooms?: RoomType[] }).rooms ?? [];
+  const roomPrices = rooms.map((room) => room.price);
+  const fromPrice = roomPrices.length > 0 ? Math.min(...roomPrices) : null;
   const isAvailable = house.status === "AVAILABLE";
+  const bookingKind = getBookingKind(house.propertyType);
+  const amenities = parseAmenities(house.metadata);
+  const detailCopy =
+    bookingKind === "car"
+      ? {
+          spaceEyebrow: "The vehicle",
+          spaceHeading: "Ready for the road",
+          whyHeading: "Designed for an easy rental",
+          firstTitle: "Ready to drive away",
+          firstDescription: `A ${house.propertyType.toLowerCase()} available for flexible rental, priced per day.`,
+          availabilityDescription:
+            "Availability is kept current so you know when a car is ready to book.",
+        }
+      : bookingKind === "hotel"
+        ? {
+            spaceEyebrow: "The stay",
+            spaceHeading: "A place to rest easy",
+            whyHeading: "Designed for an easy stay",
+            firstTitle: "Ready for your stay",
+            firstDescription: `A ${house.propertyType.toLowerCase()} listed for comfortable short stays, booked per night.`,
+            availabilityDescription:
+              "Availability is kept current so you know when a room is ready to book.",
+          }
+        : {
+            spaceEyebrow: "The space",
+            spaceHeading: "A place to settle into",
+            whyHeading: "Designed for an easy move",
+            firstTitle: "Ready to call home",
+            firstDescription: `A ${house.propertyType.toLowerCase()} listed for long-term monthly living.`,
+            availabilityDescription:
+              "Availability is kept current so you know when a home is ready to book.",
+          };
 
   return (
     <div className="min-h-screen bg-[#f7f5f0] text-slate-950 dark:bg-slate-950 dark:text-slate-50">
@@ -241,7 +269,9 @@ export function HouseDetails({ houseId }: { houseId: string }) {
               icon={Heart}
               label={isFavorite ? "Saved" : "Save"}
               active={isFavorite}
-              onClick={() => requireAuthentication(() => favoriteMutation.mutate())}
+              onClick={() => {
+                if (requireAuthentication()) favoriteMutation.mutate();
+              }}
             />
             {!session ? (
               <Button variant="outline" asChild className="ml-2 hidden h-10 px-5 md:inline-flex">
@@ -271,7 +301,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
 
         <Gallery house={house} />
 
-        <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-16">
+        <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_28rem] lg:gap-12">
           <div>
             <div className="flex flex-col gap-5 border-b border-slate-900/10 pb-8 dark:border-white/10 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -279,6 +309,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                   <span className="rounded-full bg-[#17174a] px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
                     {house.propertyType}
                   </span>
+                  <PropertyVerificationBadge status={house.verificationStatus} />
                   <span
                     className={cn(
                       "rounded-full px-3 py-1 text-xs font-bold",
@@ -319,10 +350,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
             </div>
 
             <section className="py-9">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                The space
-              </p>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight">A place to settle into</h2>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight">{detailCopy.spaceHeading}</h2>
               <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-400">
                 {house.description}
               </p>
@@ -330,16 +358,63 @@ export function HouseDetails({ houseId }: { houseId: string }) {
 
             <Separator className="bg-slate-900/10 dark:bg-white/10" />
 
+            {amenities.length > 0 ? (
+              <>
+                <section className="py-9">
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight">What this place offers</h2>
+                  <ul className="mt-6 grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2">
+                    {amenities.map((amenity) => {
+                      const Icon = amenityIcons[amenity];
+                      return (
+                        <li key={amenity} className="flex items-center gap-4">
+                          <Icon className="size-6 shrink-0 text-slate-950 dark:text-slate-50" />
+                          <span className="text-base text-slate-800 dark:text-slate-200">
+                            {propertyAmenityLabels[amenity]}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+
+                <Separator className="bg-slate-900/10 dark:bg-white/10" />
+              </>
+            ) : null}
+
+            {bookingKind === "hotel" && rooms.length > 0 ? (
+              <>
+                <section className="py-9">
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                    Rooms{fromPrice != null ? ` · from ${fromPrice.toLocaleString("en-US")} RWF` : ""}
+                  </h2>
+                  <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+                    {rooms.map((room) => (
+                      <li
+                        key={room.id}
+                        className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card/55 p-5"
+                      >
+                        <div>
+                          <p className="font-bold">{room.name}</p>
+                        </div>
+                        <p className="text-lg font-black text-primary">
+                          {room.price.toLocaleString("en-US")} RWF
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                <Separator className="bg-slate-900/10 dark:bg-white/10" />
+              </>
+            ) : null}
+
             <section className="py-9">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                Why it works
-              </p>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight">Designed for an easy move</h2>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight">{detailCopy.whyHeading}</h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <Feature
                   icon={KeyRound}
-                  title="Ready to call home"
-                  description={`A ${house.propertyType.toLowerCase()} listed for long-term monthly living.`}
+                  title={detailCopy.firstTitle}
+                  description={detailCopy.firstDescription}
                 />
                 <Feature
                   icon={MapPin}
@@ -349,7 +424,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                 <Feature
                   icon={ShieldCheck}
                   title="Clear availability"
-                  description="Availability is kept current so you know when a home is ready to book."
+                  description={detailCopy.availabilityDescription}
                 />
                 <Feature
                   icon={MessageCircle}
@@ -360,52 +435,123 @@ export function HouseDetails({ houseId }: { houseId: string }) {
             </section>
 
             <Separator className="bg-slate-900/10 dark:bg-white/10" />
+
+            <ListingInformation house={house} bookingKind={bookingKind} isAvailable={isAvailable} />
           </div>
 
           <aside className="sticky top-24 hidden lg:block">
             <BookingCard
               house={house}
               isAvailable={isAvailable}
-              isPending={bookingMutation.isPending}
-              hasAcceptedPolicy={hasAcceptedPolicy}
-              onAcceptedPolicyChange={setHasAcceptedPolicy}
-              notice={notice}
               onBook={bookProperty}
+              hasAcceptedPolicy={hasAcceptedPolicy}
+              onPolicyAcceptanceChange={setHasAcceptedPolicy}
             />
           </aside>
         </div>
       </main>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-900/10 bg-[#f7f5f0]/95 p-4 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/95 lg:hidden">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-5">
-          <div>
-            <p className="text-lg font-black">{formatPrice(house.price)}</p>
-            {/*<p className="text-xs text-slate-500">per month</p>*/}
-          </div>
-          <Button
-            className="h-12 min-w-40 px-6 font-bold"
-            disabled={!isAvailable || !hasAcceptedPolicy || bookingMutation.isPending}
-            onClick={bookProperty}
-          >
-            {bookingMutation.isPending
-              ? "Booking..."
-              : isAvailable
-                ? `Book this ${house.propertyType.toLowerCase()}`
-                : "Unavailable"}
-          </Button>
-        </div>
-        <div className="mx-auto mt-3 max-w-2xl">
-          <PolicyAcceptance
-            id="mobile-policy-consent"
-            checked={hasAcceptedPolicy}
-            onCheckedChange={setHasAcceptedPolicy}
-          />
-        </div>
-        {notice ? (
-          <p className="mt-2 text-center text-xs text-slate-600 dark:text-slate-400">{notice}</p>
-        ) : null}
+        <BookingCard
+          house={house}
+          isAvailable={isAvailable}
+          onBook={bookProperty}
+          hasAcceptedPolicy={hasAcceptedPolicy}
+          onPolicyAcceptanceChange={setHasAcceptedPolicy}
+          compact
+        />
       </div>
     </div>
+  );
+}
+
+function ListingInformation({
+  house,
+  bookingKind,
+  isAvailable,
+}: {
+  house: House;
+  bookingKind: "home" | "hotel" | "car";
+  isAvailable: boolean;
+}) {
+  const priceUnit = bookingKind === "hotel" ? "night" : bookingKind === "car" ? "day" : "month";
+  const verificationLabel =
+    house.verificationStatus === "VerifiedByIndanga"
+      ? "Verified by INDANGA"
+      : "Reviewed by INDANGA";
+
+  return (
+    <section className="divide-y divide-slate-900/10 border-b border-slate-900/10 dark:divide-white/10 dark:border-white/10">
+      <AccordionRow icon={Home} title="About this listing">
+        <p>{house.description}</p>
+        <p className="mt-3">
+          Located in {house.location}, this {house.propertyType.toLowerCase()} has {house.bedrooms}{" "}
+          {house.bedrooms === 1 ? "bedroom" : "bedrooms"} and {house.bathrooms}{" "}
+          {house.bathrooms === 1 ? "bathroom" : "bathrooms"}.
+        </p>
+      </AccordionRow>
+      <AccordionRow icon={WalletCards} title="Price details">
+        <p>
+          {house.price ? `${formatPrice(house.price)} per ${priceUnit}.` : ""} The displayed price is the listing rate; confirm the total at booking.
+        </p>
+        <p className="mt-3">
+          INDANGA keeps payment inside the platform so your booking record stays connected to your
+          account.
+        </p>
+      </AccordionRow>
+      <AccordionRow icon={BadgeCheck} title="Verification and listing information">
+        <p>
+          {verificationLabel}. The listing information was submitted by the provider and is reviewed
+          before publication.
+        </p>
+        <p className="mt-3">
+          Availability: {isAvailable ? "available to book now" : "currently unavailable"}.
+        </p>
+      </AccordionRow>
+      <AccordionRow icon={RotateCcw} title="Cancellation and refunds">
+        <p>
+          Cancellation and refund eligibility depends on the booking status and the provider&apos;s
+          terms.
+        </p>
+        <p className="mt-3">
+          Contact INDANGA support before cancelling if you need help reviewing your booking.
+        </p>
+      </AccordionRow>
+      <AccordionRow icon={LockKeyhole} title="Stay safe">
+        <p>
+          Your safety matters Keep all booking details, payment instructions, and receipts. Confirm the listing, provider, price, and cancellation terms before paying. INDANGA will never ask you to hide a payment or bypass the official booking process.
+        </p>
+        <p className="mt-3">Report suspicious activity to &nbsp;
+          <Link href="mailto:support@indanga.com" className="text-primary underline">
+            support@indanga.com
+          </Link>
+          .
+        </p>
+      </AccordionRow>
+    </section>
+  );
+}
+
+function AccordionRow({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: typeof Home;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <details className="group py-5">
+      <summary className="flex cursor-pointer list-none items-center gap-4 text-sm font-bold [&::-webkit-details-marker]:hidden">
+        <Icon className="size-5 shrink-0 text-slate-700 dark:text-slate-300" />
+        <span className="flex-1">{title}</span>
+        <ChevronRight className="size-4 shrink-0 text-slate-500 transition-transform group-open:rotate-90" />
+      </summary>
+      <div className="ml-9 max-w-3xl pt-4 text-sm leading-6 text-slate-600 dark:text-slate-400">
+        {children}
+      </div>
+    </details>
   );
 }
 
@@ -451,113 +597,14 @@ function Feature({
   );
 }
 
-function BookingCard({
-  house,
-  isAvailable,
-  isPending,
-  hasAcceptedPolicy,
-  onAcceptedPolicyChange,
-  notice,
-  onBook,
-}: {
-  house: House;
-  isAvailable: boolean;
-  isPending: boolean;
-  hasAcceptedPolicy: boolean;
-  onAcceptedPolicyChange: (checked: boolean) => void;
-  notice?: string;
-  onBook: () => void;
-}) {
-  function label() {
-    if (house.propertyType.toLowerCase() === "hotel") return "Book this hotel";
-    if (house.propertyType.toLowerCase() === "car") return "Book this car";
-    return "Book this house";
-  }
-  return (
-    <div className="rounded-2xl border border-slate-900/10 bg-white p-6 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-slate-900 dark:shadow-black/40">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-2xl font-black tracking-tight">{formatPrice(house.price)}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">per month</p>
-        </div>
-      </div>
-
-      <PolicyAcceptance
-        id="desktop-policy-consent"
-        checked={hasAcceptedPolicy}
-        onCheckedChange={onAcceptedPolicyChange}
-      />
-
-      <Button
-        className="h-12 w-full text-base font-bold"
-        disabled={!isAvailable || !hasAcceptedPolicy || isPending}
-        onClick={onBook}
-      >
-        {isPending ? "Confirming..." : isAvailable ? label() : "Not available"}
-      </Button>
-
-      {notice ? (
-        <p className="mt-4 rounded-xl bg-slate-50 p-3 text-sm leading-5 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-          {notice}
-        </p>
-      ) : null}
-
-      <Separator className="my-5 bg-slate-900/10 dark:bg-white/10" />
-      <div className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
-        <p className="flex items-center gap-2">
-          <Check className="size-4 text-emerald-600" /> Verified listing details
-        </p>
-        <p className="flex items-center gap-2">
-          <Check className="size-4 text-emerald-600" /> Secure booking through INDANGA
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function PolicyAcceptance({
-  id,
-  checked,
-  onCheckedChange,
-}: {
-  id: string;
-  checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
-}) {
-  return (
-    <label htmlFor={id} className="mb-4 flex cursor-pointer items-start gap-2 text-sm leading-5">
-      <input
-        id={id}
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => onCheckedChange(event.target.checked)}
-        className="mt-1 size-4 shrink-0 accent-primary"
-      />
-      <span>
-        I have read and accept the{" "}
-        <Link
-          href="/refund-cancellation-policy"
-          target="_blank"
-          rel="noreferrer"
-          className="font-semibold text-primary underline underline-offset-2"
-          onClick={(event) => event.stopPropagation()}
-        >
-          Refund &amp; Cancellation Policy
-        </Link>
-        {" "}before booking this property.
-      </span>
-    </label>
-  );
-}
-
 function HouseDetailsSkeleton() {
   return (
     <div className="min-h-screen bg-[#f7f5f0] dark:bg-slate-950">
       <div className="h-18 border-b border-slate-900/8 dark:border-white/10" />
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Skeleton className="mb-5 h-5 w-40" />
-        <Skeleton className="h-[22rem] w-full rounded-2xl sm:h-[30rem] lg:h-[34rem]" />
-        <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_23rem]">
+        <Skeleton className="h-72 w-full rounded-2xl sm:h-88 lg:h-96" />
+        <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_28rem]">
           <div>
             <Skeleton className="h-5 w-32" />
             <Skeleton className="mt-4 h-12 w-3/4" />

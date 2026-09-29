@@ -1,13 +1,12 @@
 import { Navbar } from "@/components/home/navbar";
 import { Hero } from "@/components/home/hero";
 import { SearchBar } from "@/components/home/search-bar";
+import { TrustSignals } from "@/components/home/trust-signals";
 import { Categories } from "@/components/home/categories";
 import { Recommended } from "@/components/home/recommended";
-import { WhyChoose } from "@/components/home/why-choose";
 import { HowItWorks } from "@/components/home/how-it-works";
-import { CTASection } from "@/components/home/cta-section";
+import { ProviderCTA } from "@/components/home/provider-cta";
 import { Footer } from "@/components/home/footer";
-import { AboutSection } from "@/components/home/about-section";
 
 export default function Home() {
   return (
@@ -16,9 +15,12 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <SearchBar redirectTo="/properties" />
+        <TrustSignals />
         <HowItWorks />
         <Categories />
         <Recommended />
+        <HowItWorks />
+        <ProviderCTA />
       </main>
       <Footer />
     </div>

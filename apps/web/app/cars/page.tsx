@@ -4,6 +4,7 @@ import { Car, Compass, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatPrice } from "@/lib/utils";
 
 const featuredCars = [
   {
@@ -97,9 +98,7 @@ export default function CarsPage() {
               <div className="mt-5 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">From</p>
-                  <p className="text-xl font-semibold text-foreground">
-                    RWF {car.price.toLocaleString()}
-                  </p>
+                  <p className="text-xl font-semibold text-foreground">{car.price != null ? formatPrice(car.price) : "Contact for price"}</p>
                 </div>
                 <Button asChild size="sm">
                   <Link href="#">Reserve now</Link>

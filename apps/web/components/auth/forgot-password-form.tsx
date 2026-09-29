@@ -19,11 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { authClient } from "@/lib/auth-client";
 import {
   forgotPasswordSchema,
@@ -156,7 +152,11 @@ export function ForgotPasswordForm() {
         </div>
 
         <Form {...requestForm}>
-          <form onSubmit={requestForm.handleSubmit(onRequestSubmit)} className="space-y-5" noValidate>
+          <form
+            onSubmit={requestForm.handleSubmit(onRequestSubmit)}
+            className="space-y-5"
+            noValidate
+          >
             <FormField
               control={requestForm.control}
               name="email"
@@ -253,7 +253,10 @@ export function ForgotPasswordForm() {
           ) : null}
 
           {otpError ? (
-            <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+            <p
+              role="alert"
+              className="rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+            >
               {otpError}
             </p>
           ) : null}

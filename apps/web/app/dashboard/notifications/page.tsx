@@ -8,7 +8,7 @@ import {
   CircleDollarSign,
   Inbox,
   ShieldCheck,
- Cog,
+  Cog,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 

@@ -64,7 +64,6 @@ export class HousesController {
   }
 
   @Get("favorites")
-  @Roles(["tenant"])
   async getFavorites(@Session() session: UserSession, @Query() query: FavoriteFilterDto) {
     const result = await this.houseService.getFavorites(session.user.id, query);
     return new PaginationResponse(result.data, result.meta);
@@ -82,6 +81,23 @@ export class HousesController {
   async getHouseById(@Param("id") id: string) {
     const house = await this.houseService.getHouseById(id);
     return new ApiResponse(house, "property fetched");
+  }
+
+  @Get(":id/availability")
+  @AllowAnonymous()
+  async getRoomAvailability(
+    @Param("id") id: string,
+    @Query("roomTypeId") roomTypeId?: string,
+    @Query("checkIn") checkIn?: string,
+    @Query("checkOut") checkOut?: string,
+  ) {
+    const availability = await this.houseService.getRoomAvailability(
+      id,
+      roomTypeId,
+      checkIn,
+      checkOut,
+    );
+    return new ApiResponse(availability, "availability fetched");
   }
 
   @Patch(":id")
@@ -123,14 +139,12 @@ export class HousesController {
   }
 
   @Post(":id/favorites")
-  @Roles(["tenant"])
   async toggleFavorite(@Param("id") id: string, @Session() session: UserSession) {
     const favorite = await this.houseService.toggleFavorite(session.user.id, id);
     return new ApiResponse(favorite, "favorite toggled");
   }
 
   @Post(":id/reviews")
-  @Roles(["tenant"])
   async leaveReview(
     @Param("id") id: string,
     @Session() session: UserSession,

@@ -9,11 +9,16 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { fetcher } from "@/lib/fetcher";
+import { formatPrice } from "@/lib/utils";
 
 type BookingWithDetails = {
   id: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
   createdAt: string;
+  checkIn?: string | null;
+  checkOut?: string | null;
+  nights?: number | null;
+  totalAmount?: number | null;
   house: { id: string; name: string; location: string; price: number };
   client: { id: string; name: string; email: string };
 };
@@ -23,6 +28,7 @@ const statusColors: Record<string, string> = {
   APPROVED: "bg-green-100 text-green-700",
   REJECTED: "bg-red-100 text-red-700",
   CANCELLED: "bg-gray-100 text-gray-700",
+  COMPLETED: "bg-sky-100 text-sky-700",
 };
 
 const columns: ColumnDef<BookingWithDetails>[] = [
@@ -56,6 +62,37 @@ const columns: ColumnDef<BookingWithDetails>[] = [
         {new Date(row.original.createdAt).toLocaleDateString()}
       </span>
     ),
+  },
+  {
+    id: "total",
+    header: "Total",
+    accessorFn: (row) => row.totalAmount,
+    cell: ({ row }) =>
+      row.original.totalAmount != null ? (
+        <span className="font-medium">{formatPrice(row.original.totalAmount)}</span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
+  },
+  {
+    id: "stay",
+    header: "Stay",
+    cell: ({ row }) => {
+      const { checkIn, checkOut, nights } = row.original;
+      if (!checkIn || !checkOut) return <span className="text-muted-foreground">—</span>;
+      return (
+        <div>
+          <p className="text-sm">
+            {new Date(checkIn).toLocaleDateString()} → {new Date(checkOut).toLocaleDateString()}
+          </p>
+          {nights ? (
+            <p className="text-xs text-muted-foreground">
+              {nights} night{nights > 1 ? "s" : ""}
+            </p>
+          ) : null}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "status",
@@ -109,6 +146,7 @@ export default function AdminBookingsPage() {
               { label: "Approved", value: "APPROVED" },
               { label: "Rejected", value: "REJECTED" },
               { label: "Cancelled", value: "CANCELLED" },
+              { label: "Completed", value: "COMPLETED" },
             ],
           },
         ]}

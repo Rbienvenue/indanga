@@ -1,18 +1,18 @@
 "use client";
 
-import type { House } from "@indanga/db";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
+import type { HouseWithRooms } from "@/lib/booking-kind";
 
 export type FavoriteWithHouse = {
   id: string;
   houseId: string;
   userId: string;
   createdAt: string;
-  house: House;
+  house: HouseWithRooms;
 };
 
 interface FavoritesGridProps {
@@ -71,10 +71,13 @@ export function FavoritesGrid({ favorites, isLoading, isError }: FavoritesGridPr
           name={house.name}
           location={house.location}
           price={house.price}
+          rooms={house.rooms}
           media={house.media}
           bedrooms={house.bedrooms}
           bathrooms={house.bathrooms}
+          propertyType={house.propertyType}
           badge={house.propertyType}
+          verificationStatus={house.verificationStatus}
           isFavorite
         />
       ))}

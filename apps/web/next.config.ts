@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    proxyClientMaxBodySize: "100mb",
+  },
   images: {
     remotePatterns: [
       {

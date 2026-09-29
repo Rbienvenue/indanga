@@ -1,32 +1,57 @@
+"use client";
+
+import type { House } from "@indanga/db";
+import { useQueries } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+
+import type { PaginationResponse } from "@/@types";
+import { fetcher } from "@/lib/fetcher";
 
 const categories = [
   {
     title: "Homes",
     subtitle: "Find your next home",
-    count: "1200+ Listings",
+    propertyTypeFilter: "House,Apartment,Studio",
     image: "/image2.jpeg",
     link: "/properties?type=homes",
   },
   {
     title: "Hotel Rooms",
     subtitle: "Book the best hotels",
+    propertyTypeFilter: "Hotel",
     image: "/room3.jpg",
-    count: "850+ Listings",
     link: "/properties?type=hotels",
   },
   {
     title: "Cars",
     subtitle: "Rent a car easily",
-    count: "650+ Listings",
+    propertyTypeFilter: "Car",
     image: "/car2.jpg",
     link: "/properties?type=cars",
   },
 ];
 
+function formatCount(total: number | undefined, isLoading: boolean) {
+  if (isLoading) return "…";
+  if (total === undefined) return "";
+  if (total === 0) return "No listings yet";
+  return `${total} Listing${total === 1 ? "" : "s"}`;
+}
+
 export function Categories() {
+  const countQueries = useQueries({
+    queries: categories.map((cat) => ({
+      queryKey: ["properties", "category-count", cat.propertyTypeFilter],
+      queryFn: () =>
+        fetcher<PaginationResponse<House>>(
+          `/properties?page=1&limit=1&status=AVAILABLE&propertyType=${encodeURIComponent(cat.propertyTypeFilter)}`,
+        ),
+      staleTime: 60_000,
+    })),
+  });
+
   return (
     <section id="explore" className="px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -48,33 +73,40 @@ export function Categories() {
 
         {/* Category Image Cards */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((cat) => (
-            <Link
-              key={cat.title}
-              href={cat.link}
-              className="group relative overflow-hidden rounded-2xl"
-            >
-              {/* Image */}
-              <div className="relative aspect-4/3 w-full overflow-hidden">
-                <Image
-                  src={cat.image}
-                  alt={cat.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                />
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent" />
-              </div>
+          {categories.map((cat, index) => {
+            const countQuery = countQueries[index];
+            const total = countQuery?.data?.meta.total;
+            const isLoading = countQuery?.isLoading ?? true;
+            return (
+              <Link
+                key={cat.title}
+                href={cat.link}
+                className="group relative overflow-hidden rounded-2xl"
+              >
+                {/* Image */}
+                <div className="relative aspect-4/3 w-full overflow-hidden">
+                  <Image
+                    src={cat.image}
+                    alt={cat.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent" />
+                </div>
 
-              {/* Text overlay */}
-              <div className="absolute inset-x-0 bottom-0 p-5">
-                <h3 className="text-xl font-bold text-white">{cat.title}</h3>
-                <p className="mt-1 text-sm text-white/70">{cat.subtitle}</p>
-                <p className="mt-2 text-xs font-medium text-white/70">{cat.count}</p>
-              </div>
-            </Link>
-          ))}
+                {/* Text overlay */}
+                <div className="absolute inset-x-0 bottom-0 p-5">
+                  <h3 className="text-xl font-bold text-white">{cat.title}</h3>
+                  <p className="mt-1 text-sm text-white/70">{cat.subtitle}</p>
+                  <p className="mt-2 text-xs font-medium text-white/70">
+                    {formatCount(total, isLoading)}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -51,7 +51,7 @@ export function QuickActions() {
           <Link
             key={action.title}
             href={action.href}
-            className={`group relative flex min-h-[104px] flex-col justify-center overflow-hidden rounded-xl ${action.bgClass} ${action.textClass} p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg`}
+            className={`group relative flex h-36 flex-col justify-center overflow-hidden rounded-xl ${action.bgClass} ${action.textClass} p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg`}
           >
             {/* Image bleeds in from the right, faded out over the card colour */}
             <div
