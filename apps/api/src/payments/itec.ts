@@ -34,7 +34,7 @@ export class ITECService implements PaymentGateway {
     this.validateAmount(payment.amount);
     if (payment.method === "CARD") {
       const response = await this.fetcher<CardPaymentResponse>(
-        "/api/pay/apis/pesapal/generatecode",
+        "/api/pay/apis/cardpay/generatecode",
         {
           method: "POST",
           body: JSON.stringify({

@@ -19,6 +19,7 @@ const navLinks = [
 const aboutLinks = [
   { label: "Who we are", href: "/about" },
   { label: "Our purpose", href: "/about#our-purpose" },
+  { label: "Our team", href: "/about#team" },
   { label: "Our operations", href: "/about#our-operations" },
   { label: "Contact", href: "/about#contact" },
 ];
