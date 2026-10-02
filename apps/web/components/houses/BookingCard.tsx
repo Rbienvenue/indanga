@@ -3,7 +3,16 @@
 import type { House, RoomType } from "@indanga/db";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ArrowRight, BedDouble, CalendarIcon, Headphones, Loader2, Minus, Plus } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  BedDouble,
+  CalendarIcon,
+  Headphones,
+  Loader2,
+  Minus,
+  Plus,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,6 +21,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
+import { BookingPriceSummary } from "@/components/houses/BookingPriceSummary";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
@@ -97,7 +107,9 @@ export function BookingCard({
   const rooms = house.rooms ?? [];
   const { fromPrice } = getDisplayPrice(house.price, rooms);
   const form = useForm<BookingValues>({
-    resolver: zodResolver(isHotel ? hotelBookingSchema : isDated ? datedBookingSchema : bookingSchema),
+    resolver: zodResolver(
+      isHotel ? hotelBookingSchema : isDated ? datedBookingSchema : bookingSchema,
+    ),
     defaultValues: {
       houseId: house.id,
       gateway: "momo",
@@ -118,11 +130,14 @@ export function BookingCard({
   const selectedRoom = isHotel ? rooms.find((room) => room.id === roomTypeId) : undefined;
   const quantity = isHotel ? Math.max(Number(roomCount) || 1, 1) : 1;
   const unitPrice = selectedRoom?.price ?? house.price ?? fromPrice ?? 0;
-  const total = isHotel
+  const subtotal = isHotel
     ? unitPrice * quantity * (nights > 0 ? nights : 1)
     : isDated && nights > 0
       ? unitPrice * nights
       : unitPrice;
+  const serviceFee = Math.round(subtotal * 0.05);
+  const total = subtotal + serviceFee;
+  const priceReady = (!isDated || nights > 0) && (!isHotel || Boolean(selectedRoom));
 
   const availabilityQuery = useQuery({
     queryKey: ["properties", house.id, "availability", checkIn, checkOut],
@@ -139,7 +154,6 @@ export function BookingCard({
   const maxRooms = selectedAvailability
     ? selectedAvailability.availableRooms
     : (selectedRoom?.totalRooms ?? 1);
-  const dayLabel = bookingKind === "car" ? "day" : "night";
   const today = startOfDay(new Date());
   const checkInDate = checkIn ? new Date(`${checkIn}T00:00:00`) : undefined;
   const checkOutDate = checkOut ? new Date(`${checkOut}T00:00:00`) : undefined;
@@ -149,7 +163,15 @@ export function BookingCard({
     bookingKind === "hotel" ? "per night" : bookingKind === "car" ? "per day" : "per month";
 
   const paymentMutation = useMutation({
-    mutationFn: async ({ houseId, gateway, phone, checkIn, checkOut, roomTypeId, roomCount }: BookingValues) => {
+    mutationFn: async ({
+      houseId,
+      gateway,
+      phone,
+      checkIn,
+      checkOut,
+      roomTypeId,
+      roomCount,
+    }: BookingValues) => {
       const method = paymentMethods.find((item) => item.gateway === gateway)!.method;
       return fetcher<ApiResponse<PaymentResponse>>("/payments", {
         method: "POST",
@@ -223,7 +245,9 @@ export function BookingCard({
     cardPrice != null ? (
       <>
         {fromRooms ? (
-          <span className="mr-1 text-sm font-semibold text-slate-500 dark:text-slate-400">From</span>
+          <span className="mr-1 text-sm font-semibold text-slate-500 dark:text-slate-400">
+            From
+          </span>
         ) : null}
         {formatPrice(cardPrice)}
       </>
@@ -257,36 +281,36 @@ export function BookingCard({
     return (
       <div className="space-y-4">
         <div className="rounded-2xl border border-slate-900/10 bg-white p-6 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-slate-900 dark:shadow-black/40">
-               {cardPrice != null ? (
-                 <p className="flex flex-wrap items-baseline gap-x-1.5 text-2xl font-black tracking-tight">
-                   {fromRooms ? (
-                     <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                       From
-                     </span>
-                   ) : null}
-                   <span>{formatPrice(cardPrice)}</span>
-                   <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                     / {priceUnitLabel.replace("per ", "")}
-                   </span>
-                 </p>
-               ) : (
-                 <p className="text-lg font-bold text-slate-500 dark:text-slate-400">
-                   Contact for price
-                 </p>
-               )}
-               <PolicyAcceptance
-                 id="desktop-policy-consent"
-                 checked={hasAcceptedPolicy}
-                 onCheckedChange={onPolicyAcceptanceChange}
-               />
-               <Button
-                 className="mt-4 h-12 w-full text-base font-bold"
-                 disabled={!isAvailable || !hasAcceptedPolicy}
-                 onClick={beginCheckout}
-               >
-                 {isAvailable ? bookThisLabel : "Not available"}
-               </Button>
-             </div>
+          {cardPrice != null ? (
+            <p className="flex flex-wrap items-baseline gap-x-1.5 text-2xl font-black tracking-tight">
+              {fromRooms ? (
+                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                  From
+                </span>
+              ) : null}
+              <span>{formatPrice(cardPrice)}</span>
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                / {priceUnitLabel.replace("per ", "")}
+              </span>
+            </p>
+          ) : (
+            <p className="text-lg font-bold text-slate-500 dark:text-slate-400">
+              Contact for price
+            </p>
+          )}
+          <PolicyAcceptance
+            id="desktop-policy-consent"
+            checked={hasAcceptedPolicy}
+            onCheckedChange={onPolicyAcceptanceChange}
+          />
+          <Button
+            className="mt-4 h-12 w-full text-base font-bold"
+            disabled={!isAvailable || !hasAcceptedPolicy}
+            onClick={beginCheckout}
+          >
+            {isAvailable ? bookThisLabel : "Not available"}
+          </Button>
+        </div>
         <div className="rounded-xl border border-slate-900/10 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
           <div className="flex items-center gap-3">
             <Headphones className="size-6 shrink-0 text-primary" />
@@ -344,18 +368,16 @@ export function BookingCard({
           : "rounded-2xl border p-6 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.35)] dark:shadow-black/40",
       )}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xl font-black tracking-tight">{formatPrice(total)}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {isDated && nights > 0
-              ? `${nights} ${dayLabel}${nights > 1 ? "s" : ""}${isHotel && quantity > 1 ? ` × ${quantity} rooms` : ""} × ${formatPrice(unitPrice)} ${priceUnitLabel}`
-              : isHotel && selectedRoom && quantity > 1
-                ? `${quantity} rooms × ${formatPrice(unitPrice)} ${priceUnitLabel}`
-                : priceUnitLabel}
-          </p>
-        </div>
-      </div>
+      <BookingPriceSummary
+        bookingKind={bookingKind}
+        unitPrice={unitPrice}
+        nights={nights}
+        quantity={quantity}
+        subtotal={subtotal}
+        serviceFee={serviceFee}
+        total={total}
+        ready={priceReady}
+      />
 
       {step === "submitted" ? (
         <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
@@ -481,7 +503,6 @@ export function BookingCard({
               </div>
             ) : null}
 
-
             {isHotel ? (
               <div className="grid grid-cols-2 gap-3">
                 <FormField
@@ -538,9 +559,7 @@ export function BookingCard({
                           size="icon"
                           className="size-11 shrink-0"
                           disabled={submitting || quantity <= 1}
-                          onClick={() =>
-                            field.onChange(Math.max(quantity - 1, 1))
-                          }
+                          onClick={() => field.onChange(Math.max(quantity - 1, 1))}
                           aria-label="Fewer rooms"
                         >
                           <Minus className="size-4" />
@@ -669,11 +688,7 @@ export function BookingCard({
                 </>
               ) : (
                 <>
-                  {isDated && nights > 0 ? (
-                    <>
-                      Pay {formatPrice(total)} <ArrowRight className="size-4" />
-                    </>
-                  ) : isHotel && selectedRoom && quantity > 1 ? (
+                  {priceReady ? (
                     <>
                       Pay {formatPrice(total)} <ArrowRight className="size-4" />
                     </>

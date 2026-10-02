@@ -61,7 +61,8 @@ export class PaymentsService {
         if (dated) {
           if (!data.checkIn || !data.checkOut) {
             throw new BadRequestException("Check-in and check-out dates are required");
-          }          checkIn = new Date(data.checkIn);
+          }
+          checkIn = new Date(data.checkIn);
           checkOut = new Date(data.checkOut);
           if (Number.isNaN(checkIn.getTime()) || Number.isNaN(checkOut.getTime())) {
             throw new BadRequestException("Invalid check-in or check-out date");
@@ -111,6 +112,8 @@ export class PaymentsService {
             amount = (house.price ?? 0) * nights;
           }
         }
+
+        amount += Math.round(amount * 0.05);
 
         const booking = await tx.booking.create({
           data: {

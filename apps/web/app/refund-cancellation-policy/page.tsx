@@ -29,7 +29,7 @@ const policySections: PolicySection[] = [
       "Refund eligibility depends on the reason for cancellation, the applicable transaction terms, the status of the service, the conduct of the parties, payment status, and applicable law.",
       "Indanga does not guarantee that every cancellation will result in a full refund.",
       "An approved refund may take time to reach the customer because the reversal or credit is processed through the applicable payment channel, payment provider, bank, card issuer, mobile-money operator, or other financial institution.",
-      "The Payment Risk Reserve or Rolling Reserve described in this Policy is a payment-provider risk mechanism and must not be represented to customers as an Indanga refund fee.",
+      "Payment providers may apply internal risk and settlement procedures. These procedures do not automatically reduce an approved customer refund.",
     ],
   },
   {
@@ -200,6 +200,14 @@ export default function RefundCancellationPolicyPage() {
             This Policy applies to customers, Providers, and authorised agents or commissioners
             participating in transactions through INDANGA. Listing-specific terms may also apply.
           </p>
+          <div className="mt-6 rounded-lg border border-border bg-muted/50 p-4 sm:p-5">
+            <p className="text-sm font-semibold">Plain-language summary</p>
+            <p className="mt-2 text-sm leading-7 text-muted-foreground">
+              Payment providers may apply internal risk and settlement procedures. These
+              procedures do not automatically reduce an approved customer refund. The final
+              refund amount and processing time will be confirmed for the relevant transaction.
+            </p>
+          </div>
         </header>
 
         <div className="divide-y divide-border">
