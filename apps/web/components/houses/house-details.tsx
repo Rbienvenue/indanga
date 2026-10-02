@@ -475,10 +475,6 @@ function ListingInformation({
   isAvailable: boolean;
 }) {
   const priceUnit = bookingKind === "hotel" ? "night" : bookingKind === "car" ? "day" : "month";
-  const verificationLabel =
-    house.verificationStatus === "VerifiedByIndanga"
-      ? "Verified by INDANGA"
-      : "Reviewed by INDANGA";
 
   return (
     <section className="divide-y divide-slate-900/10 border-b border-slate-900/10 dark:divide-white/10 dark:border-white/10">
@@ -501,8 +497,19 @@ function ListingInformation({
       </AccordionRow>
       <AccordionRow icon={BadgeCheck} title="Verification and listing information">
         <p>
-          {verificationLabel}. The listing information was submitted by the provider and is reviewed
-          before publication.
+          {house.verificationStatus === "VerifiedByIndanga"
+            ? "Verified by INDANGA. INDANGA checked the provider's identity and reviewed key listing information, including the location, photos, pricing, and availability."
+            : "Reviewed by INDANGA. We checked the information submitted by the provider before publishing this listing. Prices and availability can change, so review the latest details before booking."}
+        </p>
+        <p className="mt-3 text-muted-foreground">
+          {house.verificationStatus === "VerifiedByIndanga" ? "Verified" : "Reviewed"} on{" "}
+          {new Date(house.updatedAt).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+          . Verification does not guarantee future availability, unchanged pricing, or the quality
+          of every service.
         </p>
         <p className="mt-3">
           Availability: {isAvailable ? "available to book now" : "currently unavailable"}.

@@ -25,7 +25,7 @@ const propertyTypes = [
 
 const subTypeOptions: Record<string, readonly { value: string; label: string }[]> = {
   homes: [
-    { value: "all", label: "All Type" },
+    { value: "all", label: "All property types" },
     { value: "1 Bedroom", label: "1 Bedroom" },
     { value: "2 Bedroom", label: "2 Bedroom" },
     { value: "3 Bedroom", label: "3 Bedroom" },
@@ -36,7 +36,7 @@ const subTypeOptions: Record<string, readonly { value: string; label: string }[]
     { value: "House", label: "House" },
   ],
   hotels: [
-    { value: "all", label: "All Type" },
+    { value: "all", label: "All hotel types" },
     { value: "hotel", label: "Hotel" },
     { value: "motel", label: "Motel" },
     { value: "lodge", label: "Lodge" },
@@ -44,7 +44,7 @@ const subTypeOptions: Record<string, readonly { value: string; label: string }[]
     { value: "resort", label: "Resort" },
   ],
   cars: [
-    { value: "all", label: "All Type" },
+    { value: "all", label: "All vehicle types" },
     { value: "sedan", label: "Sedan" },
     { value: "van", label: "Van" },
     { value: "suv", label: "SUV" },
@@ -54,7 +54,7 @@ const subTypeOptions: Record<string, readonly { value: string; label: string }[]
 };
 
 const budgetOptions = [
-  { value: "any", label: "Any Budget" },
+  { value: "any", label: "Any budget" },
   { value: "50000-100000", label: "RWF 50K – 100K" },
   { value: "100000-150000", label: "RWF 100K – 150K" },
   { value: "150000-200000", label: "RWF 150K – 200K" },
@@ -62,6 +62,12 @@ const budgetOptions = [
   { value: "250000-300000", label: "RWF 250K – 300K" },
   { value: "300000-350000", label: "RWF 300K – 350K" },
 ] as const;
+
+const budgetAnyLabels: Record<string, string> = {
+  homes: "Any monthly budget",
+  hotels: "Any nightly budget",
+  cars: "Any daily budget",
+};
 
 type SearchBarProps = {
   className?: string;
@@ -310,7 +316,7 @@ export function SearchBar({ className, redirectTo }: SearchBarProps) {
               <SelectContent>
                 {budgetOptions.map(({ value, label }) => (
                   <SelectItem key={value} value={value}>
-                    {label}
+                    {value === "any" ? (budgetAnyLabels[propertyType] ?? label) : label}
                   </SelectItem>
                 ))}
               </SelectContent>

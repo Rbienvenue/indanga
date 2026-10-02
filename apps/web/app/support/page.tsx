@@ -1,15 +1,9 @@
 import Link from "next/link";
 import {
   BadgeCheck,
-  Building2,
   CircleHelp,
   Clock3,
-  CreditCard,
-  House,
-  Mail,
-  MessageSquareText,
-  Phone,
-  ShieldCheck,
+  TriangleAlert,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -17,117 +11,14 @@ import { Navbar } from "@/components/home/navbar";
 import { Footer } from "@/components/home/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
-const supportAreas = [
-  {
-    icon: House,
-    title: "Booking & stay help",
-    description: "Need help with a reservation, property access, or arranging your next stay?",
-    items: [
-      "Check reservation details and check-in instructions",
-      "Update guest or stay details",
-      "Report missing amenities or property issues",
-    ],
-  },
-  {
-    icon: Building2,
-    title: "Property & listing support",
-    description:
-      "For hosts and guests who need help with listing visibility, verification, or quality checks.",
-    items: [
-      "Review listing accuracy and images",
-      "Resolve ownership or verification concerns",
-      "Request assistance with house or hotel quality issues",
-    ],
-  },
-  {
-    icon: CreditCard,
-    title: "Payments & refunds",
-    description: "Questions about pricing, payment confirmations, refunds, or invoice requests.",
-    items: [
-      "Confirm payment status or receipt details",
-      "Request refund information or billing support",
-      "Understand cancellation and service fee policies",
-    ],
-  },
-  {
-    icon: ShieldCheck,
-    title: "Safety & trust",
-    description:
-      "We help protect users, landlords, and tenants with secure, verified booking experiences.",
-    items: [
-      "Report suspicious activity or unsafe situations",
-      "Request account verification support",
-      "Learn how we review listings and payments",
-    ],
-  },
-] as const;
-
-const contactChannels = [
-  {
-    icon: Mail,
-    title: "Email support",
-    value: "support@indanga.com",
-    href: "mailto:support@indanga.com",
-    description: "Usually replies within 24 hours.",
-  },
-  {
-    icon: Phone,
-    title: "Call us",
-    value: "+250 788 123 456",
-    href: "tel:+250788123456",
-    description: "Available Monday to Saturday, 8:00 AM - 6:00 PM.",
-  },
-  {
-    icon: MessageSquareText,
-    title: "Live chat",
-    value: "Chat with the team",
-    href: "mailto:support@indanga.com?subject=Live%20chat%20request",
-    description: "For urgent booking or payment questions.",
-  },
-] as const;
-
-const faqItems = [
-  {
-    question: "How do I book a property on Indanga?",
-    answer:
-      "Browse homes, hotels, or cars, choose a suitable option, and complete the booking with a secure payment flow. You will receive confirmation by email once the reservation is confirmed.",
-  },
-  {
-    question: "Can I cancel or modify my reservation?",
-    answer:
-      "Cancellation and modification rules depend on the host or property owner. You can review the specific policy in the listing before payment and contact support if you need help with a change.",
-  },
-  {
-    question: "What if I experience a problem during my stay?",
-    answer:
-      "Please contact our support team immediately with your booking reference and a description of the issue. We help coordinate with the host or provider to resolve matters quickly.",
-  },
-  {
-    question: "How are payments protected?",
-    answer:
-      "Indanga follows secure payment flows and account verification checks to help keep transactions safe. If you see anything suspicious, contact support right away.",
-  },
-  {
-    question: "What support do landlords and agents receive?",
-    answer:
-      "Hosts can get help with property listing setup, booking requests, payment coordination, and account management through the same support channels.",
-  },
-  {
-    question: "How do I report a listing issue or misconduct?",
-    answer:
-      "Use the support contact form or email us with the listing URL, booking details, and a clear description so our team can investigate and take the appropriate action.",
-  },
-] as const;
-
-const quickResources = [
-  "Booking confirmation checklist",
-  "How to manage profile settings",
-  "Payment and refund guidelines",
-  "Listing verification process",
-  "Cancellation policy overview",
-  "Safety guidance for guests",
-] as const;
+import {
+  faqItems,
+  fraudWarning,
+  mostAskedFaqIds,
+  quickResources,
+  supportAreas,
+  supportChannels,
+} from "@/lib/support-content";
 
 export default function Page() {
   return (
@@ -223,11 +114,36 @@ export default function Page() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {faqItems.map(({ question, answer }) => (
-                <div key={question} className="rounded-xl border bg-background p-4">
-                  <h3 className="font-medium">{question}</h3>
+              <div className="rounded-xl border bg-muted/30 p-4">
+                <h3 className="text-sm font-semibold">Most asked questions</h3>
+                <ul className="mt-2 space-y-1.5 text-sm">
+                  {mostAskedFaqIds.map((id) => {
+                    const faq = faqItems.find((item) => item.id === id);
+                    if (!faq) return null;
+                    return (
+                      <li key={id}>
+                        <Link
+                          href={`/support#faq-${faq.id}`}
+                          className="text-primary hover:underline"
+                        >
+                          {faq.question}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+              {faqItems.map(({ id, question, answer }) => (
+                <details
+                  key={question}
+                  id={`faq-${id}`}
+                  className="group scroll-mt-28 rounded-xl border bg-background p-4"
+                >
+                  <summary className="cursor-pointer list-none font-medium [&::-webkit-details-marker]:hidden">
+                    {question}
+                  </summary>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{answer}</p>
-                </div>
+                </details>
               ))}
             </CardContent>
           </Card>
@@ -242,7 +158,7 @@ export default function Page() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {contactChannels.map(({ icon: Icon, title, value, href, description }) => (
+              {supportChannels.map(({ icon: Icon, title, value, href, description }) => (
                 <Link
                   key={title}
                   href={href}
@@ -258,6 +174,12 @@ export default function Page() {
                   </div>
                 </Link>
               ))}
+              <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+                <div className="rounded-lg bg-amber-500/10 p-2 text-amber-600">
+                  <TriangleAlert className="size-4" />
+                </div>
+                <p className="text-xs leading-5 text-muted-foreground">{fraudWarning}</p>
+              </div>
             </CardContent>
           </Card>
 
@@ -267,13 +189,15 @@ export default function Page() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
-                {quickResources.map((resource) => (
-                  <li
-                    key={resource}
-                    className="flex items-center gap-2 text-sm text-muted-foreground"
-                  >
-                    <span className="size-2 rounded-full bg-primary" />
-                    <span>{resource}</span>
+                {quickResources.map(({ label, href }) => (
+                  <li key={label}>
+                    <Link
+                      href={href}
+                      className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+                    >
+                      <span className="size-2 rounded-full bg-primary" />
+                      <span>{label}</span>
+                    </Link>
                   </li>
                 ))}
               </ul>
