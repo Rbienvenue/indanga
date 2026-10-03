@@ -142,7 +142,7 @@ export default function Page() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f6f8fc]">
+    <div className="flex min-h-screen flex-col bg-[#f6f8fc] dark:bg-background">
       <Navbar solid />
       <main className="flex-1">
         {/* Hero */}
@@ -171,10 +171,10 @@ export default function Page() {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search help articles"
                 aria-label="Search help articles"
-                className="h-11 bg-white pl-9"
+                className="h-11 bg-white pl-9 text-foreground dark:bg-input"
               />
               {searchResults.length > 0 && (
-                <div className="absolute inset-x-0 top-full z-20 mt-2 overflow-hidden rounded-xl border bg-white text-left shadow-xl">
+                <div className="absolute inset-x-0 top-full z-20 mt-2 overflow-hidden rounded-xl border bg-white text-left shadow-xl dark:bg-popover">
                   {searchResults.map((item) => (
                     <button
                       key={item.id}
@@ -225,7 +225,7 @@ export default function Page() {
               {supportAreas.map(({ icon: Icon, title, description }) => (
                 <div
                   key={title}
-                  className="flex items-start justify-between gap-3 rounded-xl border bg-white p-4 shadow-sm"
+                  className="flex items-start justify-between gap-3 rounded-xl border bg-white p-4 shadow-sm dark:bg-card"
                 >
                   <div className="flex items-start gap-3">
                     <div className="rounded-lg bg-primary/10 p-2 text-primary">
@@ -257,7 +257,7 @@ export default function Page() {
               {commonQuestions.map(({ question, answer }) => {
                 const open = openQuestion === question;
                 return (
-                  <div key={question} className="rounded-xl border bg-white shadow-sm">
+                  <div key={question} className="rounded-xl border bg-white shadow-sm dark:bg-card">
                     <button
                       type="button"
                       onClick={() => setOpenQuestion(open ? null : question)}
@@ -299,7 +299,7 @@ export default function Page() {
                 <Link
                   key={title}
                   href={href}
-                  className="rounded-xl border bg-white p-4 shadow-sm transition-colors hover:border-primary/40"
+                  className="rounded-xl border bg-white p-4 shadow-sm transition-colors hover:border-primary/40 dark:bg-card"
                 >
                   <div className="flex items-center justify-between">
                     <div className="rounded-lg bg-primary/10 p-2 text-primary">
@@ -316,8 +316,8 @@ export default function Page() {
 
           {/* Safety + form */}
           <section className="grid gap-4 lg:grid-cols-2">
-            <div id="safety" className="scroll-mt-24 rounded-xl border border-red-100 bg-red-50 p-5">
-              <div className="flex items-center gap-2 text-red-700">
+            <div id="safety" className="scroll-mt-24 rounded-xl border border-red-100 bg-red-50 p-5 dark:border-red-900 dark:bg-red-950/40">
+              <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
                 <TriangleAlert className="size-5" />
                 <h2 className="text-base font-bold">Stay safe</h2>
               </div>
@@ -335,7 +335,7 @@ export default function Page() {
 
             <div
               id="contact-form"
-              className="scroll-mt-24 rounded-xl border bg-white p-5 shadow-sm"
+              className="scroll-mt-24 rounded-xl border bg-white p-5 shadow-sm dark:bg-card"
             >
               <h2 className="text-base font-bold">Contact INDANGA support</h2>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -343,8 +343,8 @@ export default function Page() {
                 you have one. Do not send passwords or full payment-card details.
               </p>
               {reference ? (
-                <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-                  <p className="font-semibold">Your request has been received.</p>
+                <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900 dark:bg-emerald-950">
+                  <p className="font-semibold dark:text-emerald-50">Your request has been received.</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Reference number: {reference}. We usually reply within 24 hours. Keep
                     this reference for follow-up.
@@ -529,7 +529,7 @@ export default function Page() {
                   <Link
                     key={label}
                     href={href}
-                    className="flex items-center justify-between gap-2 rounded-xl border bg-white p-4 text-sm font-medium shadow-sm hover:border-primary/40"
+                    className="flex items-center justify-between gap-2 rounded-xl border bg-white p-4 text-sm font-medium shadow-sm hover:border-primary/40 dark:bg-card"
                   >
                     <span className="flex items-center gap-2">
                       <Icon className="size-4 text-primary" />
@@ -543,7 +543,7 @@ export default function Page() {
           </section>
 
           {/* More answers */}
-          <section id="prices" className="scroll-mt-24 rounded-xl border bg-white p-5 shadow-sm">
+          <section id="prices" className="scroll-mt-24 rounded-xl border bg-white p-5 shadow-sm dark:bg-card">
             <h2 className="text-base font-bold">More answers</h2>
             <p className="mt-1 text-xs text-muted-foreground">
               Booking, payment, cancellation, verification, provider, and account help.
@@ -580,7 +580,7 @@ export default function Page() {
                 <a
                   key={title}
                   href={href}
-                  className="rounded-xl border bg-muted/20 p-3 transition-colors hover:border-primary/40 hover:bg-primary/5"
+                  className="rounded-xl border bg-muted/20 p-3 transition-colors hover:border-primary/40 hover:bg-primary/5 dark:bg-card"
                 >
                   <div className="flex items-center gap-2">
                     <span className="rounded-lg bg-primary/10 p-1.5 text-primary">
@@ -597,21 +597,21 @@ export default function Page() {
 
           {/* Trust strip */}
           <section className="grid gap-3 sm:grid-cols-3">
-            <div className="flex items-center gap-3 rounded-xl border bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-3 rounded-xl border bg-white p-4 shadow-sm dark:bg-card">
               <Hotel className="size-5 text-primary" />
               <div>
                 <p className="text-sm font-semibold">Reviewed listings</p>
                 <p className="text-xs text-muted-foreground">Checked before publishing</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-3 rounded-xl border bg-white p-4 shadow-sm dark:bg-card">
               <BadgeCheck className="size-5 text-emerald-600" />
               <div>
                 <p className="text-sm font-semibold">Verified by INDANGA</p>
                 <p className="text-xs text-muted-foreground">Identity and listing checks</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-3 rounded-xl border bg-white p-4 shadow-sm dark:bg-card">
               <LifeBuoy className="size-5 text-amber-600" />
               <div>
                 <p className="text-sm font-semibold">Local support</p>
