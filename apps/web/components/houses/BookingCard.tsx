@@ -38,6 +38,7 @@ import {
 import { fetcher } from "@/lib/fetcher";
 import { useSocketIo } from "@/components/providers/socket-io-provider";
 import { getBookingKind } from "@/lib/booking-kind";
+import { calcServiceFee, type ServiceFee } from "@/lib/service-fee";
 import { getDisplayPrice } from "@/lib/room-pricing";
 import { cn, formatPrice } from "@/lib/utils";
 
@@ -135,7 +136,13 @@ export function BookingCard({
     : isDated && nights > 0
       ? unitPrice * nights
       : unitPrice;
-  const serviceFee = Math.round(subtotal * 0.05);
+  const serviceFeeQuery = useQuery({
+    queryKey: ["service-fees", bookingKind],
+    queryFn: () => fetcher<ApiResponse<ServiceFee>>(`/service-fees?bookingKind=${bookingKind}`),
+    staleTime: 5 * 60 * 1000,
+  });
+  const serviceFeeConfig = serviceFeeQuery.data?.data;
+  const serviceFee = calcServiceFee(subtotal, serviceFeeConfig);
   const total = subtotal + serviceFee;
   const priceReady = (!isDated || nights > 0) && (!isHotel || Boolean(selectedRoom));
 
@@ -375,6 +382,7 @@ export function BookingCard({
         quantity={quantity}
         subtotal={subtotal}
         serviceFee={serviceFee}
+        serviceFeeConfig={serviceFeeConfig}
         total={total}
         ready={priceReady}
       />

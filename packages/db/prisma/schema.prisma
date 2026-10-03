@@ -82,6 +82,18 @@ model RoomType {
   @@index([houseId])
   @@map("room_type")
 }
+model ServiceFee {
+  id          String   @id @default(cuid())
+  bookingKind String   @unique
+  feeType     FeeType  @default(percentage)
+  amount      Int      @default(5)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("service_fee")
+}
+
 model Booking {
   id            String         @id @default(cuid())
   clientId      String
@@ -93,6 +105,7 @@ model Booking {
   checkOut      DateTime?
   nights        Int?
   unitPrice     Int?
+  serviceFee    Int?           @default(0)
   totalAmount   Int?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -307,4 +320,9 @@ enum BookingStatus {
 enum VerificationStatus {
   ReviewedByIndanga
   VerifiedByIndanga
+}
+
+enum FeeType {
+  percentage
+  fixed
 }

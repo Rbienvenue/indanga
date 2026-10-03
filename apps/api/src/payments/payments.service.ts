@@ -14,6 +14,8 @@ import { ITECService } from "./itec";
 import { WsGateway } from "src/ws/ws.gateway";
 import { getBookingKind, isDatedProperty } from "src/houses/booking-kind.util";
 import { countOverlappingRooms } from "src/houses/houses.service";
+import { ServiceFeesService } from "src/service-fees/service-fees.service";
+import { calcServiceFee } from "src/service-fees/service-fee.util";
 
 function startOfDay(date: Date): Date {
   const d = new Date(date);
@@ -33,6 +35,7 @@ export class PaymentsService {
     private readonly notifications: NotificationsService,
     private readonly itec: ITECService,
     private readonly ws: WsGateway,
+    private readonly serviceFees: ServiceFeesService,
   ) {}
   async initiatePayment(clientId: string, data: CreateOrderDto) {
     const { booking, payment, result } = await this.db.$transaction(
@@ -113,7 +116,10 @@ export class PaymentsService {
           }
         }
 
-        amount += Math.round(amount * 0.05);
+        const bookingKind = getBookingKind(house.propertyType);
+        const feeConfig = await this.serviceFees.getByKind(bookingKind);
+        const serviceFee = calcServiceFee(amount, feeConfig);
+        amount += serviceFee;
 
         const booking = await tx.booking.create({
           data: {
@@ -126,6 +132,7 @@ export class PaymentsService {
             roomTypeId,
             roomCount: isHotel ? roomCount : undefined,
             unitPrice: nights ? (unitPrice ?? house.price ?? undefined) : undefined,
+            serviceFee,
             totalAmount: amount,
           },
           include: {

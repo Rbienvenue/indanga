@@ -32,6 +32,7 @@ import {
   Shield,
   ShieldCheck,
   BadgeCheck,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -70,6 +71,7 @@ const adminItems = [
   { title: "Bookings", href: "/admin/bookings", icon: Calendar },
   { title: "Payments", href: "/admin/payments", icon: CreditCard },
   { title: "Reviews", href: "/admin/reviews", icon: Star },
+  { title: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 const kycItems = [{ title: "Verification", href: "/dashboard/kyc", icon: ShieldCheck }];
