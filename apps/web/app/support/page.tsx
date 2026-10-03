@@ -4,32 +4,20 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-<<<<<<< Updated upstream
   BadgeCheck,
-  CircleHelp,
-  Clock3,
-  TriangleAlert,
-=======
-  BadgeDollarSign,
-  CalendarX2,
   ChevronDown,
   CircleHelp,
-  FileCheck2,
-  Headset,
-  House,
-  Hotel,
-  Search,
-  ShieldCheck,
-  ShieldAlert,
-  SquareUser,
-  Store,
-  TriangleAlert,
-  Flag,
-  RefreshCcw,
-  LifeBuoy,
   FileText,
-  BadgeCheck,
->>>>>>> Stashed changes
+  Flag,
+  Headset,
+  Hotel,
+  House,
+  LifeBuoy,
+  RefreshCcw,
+  Search,
+  ShieldAlert,
+  ShieldCheck,
+  TriangleAlert,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -37,17 +25,6 @@ import { z } from "zod";
 import { Navbar } from "@/components/home/navbar";
 import { Footer } from "@/components/home/footer";
 import { Button } from "@/components/ui/button";
-<<<<<<< Updated upstream
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  faqItems,
-  fraudWarning,
-  mostAskedFaqIds,
-  quickResources,
-  supportAreas,
-  supportChannels,
-} from "@/lib/support-content";
-=======
 import {
   Form,
   FormControl,
@@ -58,225 +35,25 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  faqItems,
+  fraudWarning,
+  mostAskedFaqIds,
+  quickResources,
+  supportAreas,
+  supportChannels,
+} from "@/lib/support-content";
 
 const SUPPORT_EMAIL = "support@indanga.com";
 const SUPPORT_PHONE = "+250 788 765 547";
 const SUPPORT_PHONE_HREF = "tel:+250788765547";
 
-const supportCategories = [
-  {
-    icon: House,
-    title: "Booking and reservations",
-    description:
-      "Check a booking, request a change, understand confirmation, or get help before your stay or rental.",
-    articles: [
-      "How do I book a home, hotel, or car?",
-      "Is my booking confirmed?",
-      "What happens after I send a booking request?",
-      "How do I change my dates or guest details?",
-      "Where can I find my booking reference?",
-      "What should I do if the provider does not respond?",
-    ],
-  },
-  {
-    icon: BadgeDollarSign,
-    title: "Prices and payments",
-    description:
-      "Understand the listed price, additional charges, deposits, payment status, and receipts.",
-    articles: [
-      "What is included in the listed price?",
-      "Are taxes or service fees included?",
-      "Why does the final price differ from the listing price?",
-      "Is a deposit required?",
-      "When do I pay?",
-      "How do I know whether my payment was successful?",
-    ],
-  },
-  {
-    icon: CalendarX2,
-    title: "Cancellations and refunds",
-    description:
-      "Find the cancellation deadline, understand refund eligibility, and track a refund request.",
-    articles: [
-      "How do I cancel a booking?",
-      "Will I receive a full refund?",
-      "What if the provider cancels?",
-      "How long does a refund take?",
-      "Can I change my booking instead of cancelling?",
-      "How do I submit a refund request?",
-    ],
-  },
-  {
-    icon: FileCheck2,
-    title: "Listings and verification",
-    description:
-      "Understand listing badges, report inaccurate information, or ask for a review of a property, hotel, or vehicle.",
-    articles: [
-      "What does “Reviewed by INDANGA” mean?",
-      "What does “Verified by INDANGA” mean?",
-      "How often is listing information checked?",
-      "How can I report a wrong price or unavailable listing?",
-      "How do I report a suspicious provider?",
-    ],
-  },
-  {
-    icon: ShieldCheck,
-    title: "Safety and trust",
-    description: "Learn how to protect your account, payment, and personal information.",
-    articles: [
-      "How do I stay safe when contacting a provider?",
-      "Should I pay outside INDANGA?",
-      "How do I report a suspicious payment request?",
-      "How do I report harassment, fraud, or unsafe behaviour?",
-    ],
-  },
-  {
-    icon: SquareUser,
-    title: "Account and profile",
-    description: "Manage sign-in, contact details, saved listings, and account security.",
-    articles: [
-      "How do I create an account?",
-      "I cannot sign in. What should I do?",
-      "How do I reset my password?",
-      "How do I delete my account?",
-      "How does INDANGA use my personal information?",
-    ],
-  },
-  {
-    icon: Store,
-    title: "For providers",
-    description:
-      "Get help listing a property, hotel room, or vehicle and managing enquiries and bookings.",
-    articles: [
-      "How do I become a provider?",
-      "What information is required to create a listing?",
-      "How do I update price and availability?",
-      "How do I respond to a booking request?",
-      "What happens if a customer reports a listing?",
-    ],
-  },
-];
+const commonQuestionIds = [...mostAskedFaqIds, "listed-price-includes", "report-listing"];
 
-const commonQuestions = [
-  {
-    question: "How do I know whether my booking is confirmed?",
-    answer:
-      "Not always when you click. Some listings can be confirmed immediately, while others require the provider to confirm availability and the final price. Your booking is confirmed only when the confirmation message or booking reference is issued. Keep this reference for support, changes, or cancellations.",
-  },
-  {
-    question: "What does the listed price include?",
-    answer:
-      "The listing price is the provider’s stated rate for the period shown. Depending on the listing, additional charges may include taxes, service fees, deposits, delivery or pickup fees, cleaning fees, insurance, utilities, or other disclosed costs. Review the price summary before confirming.",
-  },
-  {
-    question: "How long does a refund take?",
-    answer:
-      "After INDANGA approves or initiates a refund, the payment provider, bank, card issuer, or mobile-money operator may need additional time to process it. Keep your transaction reference until the refund reaches your account.",
-  },
-  {
-    question: "What does Reviewed by INDANGA mean?",
-    answer:
-      "We checked the information submitted by the provider before publishing the listing. Prices, availability, and conditions can change, so review the latest details before booking or paying.",
-  },
-  {
-    question: "What should I do if a provider asks for payment outside INDANGA?",
-    answer:
-      "Do not pay through an unverified link or personal account. Use the payment process shown on the platform or confirm the payment instructions with INDANGA support first. Report any request to hide or bypass the official process.",
-  },
-  {
-    question: "How do I report a suspicious listing?",
-    answer:
-      `Use Report this listing on the listing page or email ${SUPPORT_EMAIL} with the listing link, your booking reference if applicable, and a description of the concern. Do not send payment while the report is being reviewed.`,
-  },
-];
-
-const fullFaq = [
-  {
-    question: "How do I book a property, hotel, or car?",
-    answer:
-      "Choose Homes, Hotels, or Cars, enter your search details, and open a listing that suits your needs. Review the photos, location, price, availability, provider information, and cancellation terms. Select Book now, Request to book, or Check availability, depending on the listing. Your booking is confirmed only when the confirmation message or booking reference is issued.",
-  },
-  {
-    question: "What happens after I send a booking request?",
-    answer:
-      "We send the request to the provider and keep you updated. Your booking is not confirmed until availability and the final price have been confirmed. Keep your booking reference for follow-up questions.",
-  },
-  {
-    question: "What if the provider does not respond?",
-    answer:
-      "Contact INDANGA support with the listing link or booking reference. We will follow up with the provider and help you look for another option if necessary.",
-  },
-  {
-    question: "Why does the final price differ from the listing price?",
-    answer:
-      "The final price can change when you select dates, duration, room type, vehicle options, number of guests, delivery, or other services. Any known additional charges should appear in the price summary before you pay or confirm.",
-  },
-  {
-    question: "Is a deposit required?",
-    answer:
-      "Some homes, hotels, and vehicles require a deposit. The amount, purpose, refund conditions, and refund timing should be shown before confirmation. If the deposit is not shown, ask the provider or contact INDANGA support before paying.",
-  },
-  {
-    question: "When do I pay?",
-    answer:
-      "Payment timing depends on the listing and booking process. Do not send money through an unverified link or personal account. Follow the payment instructions shown through INDANGA or confirmed by the authorised provider.",
-  },
-  {
-    question: "What should I do if I was charged twice?",
-    answer:
-      `Contact ${SUPPORT_EMAIL} immediately and include your booking reference, payment confirmation, amount, date, and payment method. Do not submit multiple refund requests for the same charge while the first request is under review.`,
-  },
-  {
-    question: "How do I cancel a booking?",
-    answer:
-      "Open your booking or contact INDANGA support with your booking reference. Submit the cancellation request as soon as possible. Eligibility depends on the listing terms, cancellation time, booking status, payment status, and applicable law.",
-  },
-  {
-    question: "Will I receive a full refund?",
-    answer:
-      "A full refund is not automatic. It may be available when the service is materially unavailable, the provider fails to deliver the confirmed service, the same payment was duplicated because of a confirmed platform error, or the applicable listing terms provide for it. Review the specific cancellation terms before booking.",
-  },
-  {
-    question: "What if the provider cancels?",
-    answer:
-      "Contact support as soon as you receive the cancellation notice. INDANGA will review the transaction terms and help identify the available refund or alternative remedy.",
-  },
-  {
-    question: "What does “Verified by INDANGA” mean?",
-    answer:
-      "INDANGA has completed the checks described beside the listing, which may include provider identity, location, photos, pricing, and availability. Verification does not guarantee future availability or replace your review of the booking terms.",
-  },
-  {
-    question: "Should I pay outside INDANGA?",
-    answer:
-      "Do not pay through an unverified link or personal account. Use the payment process shown on the platform or confirm the payment instructions with INDANGA support first. Report any request to hide or bypass the official process.",
-  },
-  {
-    question: "How do I list a property, hotel, or car?",
-    answer:
-      "Select Become a provider and create an account. Provide accurate photos, location, pricing, availability, amenities or vehicle details, contact information, and any documents requested for review. Keep your listing current after publication.",
-  },
-  {
-    question: "What happens during listing review?",
-    answer:
-      "INDANGA reviews the information submitted by the provider and may request clarification or supporting documents. A listing may be approved, returned for changes, temporarily hidden, or removed if the information cannot be confirmed or violates the platform rules.",
-  },
-  {
-    question: "How do providers update prices and availability?",
-    answer:
-      "Sign in to your provider account, open the relevant listing, and update the price, availability, photos, amenities, or terms. Changes should be saved before accepting a booking request.",
-  },
-  {
-    question: "How does INDANGA use my information?",
-    answer:
-      "INDANGA may use account, booking, payment, verification, support, and technical information to operate the platform, process transactions, prevent fraud, resolve complaints, and comply with the law. Review the Privacy Policy for details and contact information.",
-  },
-  {
-    question: "I cannot sign in. What should I do?",
-    answer:
-      `Check your email or phone number, request a password reset, and try again. If the problem continues, contact ${SUPPORT_EMAIL} and include the email or phone number linked to your account. Do not send your password.`,
-  },
-];
+const commonQuestions = commonQuestionIds.flatMap((id) => {
+  const faq = faqItems.find((item) => item.id === id);
+  return faq ? [{ question: faq.question, answer: faq.answer }] : [];
+});
 
 const quickActions = [
   {
@@ -305,13 +82,7 @@ const quickActions = [
   },
 ];
 
-const guides = [
-  { icon: FileText, title: "Booking confirmation checklist", href: "#faqs" },
-  { icon: BadgeDollarSign, title: "Payment and refund guidelines", href: "#prices" },
-  { icon: BadgeCheck, title: "Listing verification process", href: "#faqs" },
-  { icon: FileCheck2, title: "Cancellation policy overview", href: "/refund-cancellation-policy" },
-  { icon: ShieldCheck, title: "Safety guidance for guests", href: "#safety" },
-];
+const guideIcons = [FileText, RefreshCcw, CircleHelp, BadgeCheck, ShieldCheck, House];
 
 const topicOptions = ["Booking", "Payment", "Refund", "Listing", "Safety", "Account", "Provider"] as const;
 
@@ -330,7 +101,6 @@ type SupportValues = z.infer<typeof supportSchema>;
 function makeReference() {
   return `IND-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
->>>>>>> Stashed changes
 
 export default function Page() {
   const [query, setQuery] = useState("");
@@ -353,11 +123,12 @@ export default function Page() {
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (q.length < 2) return [];
-    const pool = [...commonQuestions, ...fullFaq];
-    return pool.filter(
-      (item) =>
-        item.question.toLowerCase().includes(q) || item.answer.toLowerCase().includes(q),
-    ).slice(0, 6);
+    return faqItems
+      .filter(
+        (item) =>
+          item.question.toLowerCase().includes(q) || item.answer.toLowerCase().includes(q),
+      )
+      .slice(0, 6);
   }, [query]);
 
   const onSubmit = (values: SupportValues) => {
@@ -406,7 +177,7 @@ export default function Page() {
                 <div className="absolute inset-x-0 top-full z-20 mt-2 overflow-hidden rounded-xl border bg-white text-left shadow-xl">
                   {searchResults.map((item) => (
                     <button
-                      key={item.question}
+                      key={item.id}
                       type="button"
                       onClick={() => {
                         setQuery("");
@@ -451,7 +222,7 @@ export default function Page() {
               Find help and useful information about using INDANGA.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {supportCategories.map(({ icon: Icon, title, description }) => (
+              {supportAreas.map(({ icon: Icon, title, description }) => (
                 <div
                   key={title}
                   className="flex items-start justify-between gap-3 rounded-xl border bg-white p-4 shadow-sm"
@@ -514,61 +285,6 @@ export default function Page() {
             </div>
           </section>
 
-<<<<<<< Updated upstream
-          <Card>
-            <CardHeader>
-              <CardTitle>Frequently asked questions</CardTitle>
-              <CardDescription>
-                Helpful answers for guests, tenants, and hosts on Indanga.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-xl border bg-muted/30 p-4">
-                <h3 className="text-sm font-semibold">Most asked questions</h3>
-                <ul className="mt-2 space-y-1.5 text-sm">
-                  {mostAskedFaqIds.map((id) => {
-                    const faq = faqItems.find((item) => item.id === id);
-                    if (!faq) return null;
-                    return (
-                      <li key={id}>
-                        <Link
-                          href={`/support#faq-${faq.id}`}
-                          className="text-primary hover:underline"
-                        >
-                          {faq.question}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-              {faqItems.map(({ id, question, answer }) => (
-                <details
-                  key={question}
-                  id={`faq-${id}`}
-                  className="group scroll-mt-28 rounded-xl border bg-background p-4"
-                >
-                  <summary className="cursor-pointer list-none font-medium [&::-webkit-details-marker]:hidden">
-                    {question}
-                  </summary>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{answer}</p>
-                </details>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact us</CardTitle>
-              <CardDescription>
-                Reach the Indanga team directly for urgent assistance.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {supportChannels.map(({ icon: Icon, title, value, href, description }) => (
-=======
           {/* Quick actions */}
           <section>
             <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -580,7 +296,6 @@ export default function Page() {
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {quickActions.map(({ icon: Icon, title, description, href }) => (
->>>>>>> Stashed changes
                 <Link
                   key={title}
                   href={href}
@@ -596,39 +311,6 @@ export default function Page() {
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>
                 </Link>
               ))}
-<<<<<<< Updated upstream
-              <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
-                <div className="rounded-lg bg-amber-500/10 p-2 text-amber-600">
-                  <TriangleAlert className="size-4" />
-                </div>
-                <p className="text-xs leading-5 text-muted-foreground">{fraudWarning}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Helpful resources</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {quickResources.map(({ label, href }) => (
-                  <li key={label}>
-                    <Link
-                      href={href}
-                      className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
-                    >
-                      <span className="size-2 rounded-full bg-primary" />
-                      <span>{label}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <Button asChild variant="outline" className="mt-5 w-full">
-                <Link href="mailto:support@indanga.com?subject=Request%20for%20help">
-                  Request support
-                </Link>
-=======
             </div>
           </section>
 
@@ -645,9 +327,9 @@ export default function Page() {
               <p className="mt-1 text-sm text-muted-foreground">
                 Do not send money through an unverified link or personal account.
               </p>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">{fraudWarning}</p>
               <Button asChild className="mt-4 bg-red-600 hover:bg-red-700">
                 <Link href="#contact-form">Report a safety concern</Link>
->>>>>>> Stashed changes
               </Button>
             </div>
 
@@ -840,20 +522,23 @@ export default function Page() {
             <p className="text-sm text-muted-foreground">
               Explore our helpful guides to get the most out of INDANGA.
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {guides.map(({ icon: Icon, title, href }) => (
-                <Link
-                  key={title}
-                  href={href}
-                  className="flex items-center justify-between gap-2 rounded-xl border bg-white p-4 text-sm font-medium shadow-sm hover:border-primary/40"
-                >
-                  <span className="flex items-center gap-2">
-                    <Icon className="size-4 text-primary" />
-                    {title}
-                  </span>
-                  <ChevronDown className="size-4 -rotate-90 text-muted-foreground" />
-                </Link>
-              ))}
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {quickResources.map(({ label, href }, index) => {
+                const Icon = guideIcons[index % guideIcons.length];
+                return (
+                  <Link
+                    key={label}
+                    href={href}
+                    className="flex items-center justify-between gap-2 rounded-xl border bg-white p-4 text-sm font-medium shadow-sm hover:border-primary/40"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Icon className="size-4 text-primary" />
+                      {label}
+                    </span>
+                    <ChevronDown className="size-4 -rotate-90 text-muted-foreground" />
+                  </Link>
+                );
+              })}
             </div>
           </section>
 
@@ -864,11 +549,17 @@ export default function Page() {
               Booking, payment, cancellation, verification, provider, and account help.
             </p>
             <div className="mt-4 grid gap-3 lg:grid-cols-2">
-              {fullFaq.map(({ question, answer }) => (
-                <div key={question} className="rounded-lg border bg-background p-4">
-                  <h3 className="text-sm font-medium">{question}</h3>
+              {faqItems.map(({ id, question, answer }) => (
+                <details
+                  key={id}
+                  id={`faq-${id}`}
+                  className="group scroll-mt-28 rounded-lg border bg-background p-4"
+                >
+                  <summary className="cursor-pointer list-none text-sm font-medium [&::-webkit-details-marker]:hidden">
+                    {question}
+                  </summary>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{answer}</p>
-                </div>
+                </details>
               ))}
             </div>
             <div className="mt-4 flex flex-col items-start justify-between gap-3 border-t pt-4 sm:flex-row sm:items-center">
@@ -883,6 +574,24 @@ export default function Page() {
                   <a href={`mailto:${SUPPORT_EMAIL}`}>Contact support</a>
                 </Button>
               </div>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {supportChannels.map(({ icon: Icon, title, value, href, description }) => (
+                <a
+                  key={title}
+                  href={href}
+                  className="rounded-xl border bg-muted/20 p-3 transition-colors hover:border-primary/40 hover:bg-primary/5"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-lg bg-primary/10 p-1.5 text-primary">
+                      <Icon className="size-4" />
+                    </span>
+                    <p className="text-sm font-medium">{title}</p>
+                  </div>
+                  <p className="mt-2 text-sm text-primary">{value}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+                </a>
+              ))}
             </div>
           </section>
 

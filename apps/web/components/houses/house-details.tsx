@@ -309,7 +309,10 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                   <span className="rounded-full bg-[#17174a] px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
                     {house.propertyType}
                   </span>
-                  <PropertyVerificationBadge status={house.verificationStatus} />
+                  <PropertyVerificationBadge
+                    status={house.verificationStatus}
+                    lastReviewed={house.updatedAt}
+                  />
                   <span
                     className={cn(
                       "rounded-full px-3 py-1 text-xs font-bold",
@@ -496,10 +499,9 @@ function ListingInformation({
         </p>
       </AccordionRow>
       <AccordionRow icon={BadgeCheck} title="Verification and listing information">
-<<<<<<< Updated upstream
         <p>
           {house.verificationStatus === "VerifiedByIndanga"
-            ? "Verified by INDANGA. INDANGA checked the provider's identity and reviewed key listing information, including the location, photos, pricing, and availability."
+            ? "Verified by INDANGA. INDANGA checked the provider&apos;s identity and reviewed key listing information, including the location, photos, pricing, and availability."
             : "Reviewed by INDANGA. We checked the information submitted by the provider before publishing this listing. Prices and availability can change, so review the latest details before booking."}
         </p>
         <p className="mt-3 text-muted-foreground">
@@ -510,26 +512,7 @@ function ListingInformation({
             year: "numeric",
           })}
           . Verification does not guarantee future availability, unchanged pricing, or the quality
-          of every service.
-=======
-        {house.verificationStatus === "VerifiedByIndanga" ? (
-          <p>
-            Verified by INDANGA. INDANGA checked the provider&apos;s identity and reviewed
-            key listing information, including the location, photos, pricing, and
-            availability.
-          </p>
-        ) : (
-          <p>
-            Reviewed by INDANGA. We checked the information submitted by the provider
-            before publishing this listing. Prices and availability can change, so review
-            the latest details before booking.
-          </p>
-        )}
-        <p className="mt-3">
-          Verification does not guarantee future availability, unchanged pricing, or the
-          quality of every service. Review the listing and booking terms before making a
-          payment.
->>>>>>> Stashed changes
+          of every service. Review the listing and booking terms before making a payment.
         </p>
         <p className="mt-3">
           Availability: {isAvailable ? "available to book now" : "currently unavailable"}.
