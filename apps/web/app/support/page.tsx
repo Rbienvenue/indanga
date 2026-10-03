@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -105,7 +105,16 @@ function makeReference() {
 export default function Page() {
   const [query, setQuery] = useState("");
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
+  const [openFaqId, setOpenFaqId] = useState<string | null>(null);
   const [reference, setReference] = useState<string | null>(null);
+
+  // Deep-link support: /support#faq-<id> opens that answer.
+  useEffect(() => {
+    const id = window.location.hash.match(/^#faq-(.+)$/)?.[1];
+    if (id && faqItems.some((item) => item.id === id)) {
+      setOpenFaqId(id);
+    }
+  }, []);
 
   const form = useForm<SupportValues>({
     resolver: zodResolver(supportSchema),
@@ -181,10 +190,17 @@ export default function Page() {
                       type="button"
                       onClick={() => {
                         setQuery("");
-                        setOpenQuestion(item.question);
-                        document
-                          .getElementById("faqs")
-                          ?.scrollIntoView({ behavior: "smooth" });
+                        if (commonQuestions.some((q) => q.question === item.question)) {
+                          setOpenQuestion(item.question);
+                          document
+                            .getElementById("faqs")
+                            ?.scrollIntoView({ behavior: "smooth" });
+                        } else {
+                          setOpenFaqId(item.id);
+                          document
+                            .getElementById(`faq-${item.id}`)
+                            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+                        }
                       }}
                       className="block w-full px-4 py-3 text-sm hover:bg-muted"
                     >
@@ -261,7 +277,7 @@ export default function Page() {
                     <button
                       type="button"
                       onClick={() => setOpenQuestion(open ? null : question)}
-                      className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left"
+                      className="flex w-full cursor-pointer items-start justify-between gap-3 px-4 py-3 text-left"
                       aria-expanded={open}
                     >
                       <span>
@@ -549,18 +565,31 @@ export default function Page() {
               Booking, payment, cancellation, verification, provider, and account help.
             </p>
             <div className="mt-4 grid gap-3 lg:grid-cols-2">
-              {faqItems.map(({ id, question, answer }) => (
-                <details
-                  key={id}
-                  id={`faq-${id}`}
-                  className="group scroll-mt-28 rounded-lg border bg-background p-4"
-                >
-                  <summary className="cursor-pointer list-none text-sm font-medium [&::-webkit-details-marker]:hidden">
-                    {question}
-                  </summary>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{answer}</p>
-                </details>
-              ))}
+              {faqItems.map(({ id, question, answer }) => {
+                const open = openFaqId === id;
+                return (
+                  <div
+                    key={id}
+                    id={`faq-${id}`}
+                    className="scroll-mt-28 rounded-lg border bg-background p-4"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaqId(open ? null : id)}
+                      className="flex w-full cursor-pointer items-center justify-between gap-3 text-left"
+                      aria-expanded={open}
+                    >
+                      <span className="text-sm font-medium">{question}</span>
+                      <ChevronDown
+                        className={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {open && (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">{answer}</p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <div className="mt-4 flex flex-col items-start justify-between gap-3 border-t pt-4 sm:flex-row sm:items-center">
               <p className="text-sm text-muted-foreground">
