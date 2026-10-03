@@ -496,6 +496,7 @@ function ListingInformation({
         </p>
       </AccordionRow>
       <AccordionRow icon={BadgeCheck} title="Verification and listing information">
+<<<<<<< Updated upstream
         <p>
           {house.verificationStatus === "VerifiedByIndanga"
             ? "Verified by INDANGA. INDANGA checked the provider's identity and reviewed key listing information, including the location, photos, pricing, and availability."
@@ -510,6 +511,25 @@ function ListingInformation({
           })}
           . Verification does not guarantee future availability, unchanged pricing, or the quality
           of every service.
+=======
+        {house.verificationStatus === "VerifiedByIndanga" ? (
+          <p>
+            Verified by INDANGA. INDANGA checked the provider&apos;s identity and reviewed
+            key listing information, including the location, photos, pricing, and
+            availability.
+          </p>
+        ) : (
+          <p>
+            Reviewed by INDANGA. We checked the information submitted by the provider
+            before publishing this listing. Prices and availability can change, so review
+            the latest details before booking.
+          </p>
+        )}
+        <p className="mt-3">
+          Verification does not guarantee future availability, unchanged pricing, or the
+          quality of every service. Review the listing and booking terms before making a
+          payment.
+>>>>>>> Stashed changes
         </p>
         <p className="mt-3">
           Availability: {isAvailable ? "available to book now" : "currently unavailable"}.

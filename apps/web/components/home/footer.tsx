@@ -13,10 +13,16 @@ const exploreLinks = [
 
 const companyLinks = [
   { label: "About", href: "/about" },
-
   { label: "Contact", href: "/about#contact" },
-  { label: "Help center", href: "/support" },
+  { label: "Privacy policy", href: "/privacy-policy" },
   { label: "Terms of use", href: "/terms-and-conditions" },
+];
+
+const trustLinks = [
+  { label: "Help Center", href: "/support" },
+  { label: "Safety and verification", href: "/support#safety" },
+  { label: "Prices and fees", href: "/support#prices" },
+  { label: "Cancellation and refunds", href: "/refund-cancellation-policy" },
 ];
 
 const socialLinks = [
@@ -77,6 +83,22 @@ export function Footer() {
           </div>
 
           <div>
+            <h3 className="mb-2 text-xs font-semibold">Trust and support</h3>
+            <ul className="flex flex-col gap-1.5">
+              {trustLinks.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-xs text-muted-foreground transition-colors hover:text-primary"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
             <h3 className="mb-2 text-xs font-semibold">Company</h3>
             <ul className="flex flex-col gap-1.5">
               {companyLinks.map((link) => (
@@ -102,6 +124,15 @@ export function Footer() {
                 <Mail className="size-3.5 shrink-0" aria-hidden="true" />
                 support@indanga.com
               </a>
+              <span className="text-[11px]">Customer support</span>
+              <a
+                href="mailto:info@indanga.com"
+                className="inline-flex items-center gap-2 transition-colors hover:text-primary"
+              >
+                <Mail className="size-3.5 shrink-0" aria-hidden="true" />
+                info@indanga.com
+              </a>
+              <span className="text-[11px]">General enquiries</span>
               <a
                 href="tel:+250788765547"
                 className="inline-flex items-center gap-2 transition-colors hover:text-primary"
@@ -109,13 +140,9 @@ export function Footer() {
                 <Phone className="size-3.5 shrink-0" aria-hidden="true" />
                 +250 788 765 547
               </a>
-              <a
-                href="tel:+250788886315"
-                className="inline-flex items-center gap-2 transition-colors hover:text-primary"
-              >
-                <Phone className="size-3.5 shrink-0" aria-hidden="true" />
-                +250 788 886 315
-              </a>
+              <span className="text-[11px]">
+                Mon&ndash;Sat, 8:00 AM&ndash;6:00 PM &middot; Usually replies within 24 hours
+              </span>
               <span className="inline-flex items-center gap-2">
                 <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
                 Kigali, Rwanda
