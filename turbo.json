@@ -4,7 +4,8 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", "generated/**"],
-      "outputs": ["dist/**", "build/**", ".next/**"]
+      "outputs": ["dist/**", "build/**", ".next/**"],
+      "env": ["DATABASE_URL"]
     },
     "dev": {
       "dependsOn": ["^build"],
