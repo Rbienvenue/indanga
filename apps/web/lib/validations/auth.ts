@@ -22,7 +22,8 @@ function refineNationalId(values: { role: string; nationalId?: string }, ctx: z.
 
 export const signupSchema = z
   .object({
-    name: z.string().trim().min(2, "Enter your full name"),
+    firstName: z.string().trim().min(2, "Enter your first name"),
+    lastName: z.string().trim().min(2, "Enter your second name"),
     role: z.enum(["tenant", "landlord"], { message: "Select a role" }),
     phoneNumber: z
       .string()
@@ -33,9 +34,9 @@ export const signupSchema = z
     email: z.email("Enter a valid email address"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Confirm your password"),
-      termsAccepted: z.boolean().refine((accepted) => accepted, {
-        message: "You must accept the Terms & Conditions to create an account",
-      }),
+    termsAccepted: z.boolean().refine((accepted) => accepted, {
+      message: "You must accept the Terms & Conditions to create an account",
+    }),
   })
   .superRefine((values, ctx) => {
     if (values.password !== values.confirmPassword) {
@@ -85,6 +86,16 @@ export const resetPasswordSchema = z
 
 export type LoginValues = z.infer<typeof loginSchema>;
 export type SignupValues = z.infer<typeof signupSchema>;
+
+/**
+ * Joins the split registration name fields back into the single `name`
+ * value stored on the user record (schema unchanged). Trims surrounding
+ * whitespace and collapses any internal runs of whitespace to one space.
+ */
+export function combineFullName(firstName: string, lastName: string): string {
+  const clean = (value: string) => value.trim().replace(/\s+/g, " ");
+  return `${clean(firstName)} ${clean(lastName)}`.trim();
+}
 export type CreateUserValues = z.infer<typeof createUserSchema>;
 export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;

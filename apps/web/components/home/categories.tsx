@@ -15,21 +15,21 @@ const categories = [
     subtitle: "Find your next home",
     propertyTypeFilter: "House,Apartment,Studio",
     image: "/image2.jpeg",
-    link: "/properties?type=homes",
+    link: "/homes",
   },
   {
     title: "Hotel Rooms",
     subtitle: "Book the best hotels",
     propertyTypeFilter: "Hotel",
     image: "/room3.jpg",
-    link: "/properties?type=hotels",
+    link: "/hotels",
   },
   {
     title: "Cars",
     subtitle: "Rent a car easily",
     propertyTypeFilter: "Car",
     image: "/car2.jpg",
-    link: "/properties?type=cars",
+    link: "/cars",
   },
 ];
 

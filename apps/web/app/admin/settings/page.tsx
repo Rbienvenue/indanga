@@ -12,7 +12,14 @@ import type { ApiResponse } from "@/@types";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -292,6 +299,14 @@ function ServiceFeeCard({
                 </FormItem>
               )}
             />
+            <div className="rounded-lg border border-dashed bg-muted/40 px-3 py-2.5 text-sm">
+              <p className="text-xs font-medium text-muted-foreground">
+                Example on a {formatPrice(PREVIEW_SUBTOTAL)} subtotal
+              </p>
+              <p className="mt-0.5 font-semibold">
+                Service fee: {preview > 0 ? formatPrice(preview) : "Free"}
+              </p>
+            </div>
             <Button type="submit" className="h-10 w-full font-bold" disabled={mutation.isPending}>
               {mutation.isPending ? (
                 <>

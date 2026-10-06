@@ -269,7 +269,7 @@ export default function Page() {
             <p className="text-sm text-muted-foreground">
               Find quick answers to the most common questions from our community.
             </p>
-            <div className="mt-4 grid gap-3 lg:grid-cols-2">
+            <div className="mt-4 grid items-start gap-3 lg:grid-cols-2">
               {commonQuestions.map(({ question, answer }) => {
                 const open = openQuestion === question;
                 return (
@@ -280,12 +280,7 @@ export default function Page() {
                       className="flex w-full cursor-pointer items-start justify-between gap-3 px-4 py-3 text-left"
                       aria-expanded={open}
                     >
-                      <span>
-                        <span className="block text-sm font-semibold">{question}</span>
-                        <span className="mt-1 line-clamp-1 block text-xs text-muted-foreground">
-                          {answer}
-                        </span>
-                      </span>
+                      <span className="text-sm font-semibold">{question}</span>
                       <ChevronDown
                         className={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
                       />

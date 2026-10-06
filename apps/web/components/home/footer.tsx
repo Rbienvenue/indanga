@@ -5,16 +5,16 @@ import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter, FaYoutube } from "r
 import { Separator } from "@/components/ui/separator";
 
 const exploreLinks = [
-  { label: "Homes", href: "/properties?type=homes" },
-  { label: "Hotels", href: "/properties?type=hotels" },
-  { label: "Cars", href: "/properties?type=cars" },
+  { label: "Homes", href: "/homes" },
+  { label: "Hotels", href: "/hotels" },
+  { label: "Cars", href: "/cars" },
 ];
-
 
 const companyLinks = [
   { label: "About", href: "/about" },
   { label: "Contact", href: "/about#contact" },
   { label: "Privacy policy", href: "/privacy-policy" },
+  { label: "Safety and Verification Policy", href: "/safety-and-verification-policy" },
   { label: "Terms of use", href: "/terms-and-conditions" },
 ];
 
@@ -49,9 +49,7 @@ export function Footer() {
               />
               <span className="text-xl font-bold text-primary">INDANGA</span>
             </Link>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Homes. Hotels. Cars. Rwanda.
-            </p>
+            <p className="mt-2 text-xs text-muted-foreground">Homes. Hotels. Cars. Rwanda.</p>
             <nav aria-label="Social media" className="mt-3 flex items-center gap-3">
               {socialLinks.map(({ label, icon: Icon }) => (
                 <a

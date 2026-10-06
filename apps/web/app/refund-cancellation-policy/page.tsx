@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import { Navbar } from "@/components/home/navbar";
+import { Footer } from "@/components/home/footer";
+
 type PolicySection = {
   title: string;
   paragraphs?: string[];
@@ -12,7 +15,7 @@ const policySections: PolicySection[] = [
   {
     title: "Purpose and Regulatory Framework",
     paragraphs: [
-      "This Refund & Cancellation Policy (the \"Policy\") establishes the circumstances in which a customer or Provider may cancel a transaction, the circumstances in which a refund may be approved, the basis on which refund amounts may be determined, and the manner in which approved refunds are processed through the INDANGA Platform and applicable payment infrastructure.",
+      'This Refund & Cancellation Policy (the "Policy") establishes the circumstances in which a customer or Provider may cancel a transaction, the circumstances in which a refund may be approved, the basis on which refund amounts may be determined, and the manner in which approved refunds are processed through the INDANGA Platform and applicable payment infrastructure.',
       "This Policy forms part of the INDANGA Terms & Conditions and shall be read together with the applicable Listing terms, Provider Rules, Complaint & Dispute Resolution Procedure, and other transaction-specific terms published or incorporated into the Platform.",
       "The Policy is intended to operate in accordance with applicable laws and regulatory requirements of the Republic of Rwanda, including Law No. 36/2012 of 21 September 2012 relating to Competition and Consumer Protection, Law No. 058/2021 of 13 October 2021 relating to the Protection of Personal Data and Privacy, Law No. 017/2021 of 3 March 2021 relating to Financial Service Consumer Protection, and applicable payment-system legislation and regulatory requirements. The applicable legal framework may change, and this Policy shall be interpreted subject to mandatory provisions of law.",
     ],
@@ -101,9 +104,7 @@ const policySections: PolicySection[] = [
   },
   {
     title: "Refund Decision Process",
-    paragraphs: [
-      "Indanga may assess a refund request using relevant information, including:",
-    ],
+    paragraphs: ["Indanga may assess a refund request using relevant information, including:"],
     bullets: [
       "transaction reference;",
       "Listing and transaction terms;",
@@ -181,60 +182,68 @@ const policySections: PolicySection[] = [
 
 export default function RefundCancellationPolicyPage() {
   return (
-    <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-12">
-      <article className="mx-auto max-w-4xl">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          Back to INDANGA
-        </Link>
+    <div className="flex min-h-screen flex-col bg-background">
+      <Navbar solid />
+      <main className="flex-1 px-4 pt-24 pb-8 text-foreground sm:px-6 sm:pt-28 sm:pb-12">
+        <article className="mx-auto max-w-4xl">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" />
+            Back to INDANGA
+          </Link>
 
-        <header className="mt-8 border-b border-border pb-6 sm:mt-12">
-          <p className="text-sm font-semibold uppercase text-primary">IND-LGL-002 | Version 1.0</p>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-            Refund &amp; Cancellation Policy
-          </h1>
-          <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
-            This Policy applies to customers, Providers, and authorised agents or commissioners
-            participating in transactions through INDANGA. Listing-specific terms may also apply.
-          </p>
-          <div className="mt-6 rounded-lg border border-border bg-muted/50 p-4 sm:p-5">
-            <p className="text-sm font-semibold">Plain-language summary</p>
-            <p className="mt-2 text-sm leading-7 text-muted-foreground">
-              Payment providers may apply internal risk and settlement procedures. These
-              procedures do not automatically reduce an approved customer refund. The final
-              refund amount and processing time will be confirmed for the relevant transaction.
+          <header className="mt-8 border-b border-border pb-6 sm:mt-12">
+            <p className="text-sm font-semibold uppercase text-primary">
+              IND-LGL-002 | Version 1.0
             </p>
-          </div>
-        </header>
+            <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              Refund &amp; Cancellation Policy
+            </h1>
+            <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
+              This Policy applies to customers, Providers, and authorised agents or commissioners
+              participating in transactions through INDANGA. Listing-specific terms may also apply.
+            </p>
+            <div className="mt-6 rounded-lg border border-border bg-muted/50 p-4 sm:p-5">
+              <p className="text-sm font-semibold">Plain-language summary</p>
+              <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                Payment providers may apply internal risk and settlement procedures. These
+                procedures do not automatically reduce an approved customer refund. The final refund
+                amount and processing time will be confirmed for the relevant transaction.
+              </p>
+            </div>
+          </header>
 
-        <div className="divide-y divide-border">
-          {policySections.map((section, index) => (
-            <section key={section.title} className="py-6 sm:py-8">
-              <h2 className="text-xl font-semibold">
-                {index + 1}. {section.title}
-              </h2>
-              {section.paragraphs?.map((paragraph) => (
-                <p key={paragraph} className="mt-3 text-sm leading-7 text-muted-foreground">
-                  {paragraph}
-                </p>
-              ))}
-              {section.bullets ? (
-                <ul className="mt-3 list-disc space-y-2 pl-6 text-sm leading-7 text-muted-foreground">
-                  {section.bullets.map((item) => <li key={item}>{item}</li>)}
-                </ul>
-              ) : null}
-              {section.closingParagraphs?.map((paragraph) => (
-                <p key={paragraph} className="mt-3 text-sm leading-7 text-muted-foreground">
-                  {paragraph}
-                </p>
-              ))}
-            </section>
-          ))}
-        </div>
-      </article>
-    </main>
+          <div className="divide-y divide-border">
+            {policySections.map((section, index) => (
+              <section key={section.title} className="py-6 sm:py-8">
+                <h2 className="text-xl font-semibold">
+                  {index + 1}. {section.title}
+                </h2>
+                {section.paragraphs?.map((paragraph) => (
+                  <p key={paragraph} className="mt-3 text-sm leading-7 text-muted-foreground">
+                    {paragraph}
+                  </p>
+                ))}
+                {section.bullets ? (
+                  <ul className="mt-3 list-disc space-y-2 pl-6 text-sm leading-7 text-muted-foreground">
+                    {section.bullets.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                ) : null}
+                {section.closingParagraphs?.map((paragraph) => (
+                  <p key={paragraph} className="mt-3 text-sm leading-7 text-muted-foreground">
+                    {paragraph}
+                  </p>
+                ))}
+              </section>
+            ))}
+          </div>
+        </article>
+      </main>
+      <Footer />
+    </div>
   );
 }

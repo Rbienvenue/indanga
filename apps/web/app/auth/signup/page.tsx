@@ -17,21 +17,22 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { signUp } from "@/lib/auth-client";
-import { signupSchema, type SignupValues } from "@/lib/validations/auth";
+import { combineFullName, signupSchema, type SignupValues } from "@/lib/validations/auth";
 
 export default function SignupPage() {
   const router = useRouter();
   const form = useForm<SignupValues, unknown, SignupValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      name: "",
+      firstName: "",
+      lastName: "",
       role: "tenant",
       phoneNumber: "",
       nationalId: "",
       email: "",
       password: "",
       confirmPassword: "",
-        termsAccepted: false,
+      termsAccepted: false,
     },
   });
 
@@ -42,6 +43,8 @@ export default function SignupPage() {
     nationalId,
     role,
     termsAccepted,
+    firstName,
+    lastName,
     ...values
   }: SignupValues) => {
     form.clearErrors("root");
@@ -49,6 +52,7 @@ export default function SignupPage() {
 
     const payload = {
       ...values,
+      name: combineFullName(firstName, lastName),
       termsAccepted,
       accountType: role,
       nationalId: nationalId?.trim() ? nationalId.trim() : undefined,
@@ -100,14 +104,14 @@ export default function SignupPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}
-              name="name"
+              name="firstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full name</FormLabel>
+                  <FormLabel>First name</FormLabel>
                   <FormControl>
                     <Input
-                      autoComplete="name"
-                      placeholder="Your name"
+                      autoComplete="given-name"
+                      placeholder="First name"
                       className="h-11 bg-white px-3"
                       disabled={isPending}
                       {...field}
@@ -117,6 +121,28 @@ export default function SignupPage() {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Second name</FormLabel>
+                  <FormControl>
+                    <Input
+                      autoComplete="family-name"
+                      placeholder="Second name"
+                      className="h-11 bg-white px-3"
+                      disabled={isPending}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}
               name="phoneNumber"
@@ -137,14 +163,11 @@ export default function SignupPage() {
                 </FormItem>
               )}
             />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
-                <FormItem className={selectedRole === "tenant" ? "sm:col-span-2" : undefined}>
+                <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
@@ -160,7 +183,10 @@ export default function SignupPage() {
                 </FormItem>
               )}
             />
-            {selectedRole === "landlord" ? (
+          </div>
+
+          {selectedRole === "landlord" ? (
+            <div className="grid gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="nationalId"
@@ -181,8 +207,8 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
-            ) : null}
-          </div>
+            </div>
+          ) : null}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField

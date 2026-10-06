@@ -41,6 +41,7 @@ import { getBookingKind } from "@/lib/booking-kind";
 import { amenityIcons, parseAmenities } from "@/lib/amenities";
 import { propertyAmenityLabels } from "@/lib/validations/house";
 import { cn, formatPrice } from "@/lib/utils";
+import { Footer } from "@/components/home/footer";
 
 function Gallery({ house }: { house: House }) {
   const media = house.media.length > 0 ? house.media : [];
@@ -388,7 +389,8 @@ export function HouseDetails({ houseId }: { houseId: string }) {
               <>
                 <section className="py-9">
                   <h2 className="mt-2 text-2xl font-bold tracking-tight">
-                    Rooms{fromPrice != null ? ` · from ${fromPrice.toLocaleString("en-US")} RWF` : ""}
+                    Rooms
+                    {fromPrice != null ? ` · from ${fromPrice.toLocaleString("en-US")} RWF` : ""}
                   </h2>
                   <ul className="mt-6 grid gap-4 sm:grid-cols-2">
                     {rooms.map((room) => (
@@ -454,6 +456,10 @@ export function HouseDetails({ houseId }: { houseId: string }) {
         </div>
       </main>
 
+      <div className="pb-24 lg:pb-0">
+        <Footer />
+      </div>
+
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-900/10 bg-[#f7f5f0]/95 p-4 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/95 lg:hidden">
         <BookingCard
           house={house}
@@ -491,7 +497,8 @@ function ListingInformation({
       </AccordionRow>
       <AccordionRow icon={WalletCards} title="Price details">
         <p>
-          {house.price ? `${formatPrice(house.price)} per ${priceUnit}.` : ""} The displayed price is the listing rate; confirm the total at booking.
+          {house.price ? `${formatPrice(house.price)} per ${priceUnit}.` : ""} The displayed price
+          is the listing rate; confirm the total at booking.
         </p>
         <p className="mt-3">
           INDANGA keeps payment inside the platform so your booking record stays connected to your
@@ -529,9 +536,12 @@ function ListingInformation({
       </AccordionRow>
       <AccordionRow icon={LockKeyhole} title="Stay safe">
         <p>
-          Your safety matters Keep all booking details, payment instructions, and receipts. Confirm the listing, provider, price, and cancellation terms before paying. INDANGA will never ask you to hide a payment or bypass the official booking process.
+          Your safety matters Keep all booking details, payment instructions, and receipts. Confirm
+          the listing, provider, price, and cancellation terms before paying. INDANGA will never ask
+          you to hide a payment or bypass the official booking process.
         </p>
-        <p className="mt-3">Report suspicious activity to &nbsp;
+        <p className="mt-3">
+          Report suspicious activity to &nbsp;
           <Link href="mailto:support@indanga.com" className="text-primary underline">
             support@indanga.com
           </Link>

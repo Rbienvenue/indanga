@@ -1,6 +1,6 @@
 "use client";
 
-import { getPriceUnit, type HouseWithRooms } from "@/lib/booking-kind";
+import type { HouseWithRooms } from "@/lib/booking-kind";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Home } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
@@ -12,7 +12,10 @@ import { Button } from "@/components/ui/button";
 import { fetcher } from "@/lib/fetcher";
 import { buildPropertiesUrl } from "@/lib/property-filters";
 
-export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
+export function PropertyFeed({
+  ownerId,
+  lockedType,
+}: { ownerId?: string; lockedType?: string } = {}) {
   const [propertyType, setPropertyType] = useQueryState("type", parseAsString.withDefault("all"));
   const [subType, setSubType] = useQueryState("subType", parseAsString.withDefault("all"));
   const [budget, setBudget] = useQueryState("budget", parseAsString.withDefault("any"));
@@ -20,8 +23,10 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
   const [district, setDistrict] = useQueryState("district", parseAsString.withDefault("all"));
   const [sector, setSector] = useQueryState("sector", parseAsString.withDefault("all"));
 
+  const effectivePropertyType = lockedType ?? propertyType;
+
   const hasActiveFilters =
-    propertyType !== "all" ||
+    (!lockedType && propertyType !== "all") ||
     subType !== "all" ||
     budget !== "any" ||
     province !== "all" ||
@@ -29,7 +34,7 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
     sector !== "all";
 
   function clearFilters() {
-    void setPropertyType(null);
+    if (!lockedType) void setPropertyType(null);
     void setSubType(null);
     void setBudget(null);
     void setProvince(null);
@@ -45,7 +50,12 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
         : province !== "all"
           ? province
           : "all";
-  const filters = { propertyType, subType, budget, location: effectiveLocation };
+  const filters = {
+    propertyType: effectivePropertyType,
+    subType,
+    budget,
+    location: effectiveLocation,
+  };
   const status = ownerId ? null : "AVAILABLE";
 
   const housesQuery = useInfiniteQuery({
@@ -65,7 +75,7 @@ export function PropertyFeed({ ownerId }: { ownerId?: string } = {}) {
 
   return (
     <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
-      <SearchBar className="mt-0 px-0" />
+      <SearchBar className="mt-0 px-0" lockedType={lockedType} />
 
       {housesQuery.isLoading ? (
         <section className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
