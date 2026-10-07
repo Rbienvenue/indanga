@@ -2,7 +2,13 @@ import { File } from "node:buffer";
 import path from "node:path";
 
 import { Injectable } from "@nestjs/common";
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { fileTypeFromBuffer } from "file-type";
 import { customAlphabet } from "nanoid";
 
@@ -21,6 +27,76 @@ export interface FileMetaData {
   path: string;
   size: number;
   mimeType: string;
+}
+
+export const HOUSE_MEDIA_PREFIX = StorageBucket.HOUSE_MEDIA;
+
+export const PROPERTY_IMAGE_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+] as const;
+
+export const PROPERTY_VIDEO_MIME_TYPES = [
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "video/x-quicktime",
+] as const;
+
+export type PropertyMediaMimeType =
+  | (typeof PROPERTY_IMAGE_MIME_TYPES)[number]
+  | (typeof PROPERTY_VIDEO_MIME_TYPES)[number];
+
+export const MAX_PROPERTY_IMAGE_BYTES = 10 * 1024 * 1024;
+export const MAX_PROPERTY_VIDEO_BYTES = 100 * 1024 * 1024;
+export const MAX_PROPERTY_MEDIA_ITEMS = 10;
+export const MAX_PROPERTY_VIDEOS = 2;
+export const PROPERTY_UPLOAD_URL_EXPIRES_IN_SECONDS = 5 * 60;
+
+const EXTENSION_BY_MIME_TYPE: Record<PropertyMediaMimeType, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/avif": "avif",
+  "video/mp4": "mp4",
+  "video/webm": "webm",
+  "video/quicktime": "mov",
+  "video/x-quicktime": "mov",
+};
+
+export function isPropertyImageMimeType(mimeType: string): boolean {
+  return (PROPERTY_IMAGE_MIME_TYPES as readonly string[]).includes(mimeType);
+}
+
+export function isPropertyVideoMimeType(mimeType: string): boolean {
+  return (PROPERTY_VIDEO_MIME_TYPES as readonly string[]).includes(mimeType);
+}
+
+export function isPropertyMediaMimeType(mimeType: string): mimeType is PropertyMediaMimeType {
+  return isPropertyImageMimeType(mimeType) || isPropertyVideoMimeType(mimeType);
+}
+
+export function maxBytesForPropertyMimeType(mimeType: string): number {
+  return isPropertyVideoMimeType(mimeType) ? MAX_PROPERTY_VIDEO_BYTES : MAX_PROPERTY_IMAGE_BYTES;
+}
+
+export function normalizePropertyMediaMimeType(contentType: string, filename?: string): string {
+  const type = contentType.trim().toLowerCase();
+  if (type === "video/x-quicktime") return "video/quicktime";
+  if (type === "" && filename?.toLowerCase().endsWith(".mov")) return "video/quicktime";
+  return contentType;
+}
+
+const VIDEO_URL_SUFFIXES = [".mp4", ".webm", ".mov"];
+
+/** Infer video items from storage URLs (server-generated keys carry the extension). */
+export function countVideosInMediaUrls(urls: string[]): number {
+  return urls.filter((url) => {
+    const path = url.split(/[?#]/)[0].toLowerCase();
+    return VIDEO_URL_SUFFIXES.some((suffix) => path.endsWith(suffix));
+  }).length;
 }
 
 type FileUpload = {
@@ -118,6 +194,76 @@ export class StorageService {
         Bucket: env.S3_BUCKET,
       }),
     );
+  }
+
+  async createPresignedPutUrl(
+    key: string,
+    contentType: string,
+    expiresInSeconds = PROPERTY_UPLOAD_URL_EXPIRES_IN_SECONDS,
+  ): Promise<string> {
+    return getSignedUrl(
+      this.s3Client,
+      new PutObjectCommand({
+        Bucket: env.S3_BUCKET,
+        Key: key,
+        ContentType: contentType,
+      }),
+      { expiresIn: expiresInSeconds },
+    );
+  }
+
+  buildHouseMediaKey(userId: string, mimeType: string): string {
+    if (!isPropertyMediaMimeType(mimeType)) {
+      throw new StorageError("Unsupported media type", "INVALID_FILE_TYPE");
+    }
+    const safeUserId = userId.replace(/[^A-Za-z0-9_-]/g, "");
+    if (!safeUserId) {
+      throw new StorageError("Invalid user id", "PERMISSION_DENIED");
+    }
+    const extension = EXTENSION_BY_MIME_TYPE[mimeType];
+    return `${HOUSE_MEDIA_PREFIX}/${safeUserId}/${this.nanoid()}.${extension}`;
+  }
+
+  publicUrlForKey(key: string): string {
+    return `${env.STORAGE_URL}/${key}`;
+  }
+
+  keyFromHouseMediaUrl(url: string): string | null {
+    const prefix = `${env.STORAGE_URL}/${HOUSE_MEDIA_PREFIX}/`;
+    if (url.startsWith(prefix)) return url.slice(`${env.STORAGE_URL}/`.length);
+    return null;
+  }
+
+  isHouseMediaKeyForUser(key: string, userId: string): boolean {
+    const safeUserId = userId.replace(/[^A-Za-z0-9_-]/g, "");
+    if (!safeUserId) return false;
+    return key.startsWith(`${HOUSE_MEDIA_PREFIX}/${safeUserId}/`);
+  }
+
+  async headHouseMediaObject(key: string): Promise<{ contentType?: string; size?: number }> {
+    try {
+      const result = await this.s3Client.send(
+        new HeadObjectCommand({ Bucket: env.S3_BUCKET, Key: key }),
+      );
+      return { contentType: result.ContentType, size: result.ContentLength };
+    } catch {
+      throw new StorageError("Uploaded media was not found in storage", "FILE_NOT_FOUND");
+    }
+  }
+
+  /**
+   * Verify a directly-uploaded object before it is persisted on a property:
+   * it exists, its Content-Type is allowed, and its size fits its type limit.
+   */
+  async verifyPersistedHouseMedia(key: string): Promise<void> {
+    const head = await this.headHouseMediaObject(key);
+    if (!head.contentType || !isPropertyMediaMimeType(head.contentType)) {
+      throw new StorageError("Unsupported media type", "INVALID_FILE_TYPE");
+    }
+    const maxBytes = maxBytesForPropertyMimeType(head.contentType);
+    if (head.size === undefined || head.size > maxBytes) {
+      throw new StorageError("Uploaded media exceeds the size limit", "FILE_TOO_LARGE");
+    }
   }
 
   private async prepareFile(

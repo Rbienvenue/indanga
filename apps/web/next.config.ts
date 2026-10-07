@@ -5,9 +5,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: {
-    proxyClientMaxBodySize: "100mb",
-  },
   images: {
     remotePatterns: [
       {
@@ -15,16 +12,6 @@ const nextConfig: NextConfig = {
         hostname: "*",
       },
     ],
-  },
-  async rewrites() {
-    return {
-      afterFiles: [
-        {
-          source: "/api/:path*",
-          destination: `${process.env.NEXT_PUBLIC_API_URL ?? "https://indanga-api-tau.vercel.app"}/v1/:path*`,
-        },
-      ],
-    };
   },
 };
 

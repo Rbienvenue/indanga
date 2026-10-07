@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,42 +8,55 @@ import {
   Patch,
   Post,
   Query,
-  UploadedFiles,
-  UseInterceptors,
 } from "@nestjs/common";
-import { FilesInterceptor } from "@nestjs/platform-express";
 import { AllowAnonymous, Roles, Session } from "@thallesp/nestjs-better-auth";
 import { ApiResponse, PaginationResponse } from "src/@types";
-import { StorageBucket, StorageService } from "src/storage/storage.service";
+import {
+  countVideosInMediaUrls,
+  MAX_PROPERTY_MEDIA_ITEMS,
+  MAX_PROPERTY_VIDEOS,
+} from "src/storage/storage.service";
 import {
   CreateHouseDto,
   CreateReviewDto,
   FavoriteFilterDto,
   FilterDto,
+  RequestPropertyUploadsDto,
   UpdateHouseDto,
 } from "./dtos";
 import { HousesService } from "./houses.service";
 import { type Session as UserSession } from "src/lib/auth";
 import { KycStatus, UserRole } from "@indanga/db";
+import { UploadAuthorizationService } from "./upload-authorization.service";
 
 @Controller("properties")
 export class HousesController {
   constructor(
     private readonly houseService: HousesService,
-    private readonly storageService: StorageService,
+    private readonly uploadAuthorizationService: UploadAuthorizationService,
   ) {}
+
+  @Post("upload-authorizations")
+  @Roles(["landlord", "admin"])
+  async authorizePropertyUploads(
+    @Session() session: UserSession,
+    @Body() data: RequestPropertyUploadsDto,
+  ) {
+    const authorizations = await this.uploadAuthorizationService.authorize(
+      session.user.id,
+      session.user.role as UserRole,
+      session.user.kycStatus as KycStatus,
+      data,
+    );
+    return new ApiResponse(authorizations, "uploads authorized");
+  }
 
   @Post()
   @Roles(["landlord", "admin"])
-  @UseInterceptors(FilesInterceptor("media", 10))
-  async createHouse(
-    @Session() session: UserSession,
-    @Body() data: CreateHouseDto,
-    @UploadedFiles() files: Express.Multer.File[],
-  ) {
-    const mediaUrls = await this.storageService.uploadFiles(
-      files?.map((file) => file.buffer) ?? [],
-      { bucket: StorageBucket.HOUSE_MEDIA },
+  async createHouse(@Session() session: UserSession, @Body() data: CreateHouseDto) {
+    const media = await this.uploadAuthorizationService.resolveNewMediaUrls(
+      session.user.id,
+      data.media ?? [],
     );
     const house = await this.houseService.createHouse(
       session.user.id,
@@ -50,7 +64,7 @@ export class HousesController {
       session?.user?.kycStatus as KycStatus,
       {
         ...data,
-        media: mediaUrls.map((url) => url.url),
+        media,
       },
     );
     return new ApiResponse(house, "property created");
@@ -102,28 +116,41 @@ export class HousesController {
 
   @Patch(":id")
   @Roles(["landlord", "admin"])
-  @UseInterceptors(FilesInterceptor("media", 10))
   async updateHouse(
     @Param("id") id: string,
     @Session() session: UserSession,
     @Body() data: UpdateHouseDto,
-    @UploadedFiles() files: Express.Multer.File[],
   ) {
-    const mediaUrls = await this.storageService.uploadFiles(
-      files?.map((file) => file.buffer) ?? [],
-      { bucket: StorageBucket.HOUSE_MEDIA },
+    const house = await this.houseService.getHouseById(id);
+    const existingMedia = this.uploadAuthorizationService.resolveExistingMediaUrls(
+      house.media,
+      data.existingMedia,
     );
-    const house = await this.houseService.updateHouse(
+    const newMedia = await this.uploadAuthorizationService.resolveNewMediaUrls(
+      session.user.id,
+      data.media ?? [],
+    );
+    const combinedMedia = [...existingMedia, ...newMedia];
+    if (combinedMedia.length > MAX_PROPERTY_MEDIA_ITEMS) {
+      throw new BadRequestException(
+        `A property can have at most ${MAX_PROPERTY_MEDIA_ITEMS} media items`,
+      );
+    }
+    if (countVideosInMediaUrls(combinedMedia) > MAX_PROPERTY_VIDEOS) {
+      throw new BadRequestException(`A property can have at most ${MAX_PROPERTY_VIDEOS} videos`);
+    }
+    const updated = await this.houseService.updateHouse(
       id,
       session.user.id,
       session?.user?.role as UserRole,
       session?.user?.kycStatus as KycStatus,
       {
         ...data,
-        media: mediaUrls.map((url) => url.url),
+        existingMedia,
+        media: newMedia,
       },
     );
-    return new ApiResponse(house, "property updated");
+    return new ApiResponse(updated, "property updated");
   }
 
   @Delete(":id")

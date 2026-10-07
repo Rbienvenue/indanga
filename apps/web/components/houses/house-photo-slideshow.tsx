@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isVideoMediaUrl } from "@/lib/property-media";
 
 export function HousePhotoSlideshow({
   houseName,
@@ -58,14 +59,25 @@ export function HousePhotoSlideshow({
             {media.map((src, index) => (
               <CarouselItem key={`${src}-${index}`} className="pl-0">
                 <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-muted">
-                  <Image
-                    src={src}
-                    alt={`${houseName} photo ${index + 1}`}
-                    fill
-                    priority={index === initialIndex}
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 90vw, 64rem"
-                  />
+                  {isVideoMediaUrl(src) ? (
+                    <video
+                      src={src}
+                      controls
+                      preload="metadata"
+                      playsInline
+                      aria-label={`${houseName} video ${index + 1}`}
+                      className="h-full w-full object-contain bg-black"
+                    />
+                  ) : (
+                    <Image
+                      src={src}
+                      alt={`${houseName} photo ${index + 1}`}
+                      fill
+                      priority={index === initialIndex}
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 90vw, 64rem"
+                    />
+                  )}
                 </div>
               </CarouselItem>
             ))}
@@ -118,13 +130,24 @@ export function HousePhotoSlideshow({
                 current === index + 1 ? "ring-2 ring-primary" : "opacity-60 hover:opacity-100",
               )}
             >
-              <Image
-                src={src}
-                alt=""
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 20vw, 10vw"
-              />
+              {isVideoMediaUrl(src) ? (
+                <video
+                  src={src}
+                  preload="none"
+                  muted
+                  playsInline
+                  aria-label=""
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={src}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 20vw, 10vw"
+                />
+              )}
             </button>
           ))}
         </div>

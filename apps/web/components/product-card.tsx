@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetcher } from "@/lib/fetcher";
+import { isVideoMediaUrl } from "@/lib/property-media";
 import { getPriceUnit } from "@/lib/booking-kind";
 import { getDisplayPrice } from "@/lib/room-pricing";
 import { cn, formatPrice } from "@/lib/utils";
@@ -75,7 +76,9 @@ export function ProductCard({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  const images = media && media.length > 0 ? media : ["/image2.jpeg"];
+  // Card views stay image-first and lightweight: videos never reach next/image here.
+  const photoSlides = media?.filter((url) => !isVideoMediaUrl(url)) ?? [];
+  const images = photoSlides.length > 0 ? photoSlides : ["/image2.jpeg"];
   const hasMultipleImages = images.length > 1;
 
   const goToPrev = useCallback(
@@ -261,18 +264,12 @@ export function ProductCard({
           <div className="flex items-baseline gap-1">
             {displayPrice != null ? (
               <>
-                {fromRooms ? (
-                  <span className="text-sm text-muted-foreground">From</span>
-                ) : null}
-                <span className="text-lg font-bold text-primary">
-                  {formatPrice(displayPrice)}
-                </span>
+                {fromRooms ? <span className="text-sm text-muted-foreground">From</span> : null}
+                <span className="text-lg font-bold text-primary">{formatPrice(displayPrice)}</span>
                 <span className="text-sm text-muted-foreground">{resolvedPriceUnit}</span>
               </>
             ) : (
-              <span className="text-sm font-semibold text-muted-foreground">
-                Contact for price
-              </span>
+              <span className="text-sm font-semibold text-muted-foreground">Contact for price</span>
             )}
           </div>
           {status && <PropertyStatusBadge status={status} />}

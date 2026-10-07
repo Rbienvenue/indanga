@@ -2,12 +2,15 @@ import { HouseStatus } from "@indanga/db";
 import { PartialType } from "@nestjs/mapped-types";
 import { Transform, Type } from "class-transformer";
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
   IsArray,
   IsEnum,
   IsInt,
   IsOptional,
   IsPositive,
   IsString,
+  Max,
   Min,
   ValidateNested,
 } from "class-validator";
@@ -134,6 +137,29 @@ export class UpdateHouseDto extends PartialType(CreateHouseDto) {
   @IsArray()
   @IsString({ each: true })
   existingMedia?: string[];
+}
+
+export class PropertyUploadItemDto {
+  @IsString()
+  filename: string;
+
+  @IsString()
+  contentType: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  @Max(100 * 1024 * 1024)
+  size: number;
+}
+
+export class RequestPropertyUploadsDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(10)
+  @ValidateNested({ each: true })
+  @Type(() => PropertyUploadItemDto)
+  items: PropertyUploadItemDto[];
 }
 
 export class FilterDto {

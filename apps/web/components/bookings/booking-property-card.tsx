@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getBookingKind } from "@/lib/booking-kind";
+import { firstImageUrl } from "@/lib/property-media";
 import { cn, formatPrice } from "@/lib/utils";
 
 export type BookingCardStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
@@ -51,7 +52,7 @@ export interface BookingPropertyCardBooking {
 
 export function BookingPropertyCard({ booking }: { booking: BookingPropertyCardBooking }) {
   const { house, status } = booking;
-  const image = house.media && house.media.length > 0 ? house.media[0] : "/image2.jpeg";
+  const image = firstImageUrl(house.media);
   const dayLabel = getBookingKind(house.propertyType) === "car" ? "day" : "night";
   const hasStay = !!booking.checkIn && !!booking.checkOut;
 
