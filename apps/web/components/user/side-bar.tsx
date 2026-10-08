@@ -50,7 +50,6 @@ const tenantItems = [
   { title: "My Bookings", href: "/dashboard/bookings", icon: Calendar },
   { title: "My Favorites", href: "/dashboard/favorites", icon: Heart },
   { title: "Search", href: "/dashboard/search", icon: Search },
-  { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
   { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { title: "Profile Settings", href: "/dashboard/profile", icon: User },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
@@ -61,20 +60,16 @@ const agentItems = [
   { title: "Listings", href: "/dashboard/search", icon: House },
   { title: "Bookings", href: "/dashboard/bookings", icon: Calendar },
   { title: "Calendar", href: "/dashboard/calendar", icon: Calendar },
+  { title: "Guests", href: "/dashboard/guest", icon: Users },
   { title: "Messages", href: "/dashboard/messages", icon: MessageSquare },
-  { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
   { title: "Reviews", href: "/dashboard/reviews", icon: Star },
   { title: "Profile Settings", href: "/dashboard/profile", icon: User },
-  { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
-  { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
 ];
 
 const carItems = agentItems
   .filter((item) => item.href !== "/dashboard/reviews" && item.href !== "/dashboard/calendar")
   .map((item) => {
     if (item.href === "/dashboard/search") return { ...item, title: "Vehicles", icon: CarFront };
-    if (item.href === "/dashboard/payments")
-      return { ...item, title: "Payouts", href: "/dashboard/payouts" };
     return item;
   });
 carItems.splice(7, 0, { title: "Compliance", href: "/dashboard/compliance", icon: ShieldCheck });

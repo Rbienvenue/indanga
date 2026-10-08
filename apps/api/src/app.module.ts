@@ -10,6 +10,7 @@ import { NotificationsModule } from "./notifications/notifications.module";
 import { AdminModule } from "./admin/admin.module";
 import { KycModule } from "./kyc/kyc.module";
 import { ServiceFeesModule } from "./service-fees/service-fees.module";
+import { GuestsModule } from "./guests/guests.module";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ServiceFeesModule } from "./service-fees/service-fees.module";
     AdminModule,
     KycModule,
     ServiceFeesModule,
+    GuestsModule,
   ],
 })
 export class AppModule {}

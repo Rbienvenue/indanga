@@ -1,48 +1,28 @@
 "use client";
 
 import type { House } from "@indanga/db";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
-import { Calendar, Check, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "sonner";
 
-import type { ApiResponse, PaginationResponse } from "@/@types";
+import type { PaginationResponse } from "@/@types";
 import { useSession } from "@/components/providers/session-provider";
+import { BookingCard, BookingDetails, type Booking } from "@/components/bookings/booking-card";
 import { BookingPropertyCard } from "@/components/bookings/booking-property-card";
 import { ProductCardSkeleton } from "@/components/product-card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/ui/data-table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
-import { formatPrice } from "@/lib/utils";
 
 const PAGE_SIZE = 6;
 
-type BookingWithHouse = {
-  id: string;
-  bookingId?: string | null;
-  status:
-    | "PENDING"
-    | "APPROVED"
-    | "REJECTED"
-    | "CANCELLED"
-    | "COMPLETED"
-    | "REQUESTED"
-    | "AWAITING_PAYMENT"
-    | "CONFIRMED"
-    | "DECLINED"
-    | "EXPIRED";
+type BookingWithHouse = Booking & {
   paymentDeadline?: string | null;
   createdAt: string;
-  checkIn?: string | null;
-  checkOut?: string | null;
   nights?: number | null;
-  totalAmount?: number | null;
   unitPrice?: number | null;
-  roomCount?: number | null;
-  roomType?: { id: string; name: string; price: number } | null;
+  roomType: { id: string; name: string; price: number } | null;
   house: House;
   client: {
     id: string;
@@ -51,63 +31,6 @@ type BookingWithHouse = {
     image: string | null;
   };
 };
-
-function formatStayDates(checkIn?: string | null, checkOut?: string | null): string | null {
-  if (!checkIn || !checkOut) return null;
-  return `${new Date(checkIn).toLocaleDateString()} → ${new Date(checkOut).toLocaleDateString()}`;
-}
-
-const statusColors: Record<string, string> = {
-  PENDING: "bg-amber-100 text-amber-700",
-  APPROVED: "bg-green-100 text-green-700",
-  REJECTED: "bg-red-100 text-red-700",
-  CANCELLED: "bg-gray-100 text-gray-700",
-  COMPLETED: "bg-sky-100 text-sky-700",
-  REQUESTED: "bg-amber-100 text-amber-700",
-  AWAITING_PAYMENT: "bg-violet-100 text-violet-700",
-  CONFIRMED: "bg-green-100 text-green-700",
-  DECLINED: "bg-red-100 text-red-700",
-  EXPIRED: "bg-gray-100 text-gray-700",
-};
-
-function BookingRequestActions({ bookingId }: { bookingId: string }) {
-  const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: (status: "AWAITING_PAYMENT" | "DECLINED") =>
-      fetcher<ApiResponse<unknown>>(`/bookings/${bookingId}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status }),
-      }),
-    onSuccess: () => {
-      toast.success("Booking request updated");
-      void queryClient.invalidateQueries({ queryKey: ["bookings"] });
-      void queryClient.invalidateQueries({ queryKey: ["recent-bookings"] });
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
-
-  return (
-    <div className="flex gap-2">
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={mutation.isPending}
-        onClick={() => mutation.mutate("AWAITING_PAYMENT")}
-      >
-        {mutation.isPending ? <Loader2 className="animate-spin" /> : <Check />}
-        Accept
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={mutation.isPending}
-        onClick={() => mutation.mutate("DECLINED")}
-      >
-        <X /> Decline
-      </Button>
-    </div>
-  );
-}
 
 function EmptyBookings({ isAgent }: { isAgent: boolean }) {
   return (
@@ -131,99 +54,6 @@ function EmptyBookings({ isAgent }: { isAgent: boolean }) {
     </div>
   );
 }
-
-const agentColumns: ColumnDef<BookingWithHouse>[] = [
-  {
-    id: "client",
-    header: "Client",
-    accessorFn: (row) => row.client.name,
-    cell: ({ row }) => (
-      <div>
-        <p className="font-medium">{row.original.client.name}</p>
-        <p className="text-xs text-muted-foreground">{row.original.client.email}</p>
-        {row.original.bookingId ? (
-          <p className="text-xs font-medium text-muted-foreground">{row.original.bookingId}</p>
-        ) : null}
-      </div>
-    ),
-  },
-  {
-    id: "property",
-    header: "Property",
-    accessorFn: (row) => row.house.name,
-    cell: ({ row }) => (
-      <div>
-        <Link href={`/properties/${row.original.house.id}`} className="font-medium hover:underline">
-          {row.original.house.name}
-        </Link>
-        <p className="text-xs text-muted-foreground">{row.original.house.location}</p>
-        {row.original.roomType ? (
-          <p className="text-xs text-muted-foreground">
-            {row.original.roomType.name}
-            {row.original.roomCount && row.original.roomCount > 1
-              ? ` × ${row.original.roomCount}`
-              : ""}
-          </p>
-        ) : null}
-      </div>
-    ),
-  },
-  {
-    id: "price",
-    header: "Total",
-    accessorFn: (row) => row.totalAmount,
-    cell: ({ row }) =>
-      row.original.totalAmount != null ? (
-        <span className="font-medium">{formatPrice(row.original.totalAmount)}</span>
-      ) : (
-        <span className="text-muted-foreground">—</span>
-      ),
-  },
-  {
-    id: "stay",
-    header: "Stay",
-    cell: ({ row }) => {
-      const stay = formatStayDates(row.original.checkIn, row.original.checkOut);
-      if (!stay) return <span className="text-muted-foreground">—</span>;
-      return (
-        <div>
-          <p className="text-sm">{stay}</p>
-          {row.original.nights ? (
-            <p className="text-xs text-muted-foreground">
-              {row.original.nights} night{row.original.nights > 1 ? "s" : ""}
-            </p>
-          ) : null}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Date",
-    cell: ({ row }) => (
-      <span className="text-muted-foreground">
-        {new Date(row.original.createdAt).toLocaleDateString()}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <Badge variant="secondary" className={statusColors[row.original.status]}>
-        {row.original.status.charAt(0) + row.original.status.slice(1).toLowerCase()}
-      </Badge>
-    ),
-  },
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row }) =>
-      row.original.status === "REQUESTED" ? (
-        <BookingRequestActions bookingId={row.original.id} />
-      ) : null,
-  },
-];
 
 function Pagination({
   page,
@@ -272,6 +102,7 @@ function Pagination({
 
 export default function BookingsPage() {
   const [page, setPage] = useState(1);
+  const [selectedId, setSelectedId] = useState<string>();
   const session = useSession();
   const isAgent = session?.user?.role === "landlord";
 
@@ -282,6 +113,7 @@ export default function BookingsPage() {
 
   const bookings = bookingsQuery.data?.data ?? [];
   const meta = bookingsQuery.data?.meta;
+  const selectedBooking = bookings.find((booking) => booking.id === selectedId) ?? bookings[0];
 
   return (
     <main>
@@ -309,8 +141,10 @@ export default function BookingsPage() {
 
       {bookingsQuery.isLoading ? (
         isAgent ? (
-          <section className="mt-6">
-            <DataTable columns={agentColumns} data={[]} loading />
+          <section className="mt-6 space-y-3">
+            {Array.from({ length: PAGE_SIZE }).map((_, index) => (
+              <Skeleton key={index} className="h-24 w-full rounded-lg" />
+            ))}
           </section>
         ) : (
           <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -331,21 +165,33 @@ export default function BookingsPage() {
       ) : bookings.length === 0 ? (
         <EmptyBookings isAgent={isAgent} />
       ) : isAgent ? (
-        <section className="mt-6">
-          <DataTable
-            columns={agentColumns}
-            data={bookings}
-            pagination={
-              meta
-                ? {
-                    page: meta.page,
-                    totalPages: meta.totalPages,
-                    onPageChange: setPage,
-                  }
-                : undefined
-            }
-          />
-        </section>
+        <>
+          <section className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+            <div className="space-y-3">
+              {bookings.map((booking) => (
+                <BookingCard
+                  key={booking.id}
+                  booking={booking}
+                  selected={selectedBooking?.id === booking.id}
+                  onSelect={() => setSelectedId(booking.id)}
+                />
+              ))}
+              {meta && (
+                <Pagination
+                  page={meta.page}
+                  totalPages={meta.totalPages}
+                  isFetching={bookingsQuery.isFetching}
+                  onPageChange={setPage}
+                />
+              )}
+            </div>
+            <BookingDetails
+              key={selectedBooking?.id}
+              booking={selectedBooking}
+              isCar={session?.user?.providerType === "CAR"}
+            />
+          </section>
+        </>
       ) : (
         <>
           <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
