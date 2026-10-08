@@ -46,8 +46,12 @@ export class PaymentsService {
       existing.status === BookingStatus.AWAITING_PAYMENT &&
       (!existing.paymentDeadline || existing.paymentDeadline <= new Date())
     ) {
-      await this.db.booking.update({
-        where: { id: existing.id },
+      await this.db.booking.updateMany({
+        where: {
+          id: existing.id,
+          status: BookingStatus.AWAITING_PAYMENT,
+          OR: [{ paymentDeadline: { lte: new Date() } }, { paymentDeadline: null }],
+        },
         data: { status: BookingStatus.EXPIRED },
       });
       throw new BadRequestException("The payment deadline has passed");
@@ -186,43 +190,82 @@ export class PaymentsService {
     booking: Prisma.BookingGetPayload<{ include: { house: true; client: true } }>,
     transactionReference: string,
   ) {
-    const stayStarted =
-      !booking.checkIn || startOfDay(booking.checkIn).getTime() <= startOfDay(new Date()).getTime();
-    // Hotels manage capacity per room type over dates; never flip the whole hotel.
-    const isHotel = getBookingKind(booking.house.propertyType) === "hotel";
-    await this.db.$transaction(async (tx) => {
-      await tx.payment.update({ where: { transactionReference }, data: { status: "COMPLETED" } });
-      await tx.booking.update({
-        where: { id: booking.id },
-        data: {
-          status:
-            booking.status === BookingStatus.AWAITING_PAYMENT
-              ? BookingStatus.CONFIRMED
-              : BookingStatus.APPROVED,
-        },
-      });
-      if (stayStarted && !isHotel) {
-        await tx.house.update({
-          where: { id: booking.houseId },
-          data: { status: HouseStatus.BOOKED },
+    const outcome = await this.db.$transaction(
+      async (tx) => {
+        // Claim the pending payment once so duplicate callbacks cannot repeat booking changes.
+        const updated = await tx.payment.updateMany({
+          where: { transactionReference, status: "PENDING" },
+          data: { status: "COMPLETED" },
         });
-      }
-    });
+        if (updated.count === 0) return null;
+        const current = await tx.booking.findUniqueOrThrow({ where: { id: booking.id } });
+        const now = new Date();
+        const canConfirm =
+          current.status === BookingStatus.AWAITING_PAYMENT &&
+          current.paymentDeadline != null &&
+          current.paymentDeadline > now;
+        if (!canConfirm) {
+          // The money was received, but released inventory must never be reserved again here.
+          if (current.status === BookingStatus.AWAITING_PAYMENT) {
+            await tx.booking.update({
+              where: { id: current.id },
+              data: { status: BookingStatus.EXPIRED },
+            });
+          }
+          return "review";
+        }
+        await tx.booking.update({
+          where: { id: current.id },
+          data: { status: BookingStatus.CONFIRMED },
+        });
+        const stayStarted = !current.checkIn || startOfDay(current.checkIn) <= startOfDay(now);
+        if (stayStarted && getBookingKind(booking.house.propertyType) !== "hotel") {
+          await tx.house.update({
+            where: { id: current.houseId },
+            data: { status: HouseStatus.BOOKED },
+          });
+        }
+        return "confirmed";
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
+    if (outcome === null) {
+      return this.db.payment.findUniqueOrThrow({ where: { transactionReference } });
+    }
     this.ws.emitPaymentUpdate(payment.id, "successful");
-    await this.notifications.create({
-      userId: booking.house.ownerId,
-      type: "BOOKING_CONFIRMED",
-      title: "New booking confirmed",
-      message: `${booking.client.name} booked ${booking.house.name}.`,
-      bookingId: booking.id,
-    });
-    await this.notifications.create({
-      userId: booking.client.id,
-      type: "BOOKING_CONFIRMED",
-      title: "Booking confirmed",
-      message: `You booked ${booking.house.name}.`,
-      bookingId: booking.id,
-    });
+    if (outcome === "review") {
+      await this.notifications.create({
+        userId: booking.house.ownerId,
+        type: "SYSTEM",
+        title: "Payment needs review",
+        message: `${booking.client.name} paid for a booking that is no longer reserved. Review payment ${payment.id}; the booking was not confirmed.`,
+        bookingId: booking.id,
+        paymentId: payment.id,
+      });
+      await this.notifications.create({
+        userId: booking.client.id,
+        type: "SYSTEM",
+        title: "Payment received; booking not confirmed",
+        message: `Your payment for ${booking.house.name} arrived after the reservation closed. Contact support to arrange a refund or a new booking.`,
+        bookingId: booking.id,
+        paymentId: payment.id,
+      });
+    } else {
+      await this.notifications.create({
+        userId: booking.house.ownerId,
+        type: "BOOKING_CONFIRMED",
+        title: "New booking confirmed",
+        message: `${booking.client.name} booked ${booking.house.name}.`,
+        bookingId: booking.id,
+      });
+      await this.notifications.create({
+        userId: booking.client.id,
+        type: "BOOKING_CONFIRMED",
+        title: "Booking confirmed",
+        message: `You booked ${booking.house.name}.`,
+        bookingId: booking.id,
+      });
+    }
     return { ...payment, status: "COMPLETED" as const };
   }
 
@@ -231,26 +274,25 @@ export class PaymentsService {
     booking: Prisma.BookingGetPayload<{ include: { house: true; client: true } }>,
     transactionReference: string,
   ) {
-    await this.db.$transaction(async (tx) => {
-      await tx.payment.update({ where: { transactionReference }, data: { status: "FAILED" } });
-      const canRetry =
-        booking.status === BookingStatus.AWAITING_PAYMENT &&
-        booking.paymentDeadline != null &&
-        booking.paymentDeadline > new Date();
-      if (booking.status === BookingStatus.AWAITING_PAYMENT) {
-        await tx.booking.update({
-          where: { id: booking.id },
-          data: {
-            status: canRetry ? BookingStatus.AWAITING_PAYMENT : BookingStatus.EXPIRED,
-          },
-        });
-      } else if (booking.status === BookingStatus.PENDING) {
-        await tx.booking.update({
-          where: { id: booking.id },
-          data: { status: BookingStatus.CANCELLED },
-        });
-      }
+    const changed = await this.db.$transaction(async (tx) => {
+      const updated = await tx.payment.updateMany({
+        where: { transactionReference, status: "PENDING" },
+        data: { status: "FAILED" },
+      });
+      if (updated.count === 0) return false;
+      await tx.booking.updateMany({
+        where: {
+          id: booking.id,
+          status: BookingStatus.AWAITING_PAYMENT,
+          OR: [{ paymentDeadline: { lte: new Date() } }, { paymentDeadline: null }],
+        },
+        data: { status: BookingStatus.EXPIRED },
+      });
+      return true;
     });
+    if (!changed) {
+      return this.db.payment.findUniqueOrThrow({ where: { transactionReference } });
+    }
     this.ws.emitPaymentUpdate(payment.id, "failed");
     return { ...payment, status: "FAILED" as const };
   }

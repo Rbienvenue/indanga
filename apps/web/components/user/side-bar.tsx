@@ -36,6 +36,7 @@ import {
   CarFront,
   MessageSquare,
   FileChartColumn,
+  BedDouble,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -69,10 +70,9 @@ const agentItems = [
 ];
 
 const carItems = agentItems
-  .filter((item) => item.href !== "/dashboard/reviews")
+  .filter((item) => item.href !== "/dashboard/reviews" && item.href !== "/dashboard/calendar")
   .map((item) => {
     if (item.href === "/dashboard/search") return { ...item, title: "Vehicles", icon: CarFront };
-    if (item.href === "/dashboard/calendar") return { ...item, title: "Fleet Calendar" };
     if (item.href === "/dashboard/payments")
       return { ...item, title: "Payouts", href: "/dashboard/payouts" };
     return item;
@@ -123,7 +123,11 @@ export function AppSidebar() {
             ? carItems
             : session.user.providerType === "HOUSE"
               ? houseItems
-              : agentItems
+              : [
+                  ...agentItems.slice(0, 4),
+                  { title: "Rooms", href: "/dashboard/rooms", icon: BedDouble },
+                  ...agentItems.slice(4),
+                ]
         : tenantItems;
 
   return (

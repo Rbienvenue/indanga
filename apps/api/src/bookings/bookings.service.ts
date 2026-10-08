@@ -8,12 +8,14 @@ import {
 import { BookingStatus, HouseStatus, Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
 import { NotificationsService } from "src/notifications/notifications.service";
-import { CreateBookingDto, FilterBookingDto } from "./dtos";
+import { CalendarBookingDto, CreateBookingDto, FilterBookingDto } from "./dtos";
 import { type UserSession } from "@thallesp/nestjs-better-auth";
 import { getBookingKind, type BookingKind } from "src/houses/booking-kind.util";
-import { countOverlappingRooms } from "src/houses/houses.service";
+import { countOverlappingRooms, reservingBookingsWhere } from "./booking-inventory";
 import { ServiceFeesService } from "src/service-fees/service-fees.service";
 import { calcServiceFee } from "src/service-fees/service-fee.util";
+
+import type { User } from "src/lib/auth";
 
 const PAYMENT_WINDOW_MS = 30 * 60 * 1000;
 
@@ -35,12 +37,6 @@ function createBookingId(kind: BookingKind, now = new Date()): string {
   const prefix = kind === "hotel" ? "HTL" : kind === "car" ? "CAR" : "HOM";
   return `IND-${prefix}-${year}${month}${random}`;
 }
-
-const RESERVING_STATUSES = [
-  BookingStatus.APPROVED,
-  BookingStatus.AWAITING_PAYMENT,
-  BookingStatus.CONFIRMED,
-];
 
 @Injectable()
 export class BookingsService {
@@ -105,7 +101,7 @@ export class BookingsService {
         const overlapping = await this.db.booking.count({
           where: {
             houseId: house.id,
-            status: { in: RESERVING_STATUSES },
+            ...reservingBookingsWhere(),
             checkIn: { lt: checkOut },
             checkOut: { gt: checkIn },
           },
@@ -159,9 +155,7 @@ export class BookingsService {
       where: {
         clientId,
         houseId,
-        status: {
-          in: [BookingStatus.REQUESTED, BookingStatus.AWAITING_PAYMENT, BookingStatus.CONFIRMED],
-        },
+        OR: [{ status: BookingStatus.REQUESTED }, reservingBookingsWhere()],
       },
       orderBy: { createdAt: "desc" },
       include: { house: true, roomType: true },
@@ -204,6 +198,99 @@ export class BookingsService {
         totalPages: Math.ceil(total / limit),
       },
     };
+  }
+
+  async getCalendar(user: User, query: CalendarBookingDto) {
+    if (user.role !== "landlord" || user.providerType !== "HOTEL") {
+      throw new ForbiddenException("The calendar is available to hotel providers only");
+    }
+    const start = new Date(query.start);
+    const end = new Date(query.end);
+    const date = new Date(query.date);
+    const dayMs = 24 * 60 * 60 * 1000;
+    if (
+      [start, end, date].some((value) => Number.isNaN(value.getTime())) ||
+      end <= start ||
+      end.getTime() - start.getTime() > 62 * dayMs ||
+      date < start ||
+      date >= end
+    ) {
+      throw new BadRequestException("Select a valid calendar range and a date within it");
+    }
+    const properties = (
+      await this.db.house.findMany({
+        where: { ownerId: user.id },
+        select: {
+          id: true,
+          name: true,
+          propertyType: true,
+          rooms: { select: { id: true, name: true, totalRooms: true }, orderBy: { price: "asc" } },
+        },
+        orderBy: { name: "asc" },
+      })
+    ).filter((property) => getBookingKind(property.propertyType) === "hotel");
+    const now = new Date();
+    const bookings = await this.db.booking.findMany({
+      where: {
+        houseId: { in: properties.map((property) => property.id) },
+        checkIn: { lt: end },
+        checkOut: { gt: start },
+        OR: [
+          { status: { in: [BookingStatus.REQUESTED, BookingStatus.COMPLETED] } },
+          reservingBookingsWhere(now),
+        ],
+      },
+      orderBy: { checkIn: "asc" },
+      select: {
+        id: true,
+        bookingId: true,
+        houseId: true,
+        roomTypeId: true,
+        roomCount: true,
+        status: true,
+        checkIn: true,
+        checkOut: true,
+        paymentDeadline: true,
+        totalAmount: true,
+        client: { select: { name: true, email: true } },
+        roomType: { select: { name: true } },
+        house: { select: { name: true } },
+      },
+    });
+    const nextDay = new Date(date.getTime() + dayMs);
+    const inventory = properties.map((property) => ({
+      id: property.id,
+      name: property.name,
+      rooms: property.rooms.map((room) => {
+        let bookedRooms = 0;
+        let heldRooms = 0;
+        for (const booking of bookings) {
+          if (
+            booking.roomTypeId !== room.id ||
+            !booking.checkIn ||
+            !booking.checkOut ||
+            booking.checkIn >= nextDay ||
+            booking.checkOut <= date
+          )
+            continue;
+          if (booking.status === BookingStatus.AWAITING_PAYMENT)
+            heldRooms += booking.roomCount ?? 1;
+          if (
+            booking.status === BookingStatus.CONFIRMED ||
+            booking.status === BookingStatus.APPROVED
+          ) {
+            bookedRooms += booking.roomCount ?? 1;
+          }
+        }
+        return {
+          ...room,
+          bookedRooms,
+          heldRooms,
+          availableRooms: Math.max(0, room.totalRooms - bookedRooms - heldRooms),
+        };
+      }),
+    }));
+    return { properties: inventory, bookings };
   }
 
   async getBookingById(id: string, user: UserSession["user"]) {
@@ -300,7 +387,7 @@ export class BookingsService {
               where: {
                 id: { not: current.id },
                 houseId: current.houseId,
-                status: { in: RESERVING_STATUSES },
+                ...reservingBookingsWhere(),
                 checkIn: { lt: current.checkOut },
                 checkOut: { gt: current.checkIn },
               },
@@ -313,7 +400,7 @@ export class BookingsService {
               where: {
                 id: { not: current.id },
                 houseId: current.houseId,
-                status: { in: RESERVING_STATUSES },
+                ...reservingBookingsWhere(),
               },
             });
             if (current.house.status !== HouseStatus.AVAILABLE || reserved > 0) {

@@ -105,7 +105,9 @@ function BookingPaymentForm({
       setPaymentId(null);
       void queryClient.invalidateQueries({ queryKey: ["bookings"] });
       if (update.status === "successful") {
-        toast.success("Booking confirmed");
+        toast.success("Payment received", {
+          description: "Check your booking for its confirmation status.",
+        });
         onPaid?.();
       } else toast.error("Payment failed", { description: "You can retry before the deadline." });
     };

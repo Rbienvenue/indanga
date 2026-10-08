@@ -16,30 +16,10 @@ import {
   UpdateHouseDto,
 } from "./dtos";
 import { getBookingKind } from "./booking-kind.util";
+import { countOverlappingRooms, reservingBookingsWhere } from "src/bookings/booking-inventory";
 
 function isHotelProperty(propertyType?: string | null): boolean {
   return getBookingKind(propertyType) === "hotel";
-}
-
-/** Rooms booked for a room type overlapping [checkIn, checkOut). Date-based inventory. */
-export async function countOverlappingRooms(
-  db: PrismaTx,
-  roomTypeId: string,
-  checkIn: Date,
-  checkOut: Date,
-) {
-  const bookings = await db.booking.findMany({
-    where: {
-      roomTypeId,
-      status: {
-        in: [BookingStatus.APPROVED, BookingStatus.AWAITING_PAYMENT, BookingStatus.CONFIRMED],
-      },
-      OR: [{ checkIn: null }, { checkIn: { lt: checkOut } }],
-      AND: [{ OR: [{ checkOut: null }, { checkOut: { gt: checkIn } }] }],
-    },
-    select: { roomCount: true },
-  });
-  return bookings.reduce((sum, b) => sum + (b.roomCount ?? 1), 0);
 }
 
 @Injectable()
@@ -360,15 +340,7 @@ export class HousesService {
     const active = await db.booking.findMany({
       where: {
         roomTypeId,
-        status: {
-          in: [
-            BookingStatus.PENDING,
-            BookingStatus.APPROVED,
-            BookingStatus.AWAITING_PAYMENT,
-            BookingStatus.CONFIRMED,
-          ],
-        },
-        OR: [{ checkOut: null }, { checkOut: { gte: today } }],
+        AND: [reservingBookingsWhere(), { OR: [{ checkOut: null }, { checkOut: { gte: today } }] }],
       },
       select: { roomCount: true },
     });

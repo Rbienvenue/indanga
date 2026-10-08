@@ -41,3 +41,14 @@ export class UpdateBookingStatusDto {
   @IsEnum(BookingStatus)
   status: BookingStatus;
 }
+
+export class CalendarBookingDto {
+  @IsDateString({ strict: true })
+  start: string;
+
+  @IsDateString({ strict: true })
+  end: string;
+
+  @IsDateString({ strict: true })
+  date: string;
+}

@@ -1,0 +1,36 @@
+.hotel-calendar {
+  --fc-monarch-primary: var(--primary);
+  --fc-monarch-primary-foreground: var(--primary-foreground);
+  --fc-monarch-event: var(--primary);
+  --fc-monarch-event-contrast: var(--primary-foreground);
+  --fc-monarch-background: var(--card);
+  --fc-monarch-foreground: var(--foreground);
+  --fc-monarch-faint-foreground: var(--muted-foreground);
+  --fc-monarch-muted-foreground: var(--muted-foreground);
+  --fc-monarch-border: var(--border);
+  --fc-monarch-strong-border: var(--border);
+  --fc-monarch-faint: var(--muted);
+  --fc-monarch-muted: var(--muted);
+  --fc-monarch-strong: var(--border);
+  --fc-monarch-stronger: var(--border);
+  --fc-monarch-strongest: var(--border);
+  --fc-monarch-popover: var(--popover);
+  --fc-monarch-popover-foreground: var(--popover-foreground);
+  --fc-monarch-highlight: color-mix(in oklch, var(--primary) 8%, transparent);
+  --fc-monarch-outline: var(--ring);
+  --fc-monarch-now: var(--primary);
+  font-size: 0.8rem;
+}
+
+.hotel-calendar .calendar-selected-day {
+  background: color-mix(in oklch, var(--primary) 7%, var(--card));
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.hotel-calendar .calendar-request {
+  opacity: 0.8;
+}
+
+.hotel-calendar .calendar-hold {
+  border-style: dashed;
+}

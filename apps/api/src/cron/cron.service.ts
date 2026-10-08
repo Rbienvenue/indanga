@@ -102,20 +102,23 @@ export class CronService {
   }
 
   private async expirePaymentDeadlines(): Promise<number> {
+    const where: Prisma.BookingWhereInput = {
+      status: BookingStatus.AWAITING_PAYMENT,
+      OR: [{ paymentDeadline: { lte: new Date() } }, { paymentDeadline: null }],
+    };
     const expired = await this.db.booking.findMany({
-      where: {
-        status: BookingStatus.AWAITING_PAYMENT,
-        paymentDeadline: { lt: new Date() },
-        payments: { none: { status: "PENDING" } },
-      },
+      where,
       include: { house: true },
     });
 
+    let count = 0;
     for (const booking of expired) {
-      await this.db.booking.update({
-        where: { id: booking.id },
+      const updated = await this.db.booking.updateMany({
+        where: { ...where, id: booking.id },
         data: { status: BookingStatus.EXPIRED },
       });
+      if (updated.count === 0) continue;
+      count += 1;
       await this.notifications.create({
         type: "BOOKING_CANCELLED",
         title: "Booking request expired",
@@ -125,7 +128,7 @@ export class CronService {
       });
     }
 
-    return expired.length;
+    return count;
   }
 
   private async reconcileHouseAvailability(): Promise<{

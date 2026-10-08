@@ -1,8 +1,14 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { ApiResponse, PaginationResponse } from "src/@types";
+import type { Session as AuthSession } from "src/lib/auth";
 import { BookingsService } from "./bookings.service";
-import { CreateBookingDto, FilterBookingDto, UpdateBookingStatusDto } from "./dtos";
+import {
+  CalendarBookingDto,
+  CreateBookingDto,
+  FilterBookingDto,
+  UpdateBookingStatusDto,
+} from "./dtos";
 
 @Controller("bookings")
 export class BookingsController {
@@ -26,6 +32,13 @@ export class BookingsController {
   async getActiveBooking(@Session() session: UserSession, @Query("houseId") houseId: string) {
     const booking = await this.bookingsService.getActiveBooking(session.user.id, houseId);
     return new ApiResponse(booking, "active booking fetched");
+  }
+
+  @Get("calendar")
+  @Roles(["landlord"])
+  async getCalendar(@Session() session: AuthSession, @Query() query: CalendarBookingDto) {
+    const calendar = await this.bookingsService.getCalendar(session.user, query);
+    return new ApiResponse(calendar, "calendar fetched");
   }
 
   @Get(":id")
