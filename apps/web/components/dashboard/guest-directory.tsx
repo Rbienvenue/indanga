@@ -8,6 +8,7 @@ import { Users } from "lucide-react";
 import type { ApiResponse, PaginationResponse } from "@/@types";
 import { useSession } from "@/components/providers/session-provider";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { MessageButton } from "@/components/messages/message-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -97,7 +98,15 @@ const historyColumns: ColumnDef<GuestBooking>[] = [
   },
 ];
 
-function GuestHistory({ guest, ownerId }: { guest: Guest; ownerId: string }) {
+function GuestHistory({
+  guest,
+  ownerId,
+  personLabel,
+}: {
+  guest: Guest;
+  ownerId: string;
+  personLabel: string;
+}) {
   const [page, setPage] = useState(1);
   const historyQuery = useQuery<PaginationResponse<GuestBooking>>({
     queryKey: ["guest-bookings", ownerId, guest.id, page],
@@ -137,7 +146,7 @@ function GuestHistory({ guest, ownerId }: { guest: Guest; ownerId: string }) {
           columns={historyColumns}
           data={historyQuery.data?.data ?? []}
           loading={historyQuery.isLoading}
-          emptyState="No bookings found for this guest."
+          emptyState={`No bookings found for this ${personLabel.toLowerCase()}.`}
           pagination={{
             page,
             totalPages: historyQuery.data?.meta.totalPages ?? 1,
@@ -152,6 +161,10 @@ function GuestHistory({ guest, ownerId }: { guest: Guest; ownerId: string }) {
 export function GuestDirectory() {
   const session = useSession();
   const ownerId = session?.user.id;
+  const usesClients =
+    session?.user.providerType === "CAR" || session?.user.providerType === "HOUSE";
+  const personLabel = usesClients ? "Client" : "Guest";
+  const peopleLabel = usesClients ? "Clients" : "Guests";
   const [search, setSearch] = useState("");
   const [houseId, setHouseId] = useState("all");
   const [page, setPage] = useState(1);
@@ -175,7 +188,7 @@ export function GuestDirectory() {
   const columns: ColumnDef<Guest>[] = [
     {
       accessorKey: "name",
-      header: "Guest",
+      header: personLabel,
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <Avatar size="lg">
@@ -198,42 +211,31 @@ export function GuestDirectory() {
     },
     { accessorKey: "bookingCount", header: "Bookings" },
     {
-      id: "latestBooking",
-      header: "Latest booking",
-      cell: ({ row }) => {
-        const booking = row.original.latestBooking;
-        return booking ? (
-          <div className="space-y-2">
-            <p className="font-medium">{booking.house.name}</p>
-            <StayDetails booking={booking} />
-            <Badge variant="secondary">{booking.status.replaceAll("_", " ")}</Badge>
-          </div>
-        ) : (
-          "—"
-        );
-      },
-    },
-    {
       id: "history",
       header: "",
       cell: ({ row }) => (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setSelectedGuest(row.original)}
-          aria-label={`View booking history for ${row.original.name}`}
-        >
-          View history
-        </Button>
+        <div className="flex w-max flex-nowrap items-center gap-2">
+          {row.original.latestBooking ? (
+            <MessageButton bookingId={row.original.latestBooking.id} label="Message" size="sm" />
+          ) : null}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedGuest(row.original)}
+            aria-label={`View booking history for ${row.original.name}`}
+          >
+            View history
+          </Button>
+        </div>
       ),
     },
   ];
 
   return (
     <main>
-      <PageHeader title="Guests" description="People who have booked your properties" />
+      <PageHeader title={peopleLabel} description="People who have booked your properties" />
       <p className="mb-4 text-sm text-muted-foreground">
-        {guestsQuery.data?.meta.total ?? 0} guests
+        {guestsQuery.data?.meta.total ?? 0} {peopleLabel.toLowerCase()}
         {houseId !== "all" ? " at this property" : " across your properties"}
       </p>
       {propertiesQuery.isError ? (
@@ -246,7 +248,7 @@ export function GuestDirectory() {
       ) : null}
       {guestsQuery.isError ? (
         <div role="alert" className="rounded-xl border bg-card p-6">
-          <p className="text-sm text-destructive">Could not load guests.</p>
+          <p className="text-sm text-destructive">Could not load {peopleLabel.toLowerCase()}.</p>
           <Button variant="outline" className="mt-3" onClick={() => void guestsQuery.refetch()}>
             Try again
           </Button>
@@ -283,12 +285,14 @@ export function GuestDirectory() {
             <div className="flex flex-col items-center gap-2">
               <Users className="size-8 text-muted-foreground" />
               <p className="font-medium">
-                {search || houseId !== "all" ? "No matching guests" : "No guests yet"}
+                {search || houseId !== "all"
+                  ? `No matching ${peopleLabel.toLowerCase()}`
+                  : `No ${peopleLabel.toLowerCase()} yet`}
               </p>
               <p className="text-sm text-muted-foreground">
                 {search || houseId !== "all"
                   ? "Try another search or property."
-                  : "Guests will appear here when they book your properties."}
+                  : `${peopleLabel} will appear here when they book your properties.`}
               </p>
             </div>
           }
@@ -307,7 +311,12 @@ export function GuestDirectory() {
       >
         <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-4xl">
           {selectedGuest && ownerId ? (
-            <GuestHistory key={selectedGuest.id} guest={selectedGuest} ownerId={ownerId} />
+            <GuestHistory
+              key={selectedGuest.id}
+              guest={selectedGuest}
+              ownerId={ownerId}
+              personLabel={personLabel}
+            />
           ) : null}
         </DialogContent>
       </Dialog>

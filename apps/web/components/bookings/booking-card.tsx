@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MessageButton } from "@/components/messages/message-button";
 import { fetcher } from "@/lib/fetcher";
 import { firstImageUrl } from "@/lib/property-media";
 import { formatPrice } from "@/lib/utils";
@@ -132,6 +133,7 @@ export function BookingDetails({ booking, isCar }: { booking?: Booking; isCar: b
               </div>
             </dl>
             <p className="break-all rounded-lg bg-muted p-3 text-sm">{booking.client.email}</p>
+            <MessageButton bookingId={booking.id} label="Message guest" />
             <BookingStatusBadge status={booking.status} />
             {booking.status === "REQUESTED" ? (
               <BookingRequestActions bookingId={booking.id} />

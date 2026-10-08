@@ -319,7 +319,16 @@ export class PaymentsService {
         take: limit,
         include: {
           booking: {
-            include: { house: true, roomType: true, client: true },
+            select: {
+              id: true,
+              bookingId: true,
+              checkIn: true,
+              checkOut: true,
+              nights: true,
+              serviceFee: true,
+              house: { select: { id: true, name: true, propertyType: true } },
+              client: { select: { name: true, email: true } },
+            },
           },
         },
       }),
@@ -327,8 +336,30 @@ export class PaymentsService {
     ]);
 
     return {
-      data: payments,
+      data: payments.map((payment) => ({
+        ...payment,
+        bookingAmount: payment.amount.toNumber() - (payment.booking.serviceFee ?? 0),
+      })),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
+  }
+
+  async getProviderPaymentStats(ownerId: string) {
+    const payments = await this.db.payment.findMany({
+      where: { booking: { house: { ownerId } }, status: { in: ["COMPLETED", "PENDING"] } },
+      select: { amount: true, status: true, booking: { select: { serviceFee: true } } },
+    });
+    return payments.reduce(
+      (totals, payment) => {
+        if (payment.status === "COMPLETED") {
+          totals.earnings += payment.amount.toNumber() - (payment.booking.serviceFee ?? 0);
+          totals.completedPayments += 1;
+        } else {
+          totals.pendingPayments += 1;
+        }
+        return totals;
+      },
+      { earnings: 0, completedPayments: 0, pendingPayments: 0 },
+    );
   }
 }

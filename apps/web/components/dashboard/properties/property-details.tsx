@@ -90,7 +90,7 @@ function HouseDetails() {
 function CarDetails() {
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">Guests rent this vehicle by the day.</p>
+      <p className="text-sm text-muted-foreground">Clients rent this vehicle by the day.</p>
       <PriceField unit="day" />
     </div>
   );

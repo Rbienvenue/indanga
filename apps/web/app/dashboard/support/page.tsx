@@ -1,11 +1,7 @@
 import Link from "next/link";
-import {
-  BadgeCheck,
-  CircleHelp,
-  Clock3,
-  TriangleAlert,
-} from "lucide-react";
+import { BadgeCheck, CircleHelp, Clock3, TriangleAlert } from "lucide-react";
 
+import { MessageButton } from "@/components/messages/message-button";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,11 +20,7 @@ export default function SupportPage() {
       <PageHeader
         title="Support Center"
         description="We’re here to help with bookings, payments, listings, and account questions across Indanga."
-        actions={
-          <Button asChild>
-            <Link href="mailto:support@indanga.com">Contact support</Link>
-          </Button>
-        }
+        actions={<MessageButton />}
       />
 
       <section className="grid gap-4 md:grid-cols-3">

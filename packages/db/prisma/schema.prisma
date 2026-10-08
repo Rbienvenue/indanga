@@ -39,6 +39,10 @@ model User {
   sessions           Session[]
   twofactors         TwoFactor[]
 
+  conversations      Conversation[]
+  messages           Message[]
+  conversationReads  ConversationRead[]
+
   @@map("user")
 }
 
@@ -65,6 +69,8 @@ model House {
   rooms              RoomType[]
   reviews            Review[]
   favorites          Favorite[]
+
+  conversations      Conversation[]
 
   @@index([ownerId])
   @@map("house")
@@ -117,6 +123,8 @@ model Booking {
   roomType      RoomType?      @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
   notifications Notification[]
   payments      Payment[]
+
+  conversation  Conversation?
 
   @@index([clientId])
   @@index([houseId])
@@ -339,4 +347,63 @@ enum VerificationStatus {
 enum FeeType {
   percentage
   fixed
+}
+
+// Public identities are independent of the internal sender account.
+enum ConversationType {
+  SUPPORT
+  PROPERTY
+}
+
+enum MessageSenderType {
+  CLIENT
+  SUPPORT
+  PROPERTY
+}
+
+model Conversation {
+  id           String           @id @default(cuid())
+  key          String           @unique
+  type         ConversationType
+  clientId     String?
+  bookingId    String?          @unique
+  houseId      String?
+  propertyName String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @default(now()) @updatedAt
+  client       User?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  booking      Booking?         @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  house        House?           @relation(fields: [houseId], references: [id], onDelete: SetNull)
+  messages     Message[]
+  reads        ConversationRead[]
+
+  @@index([clientId, updatedAt])
+  @@index([houseId, updatedAt])
+  @@index([type, updatedAt])
+  @@map("conversation")
+}
+
+model Message {
+  id             String            @id @default(cuid())
+  conversationId String
+  senderId       String?
+  senderType     MessageSenderType
+  text           String
+  createdAt      DateTime          @default(now())
+  conversation   Conversation      @relation(fields: [conversationId], references: [id], onDelete: Restrict)
+  sender         User?             @relation(fields: [senderId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt, id])
+  @@map("message")
+}
+
+model ConversationRead {
+  conversationId String
+  userId         String
+  lastReadAt     DateTime
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Restrict)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@map("conversation_read")
 }

@@ -31,7 +31,7 @@ export function RevenueChart({ data }: { data: RevenuePoint[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Monthly Revenue Trend</CardTitle>
+        <CardTitle>Monthly commission earned</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-80">

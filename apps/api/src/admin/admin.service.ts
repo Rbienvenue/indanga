@@ -25,11 +25,13 @@ const MONTH_LABELS = [
   "Dec",
 ] as const;
 
-function bucketRevenueByMonth(payments: { amount: Prisma.Decimal; createdAt: Date }[]) {
+function bucketRevenueByMonth(
+  payments: { booking: { serviceFee: number | null }; createdAt: Date }[],
+) {
   const totals = Array.from({ length: 12 }, () => 0);
 
   for (const payment of payments) {
-    totals[payment.createdAt.getMonth()] += payment.amount.toNumber();
+    totals[payment.createdAt.getMonth()] += payment.booking.serviceFee ?? 0;
   }
 
   return MONTH_LABELS.map((month, index) => ({
@@ -102,8 +104,7 @@ export class AdminService {
       pendingVerification,
       pendingListings,
       failedPayments,
-      revenueResult,
-      yearPayments,
+      completedPayments,
     ] = await Promise.all([
       this.db.user.count(),
       this.db.user.count({ where: { role: "tenant" } }),
@@ -117,13 +118,9 @@ export class AdminService {
       this.db.user.count({ where: { role: "landlord", kycStatus: "PENDING" } }),
       this.db.house.count({ where: { status: "PENDING" } }),
       this.db.payment.count({ where: { status: "FAILED" } }),
-      this.db.payment.aggregate({
-        _sum: { amount: true },
-        where: { status: "COMPLETED" },
-      }),
       this.db.payment.findMany({
-        where: { status: "COMPLETED", createdAt: { gte: startOfYear } },
-        select: { amount: true, createdAt: true },
+        where: { status: "COMPLETED" },
+        select: { amount: true, createdAt: true, booking: { select: { serviceFee: true } } },
       }),
     ]);
 
@@ -138,8 +135,18 @@ export class AdminService {
       pendingVerification,
       pendingListings,
       failedPayments,
-      totalRevenue: revenueResult._sum.amount?.toNumber() ?? 0,
-      revenueByMonth: bucketRevenueByMonth(yearPayments),
+      // Fees are stored on the booking when it is priced, not recalculated from today's fee settings.
+      totalRevenue: completedPayments.reduce(
+        (total, payment) => total + (payment.booking.serviceFee ?? 0),
+        0,
+      ),
+      totalCollected: completedPayments.reduce(
+        (total, payment) => total + payment.amount.toNumber(),
+        0,
+      ),
+      revenueByMonth: bucketRevenueByMonth(
+        completedPayments.filter((payment) => payment.createdAt >= startOfYear),
+      ),
     };
   }
 

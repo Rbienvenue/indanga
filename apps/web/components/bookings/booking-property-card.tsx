@@ -4,6 +4,7 @@ import { Bath, BedDouble, CalendarDays, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { BookingPaymentPanel } from "./booking-payment";
+import { MessageButton } from "@/components/messages/message-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getBookingKind } from "@/lib/booking-kind";
@@ -162,6 +163,10 @@ export function BookingPropertyCard({ booking }: { booking: BookingPropertyCardB
             you when the provider responds. No payment is required yet.
           </p>
         ) : null}
+
+        <div className="relative z-10 mt-3">
+          <MessageButton bookingId={booking.id} />
+        </div>
 
         {status === "AWAITING_PAYMENT" ? <BookingPaymentPanel booking={booking} /> : null}
 

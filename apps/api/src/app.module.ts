@@ -12,6 +12,8 @@ import { KycModule } from "./kyc/kyc.module";
 import { ServiceFeesModule } from "./service-fees/service-fees.module";
 import { GuestsModule } from "./guests/guests.module";
 
+import { MessagesModule } from "./messages/messages.module";
+
 @Module({
   imports: [
     AuthModule.forRoot({
@@ -27,6 +29,7 @@ import { GuestsModule } from "./guests/guests.module";
     KycModule,
     ServiceFeesModule,
     GuestsModule,
+    MessagesModule,
   ],
 })
 export class AppModule {}

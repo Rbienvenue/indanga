@@ -20,10 +20,17 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Get()
-  @Roles(["admin"])
+  @Roles(["tenant", "landlord", "admin"])
   async getPayments(@Session() session: UserSession, @Query() query: FilterPaymentsDto) {
     const result = await this.paymentsService.getPayments(session.user, query);
     return new PaginationResponse(result.data, result.meta);
+  }
+
+  @Get("stats")
+  @Roles(["landlord"])
+  async getPaymentStats(@Session() session: UserSession) {
+    const result = await this.paymentsService.getProviderPaymentStats(session.user.id);
+    return new ApiResponse(result);
   }
 
   @Post()

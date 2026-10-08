@@ -3,14 +3,17 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Loader2, RefreshCw } from "lucide-react";
+import { CreditCard, Loader2, RefreshCw, WalletCards } from "lucide-react";
 
-import type { PaginationResponse } from "@/@types";
+import type { ApiResponse, PaginationResponse } from "@/@types";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { StatCard } from "@/components/dashboard/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { fetcher } from "@/lib/fetcher";
+import { getBookingKind } from "@/lib/booking-kind";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice } from "@/lib/utils";
 
 type PaymentWithBooking = {
@@ -25,7 +28,8 @@ type PaymentWithBooking = {
     checkIn?: string | null;
     checkOut?: string | null;
     nights?: number | null;
-    house: { name: string };
+    serviceFee: number | null;
+    house: { name: string; propertyType: string };
     client: { name: string; email: string };
   };
 };
@@ -46,7 +50,13 @@ function RefreshPayment({ payment }: { payment: PaymentWithBooking }) {
           transactionReference: payment.transactionReference,
         }),
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-payments"] }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["admin-payments"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin-stats"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin-dashboard-payments"] }),
+      ]);
+    },
   });
 
   if (payment.status !== "PENDING") return null;
@@ -72,12 +82,18 @@ function RefreshPayment({ payment }: { payment: PaymentWithBooking }) {
 const columns: ColumnDef<PaymentWithBooking>[] = [
   {
     accessorKey: "amount",
-    header: "Amount",
+    header: "Customer paid / due",
     cell: ({ row }) => <span className="font-medium">{formatPrice(row.original.amount)}</span>,
   },
   {
+    id: "commission",
+    header: "Commission earned",
+    accessorFn: (row) => (row.status === "COMPLETED" ? (row.booking.serviceFee ?? 0) : 0),
+    cell: ({ getValue }) => <span className="font-medium">{formatPrice(getValue<number>())}</span>,
+  },
+  {
     id: "tenant",
-    header: "Tenant",
+    header: "Client",
     accessorFn: (row) => row.booking.client.name,
     cell: ({ row }) => (
       <div>
@@ -97,9 +113,11 @@ const columns: ColumnDef<PaymentWithBooking>[] = [
   },
   {
     id: "stay",
-    header: "Stay",
+    header: "Booking period",
     cell: ({ row }) => {
       const { checkIn, checkOut, nights } = row.original.booking;
+      const unit =
+        getBookingKind(row.original.booking.house.propertyType) === "car" ? "day" : "night";
       if (!checkIn || !checkOut) return <span className="text-muted-foreground">—</span>;
       return (
         <div>
@@ -108,7 +126,8 @@ const columns: ColumnDef<PaymentWithBooking>[] = [
           </p>
           {nights ? (
             <p className="text-xs text-muted-foreground">
-              {nights} night{nights > 1 ? "s" : ""}
+              {nights} {unit}
+              {nights > 1 ? "s" : ""}
             </p>
           ) : null}
         </div>
@@ -142,6 +161,10 @@ export default function AdminPaymentsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
   const limit = 20;
+  const statsQuery = useQuery<ApiResponse<{ totalRevenue: number; totalCollected: number }>>({
+    queryKey: ["admin-stats"],
+    queryFn: () => fetcher("/admin/stats"),
+  });
 
   const query = useQuery<PaginationResponse<PaymentWithBooking>>({
     queryKey: ["admin-payments", statusFilter, page],
@@ -159,34 +182,76 @@ export default function AdminPaymentsPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <PageHeader title="Payments" description={`${meta?.total ?? 0} total payments`} />
-
-      <DataTable
-        columns={columns}
-        data={payments}
-        loading={query.isLoading}
-        filterBy={[
-          {
-            id: "status",
-            placeholder: "All Status",
-            value: statusFilter,
-            onChange: (value) => {
-              setStatusFilter(value);
-              setPage(1);
-            },
-            options: [
-              { label: "Pending", value: "PENDING" },
-              { label: "Completed", value: "COMPLETED" },
-              { label: "Failed", value: "FAILED" },
-            ],
-          },
-        ]}
-        pagination={{
-          page,
-          totalPages: meta?.totalPages ?? 1,
-          onPageChange: setPage,
-        }}
+      <PageHeader
+        title="Payments"
+        description="Track customer payments and Indanga’s earned commission."
       />
+
+      {statsQuery.isError ? (
+        <p role="alert" className="text-sm text-destructive">
+          Unable to load payment totals.{" "}
+          <button className="underline" onClick={() => void statsQuery.refetch()}>
+            Retry
+          </button>
+        </p>
+      ) : statsQuery.isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Skeleton className="h-24 rounded-xl" />
+          <Skeleton className="h-24 rounded-xl" />
+        </div>
+      ) : (
+        <section className="grid gap-4 sm:grid-cols-2">
+          <StatCard
+            title="Commission earned · all time"
+            value={formatPrice(statsQuery.data?.data.totalRevenue ?? 0)}
+            icon={<WalletCards className="size-5" />}
+          />
+          <StatCard
+            title="Customer payments collected · all time"
+            value={formatPrice(statsQuery.data?.data.totalCollected ?? 0)}
+            icon={<CreditCard className="size-5" />}
+          />
+        </section>
+      )}
+      <p className="text-sm text-muted-foreground">
+        Totals include completed payments only. Customer payments include the provider’s booking
+        amount and Indanga’s service fee.
+      </p>
+      {query.isError ? (
+        <p role="alert" className="text-sm text-destructive">
+          Unable to load payments.{" "}
+          <button className="underline" onClick={() => void query.refetch()}>
+            Retry
+          </button>
+        </p>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={payments}
+          loading={query.isLoading}
+          filterBy={[
+            {
+              id: "status",
+              placeholder: "All Status",
+              value: statusFilter,
+              onChange: (value) => {
+                setStatusFilter(value);
+                setPage(1);
+              },
+              options: [
+                { label: "Pending", value: "PENDING" },
+                { label: "Completed", value: "COMPLETED" },
+                { label: "Failed", value: "FAILED" },
+              ],
+            },
+          ]}
+          pagination={{
+            page,
+            totalPages: meta?.totalPages ?? 1,
+            onPageChange: setPage,
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { fetcher } from "@/lib/fetcher";
+import { getBookingKind } from "@/lib/booking-kind";
 import { formatPrice } from "@/lib/utils";
 
 type BookingWithDetails = {
@@ -30,7 +31,7 @@ type BookingWithDetails = {
   checkOut?: string | null;
   nights?: number | null;
   totalAmount?: number | null;
-  house: { id: string; name: string; location: string; price: number };
+  house: { id: string; name: string; location: string; price: number; propertyType: string };
   client: { id: string; name: string; email: string };
 };
 
@@ -95,9 +96,10 @@ const columns: ColumnDef<BookingWithDetails>[] = [
   },
   {
     id: "stay",
-    header: "Stay",
+    header: "Booking period",
     cell: ({ row }) => {
       const { checkIn, checkOut, nights } = row.original;
+      const unit = getBookingKind(row.original.house.propertyType) === "car" ? "day" : "night";
       if (!checkIn || !checkOut) return <span className="text-muted-foreground">—</span>;
       return (
         <div>
@@ -106,7 +108,8 @@ const columns: ColumnDef<BookingWithDetails>[] = [
           </p>
           {nights ? (
             <p className="text-xs text-muted-foreground">
-              {nights} night{nights > 1 ? "s" : ""}
+              {nights} {unit}
+              {nights > 1 ? "s" : ""}
             </p>
           ) : null}
         </div>

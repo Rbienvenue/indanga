@@ -19,10 +19,10 @@ export function BookingRequestStatus({
 
   return (
     <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
-      <p className="font-semibold">{confirmed ? "Booking confirmed" : "Booking request sent"}</p>
+      <p className="font-semibold">{confirmed ? "Booking confirmed." : "Booking request sent"}</p>
       <p className="mt-1 text-sm text-muted-foreground">
         {confirmed
-          ? "Your payment was successful and the booking is secured."
+          ? "Keep your booking reference for check-in, pickup, changes, cancellation, and support."
           : "Your request was sent to the provider. Your booking is not confirmed yet. We will notify you when the provider responds. No payment is required yet."}
       </p>
       {booking.bookingId ? (

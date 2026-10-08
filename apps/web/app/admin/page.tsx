@@ -108,7 +108,7 @@ export default function AdminPage() {
               icon={<CheckCircle className="size-5" />}
             />
             <StatCard
-              title="Total Revenue"
+              title="Commission earned"
               value={formatPrice(stats?.totalRevenue ?? 0)}
               icon={<CreditCard className="size-5" />}
             />
