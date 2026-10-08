@@ -18,7 +18,7 @@ type PaymentPayload = {
 
 @WebSocketGateway({
   cors: {
-    origin: [env.FRONTEND_URL],
+    origin: [env.FRONTEND_URL,"www.indanga.com"],
     credentials: true,
   },
 })

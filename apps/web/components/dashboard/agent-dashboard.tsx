@@ -74,7 +74,7 @@ export function AgentDashboard({
         <Button asChild>
           <Link href="/dashboard/properties/new">
             <Plus />
-            {isHouse ? "Add house" : isCar ? "Add vehicle" : "Add hotel"}
+            {isHouse ? "Add house" : isCar ? "Add vehicle" : "Add listing"}
           </Link>
         </Button>
       </div>
@@ -106,7 +106,7 @@ export function AgentDashboard({
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Fleet overview</CardTitle>
             <Button asChild variant="ghost" size="sm">
-              <Link href="/dashboard/search">View vehicles</Link>
+              <Link href="/dashboard/listings">View vehicles</Link>
             </Button>
           </CardHeader>
           <CardContent className="flex items-center gap-3">

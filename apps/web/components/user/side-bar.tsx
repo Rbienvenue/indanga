@@ -57,7 +57,7 @@ const tenantItems = [
 
 const agentItems = [
   { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { title: "Listings", href: "/dashboard/search", icon: House },
+  { title: "Listings", href: "/dashboard/listings", icon: House },
   { title: "Bookings", href: "/dashboard/bookings", icon: Calendar },
   { title: "Calendar", href: "/dashboard/calendar", icon: Calendar },
   { title: "Guests", href: "/dashboard/guest", icon: Users },
@@ -69,7 +69,7 @@ const agentItems = [
 const carItems = agentItems
   .filter((item) => item.href !== "/dashboard/reviews" && item.href !== "/dashboard/calendar")
   .map((item) => {
-    if (item.href === "/dashboard/search") return { ...item, title: "Vehicles", icon: CarFront };
+    if (item.href === "/dashboard/listings") return { ...item, title: "Vehicles", icon: CarFront };
     return item;
   });
 carItems.splice(7, 0, { title: "Compliance", href: "/dashboard/compliance", icon: ShieldCheck });
@@ -77,7 +77,7 @@ carItems.splice(7, 0, { title: "Compliance", href: "/dashboard/compliance", icon
 const houseItems = agentItems
   .filter((item) => item.href !== "/dashboard/calendar")
   .map((item) => {
-    if (item.href === "/dashboard/search") return { ...item, title: "Houses" };
+    if (item.href === "/dashboard/listings") return { ...item, title: "Houses" };
     if (item.href === "/dashboard/properties/new") return { ...item, title: "Add House" };
     return item;
   });
