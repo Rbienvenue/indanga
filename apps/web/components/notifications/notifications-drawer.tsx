@@ -60,7 +60,7 @@ export function NotificationsDrawer() {
   const session = useSession();
   const user = session?.user;
   const queryClient = useQueryClient();
-  const { socket, isConnected } = useSocketIo();
+  const { socket, isConnected } = useSocketIo(Boolean(user?.id));
   const [open, setOpen] = useState(false);
 
   const notificationsQuery = useQuery<PaginationResponse<NotificationItem>>({

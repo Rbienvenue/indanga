@@ -100,7 +100,9 @@ export function BookingCard({
   const [step, setStep] = useState<"booking" | "payment" | "submitted">("booking");
   const [payment, setPayment] = useState<{ id: string; status: PaymentStatus } | null>(null);
   const [isReporting, setIsReporting] = useState(false);
-  const { socket } = useSocketIo();
+  const paymentId = payment?.id;
+  const needsPaymentSocket = step === "payment" || payment?.status === "pending";
+  const { socket, isConnected } = useSocketIo(needsPaymentSocket);
   const router = useRouter();
   const bookingKind = getBookingKind(house.propertyType);
   const isDated = bookingKind === "hotel" || bookingKind === "car";
@@ -126,7 +128,6 @@ export function BookingCard({
   const checkOut = useWatch({ control: form.control, name: "checkOut" });
   const roomTypeId = useWatch({ control: form.control, name: "roomTypeId" });
   const roomCount = useWatch({ control: form.control, name: "roomCount" });
-  const paymentId = payment?.id;
   const nights = isDated ? getNights(checkIn, checkOut) : 0;
   const selectedRoom = isHotel ? rooms.find((room) => room.id === roomTypeId) : undefined;
   const quantity = isHotel ? Math.max(Number(roomCount) || 1, 1) : 1;
@@ -219,7 +220,7 @@ export function BookingCard({
   });
 
   useEffect(() => {
-    if (!socket || !paymentId) return;
+    if (!socket || !isConnected || !paymentId) return;
 
     function handlePaymentUpdate(update: { paymentId: string; status: PaymentStatus }) {
       if (update.paymentId !== paymentId) return;
@@ -240,7 +241,7 @@ export function BookingCard({
     return () => {
       socket.off("payment.update", handlePaymentUpdate);
     };
-  }, [paymentId, router, socket]);
+  }, [isConnected, paymentId, router, socket]);
 
   function beginCheckout() {
     if (onBook()) setStep("payment");

@@ -1,11 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 
 type SocketContextValue = {
   socket: Socket | null;
   isConnected: boolean;
+  addConsumer: () => () => void;
 };
 
 const SocketContext = createContext<SocketContextValue | undefined>(undefined);
@@ -15,16 +16,28 @@ function getSocketUrl() {
 }
 
 export function SocketIoProvider({ children }: { children: React.ReactNode }) {
+  const [consumerCount, setConsumerCount] = useState(0);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const socketRef = useRef<Socket | null>(null);
+  const shouldConnect = consumerCount > 0;
+
+  const addConsumer = useCallback(() => {
+    setConsumerCount((count) => count + 1);
+
+    return () => {
+      setConsumerCount((count) => Math.max(0, count - 1));
+    };
+  }, []);
 
   useEffect(() => {
-    const socket = io(getSocketUrl(), {
+    if (!shouldConnect) return;
+
+    const nextSocket = io(getSocketUrl(), {
       transports: ["websocket"],
       withCredentials: true,
     });
 
-    socketRef.current = socket;
+    setSocket(nextSocket);
 
     function handleConnect() {
       setIsConnected(true);
@@ -34,33 +47,41 @@ export function SocketIoProvider({ children }: { children: React.ReactNode }) {
       setIsConnected(false);
     }
 
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
+    nextSocket.on("connect", handleConnect);
+    nextSocket.on("disconnect", handleDisconnect);
 
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
-      socket.disconnect();
-      socketRef.current = null;
+      nextSocket.off("connect", handleConnect);
+      nextSocket.off("disconnect", handleDisconnect);
+      nextSocket.disconnect();
+      setSocket(null);
+      setIsConnected(false);
     };
-  }, []);
+  }, [shouldConnect]);
 
   const value = useMemo(
     () => ({
-      socket: socketRef.current,
+      socket,
       isConnected,
+      addConsumer,
     }),
-    [isConnected],
+    [addConsumer, isConnected, socket],
   );
 
   return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
 }
 
-export function useSocketIo() {
+export function useSocketIo(enabled = true) {
   const context = useContext(SocketContext);
   if (!context) {
     throw new Error("useSocketIo must be used within SocketIoProvider");
   }
+
+  const { addConsumer } = context;
+  useEffect(() => {
+    if (!enabled) return;
+    return addConsumer();
+  }, [addConsumer, enabled]);
 
   return context;
 }
