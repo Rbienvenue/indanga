@@ -8,6 +8,24 @@ import ForgotPasswordEmail from "../email/templates/forgot-password";
 import { renderToString } from "../email/render";
 import { env } from "./env";
 
+function resolveCrossSubDomainCookies(): { enabled: boolean; domain?: string } {
+  const hosts = [env.BETTER_AUTH_URL, env.FRONTEND_URL].map((value) => {
+    try {
+      return new URL(value).hostname.toLowerCase();
+    } catch {
+      return "";
+    }
+  });
+  const [apiHost, frontendHost] = hosts;
+  const productionApex = "indanga.com";
+  const isProductionHost = (host: string) =>
+    host === productionApex || host.endsWith(`.${productionApex}`);
+  if (apiHost && frontendHost && isProductionHost(apiHost) && isProductionHost(frontendHost)) {
+    return { enabled: true, domain: productionApex };
+  }
+  return { enabled: false };
+}
+
 export const auth = betterAuth({
   appName: "Indanga",
   secret: env.BETTER_AUTH_SECRET,
@@ -15,6 +33,9 @@ export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
   basePath: "/v1/auth",
   trustedOrigins: [env.BETTER_AUTH_URL, env.FRONTEND_URL, "https://www.indanga.com"],
+  advanced: {
+    crossSubDomainCookies: resolveCrossSubDomainCookies(),
+  },
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),

@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "./api-url";
+
 /*
  * A wrapper around the fetch API that adds the necessary url, credentials and headers
  * @param url - The URL to fetch
@@ -5,11 +7,17 @@
  * @returns The response from the API
  */
 export async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`/api${url}`, {
+  const target = url.startsWith("http") ? url : `${API_BASE_URL}/v1${url}`;
+  // Only send a JSON Content-Type when a body is actually present. Adding
+  // it to bodyless requests triggers a needless CORS preflight, and setting
+  // it on FormData would break the browser-generated multipart boundary.
+  const hasJsonBody =
+    options?.body !== undefined && options?.body !== null && !(options.body instanceof FormData);
+  const response = await fetch(target, {
     ...options,
     credentials: "include",
     headers: {
-      "Content-Type": "application/json",
+      ...(hasJsonBody ? { "Content-Type": "application/json" } : undefined),
       ...options?.headers,
     },
   });

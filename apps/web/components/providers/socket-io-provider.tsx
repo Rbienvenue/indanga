@@ -3,6 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 
+import { API_BASE_URL } from "@/lib/api-url";
+
 type SocketContextValue = {
   socket: Socket | null;
   isConnected: boolean;
@@ -12,7 +14,7 @@ type SocketContextValue = {
 const SocketContext = createContext<SocketContextValue | undefined>(undefined);
 
 function getSocketUrl() {
-  return process.env.NEXT_PUBLIC_API_URL ?? "https://indanga-api-tau.vercel.app";
+  return API_BASE_URL;
 }
 
 export function SocketIoProvider({ children }: { children: React.ReactNode }) {

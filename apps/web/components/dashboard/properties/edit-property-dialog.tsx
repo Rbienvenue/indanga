@@ -27,6 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createHouseSchema, type CreateHouseValues } from "@/lib/validations/house";
+import { fetcher } from "@/lib/fetcher";
 
 type HouseData = {
   id: string;
@@ -40,24 +41,21 @@ type HouseData = {
   bathrooms: number;
 };
 
-function buildPropertyFormData(values: CreateHouseValues) {
-  const formData = new FormData();
-
-  formData.append("name", values.name);
-  formData.append("propertyType", values.propertyType);
-  if (values.price != null) formData.append("price", String(values.price));
-  formData.append("province", values.province ?? "");
-  formData.append("district", values.district);
-  formData.append("sector", values.sector);
-  formData.append("cell", values.cell);
-  formData.append("village", values.village);
-  formData.append("address", values.address ?? "");
-  formData.append("description", values.description);
-
-  if (values.bedrooms != null) formData.append("bedrooms", String(values.bedrooms));
-  if (values.bathrooms != null) formData.append("bathrooms", String(values.bathrooms));
-
-  return formData;
+function buildPropertyPayload(values: CreateHouseValues) {
+  return {
+    name: values.name,
+    propertyType: values.propertyType,
+    price: values.price,
+    province: values.province,
+    district: values.district,
+    sector: values.sector,
+    cell: values.cell,
+    village: values.village,
+    address: values.address,
+    description: values.description,
+    bedrooms: values.bedrooms,
+    bathrooms: values.bathrooms,
+  };
 }
 
 function parseLocation(location: string) {
@@ -95,20 +93,11 @@ export function EditPropertyDialog({ house }: { house: HouseData }) {
   });
 
   const editMutation = useMutation({
-    mutationFn: async (values: CreateHouseValues) => {
-      const response = await fetch(`/api/properties/${house.id}`, {
+    mutationFn: (values: CreateHouseValues) =>
+      fetcher<ApiResponse<unknown>>(`/properties/${house.id}`, {
         method: "PATCH",
-        credentials: "include",
-        body: buildPropertyFormData(values),
-      });
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => null);
-        throw new Error(error?.message || "Request failed");
-      }
-
-      return response.json() as Promise<ApiResponse<unknown>>;
-    },
+        body: JSON.stringify(buildPropertyPayload(values)),
+      }),
     onSuccess: () => {
       toast.success("Property updated successfully");
       void queryClient.invalidateQueries({ queryKey: ["properties"] });

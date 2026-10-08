@@ -38,6 +38,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
+import { isVideoMediaUrl } from "@/lib/property-media";
 import { amenityIcons, parseAmenities } from "@/lib/amenities";
 import { propertyAmenityLabels } from "@/lib/validations/house";
 import { cn, formatPrice } from "@/lib/utils";
@@ -47,6 +48,7 @@ function Gallery({ house }: { house: House }) {
   const media = house.media.length > 0 ? house.media : [];
   const images =
     media.length > 0 ? Array.from({ length: 5 }, (_, index) => media[index % media.length]) : [];
+  const hasVideos = media.some(isVideoMediaUrl);
   const [open, setOpen] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
 
@@ -68,14 +70,25 @@ function Gallery({ house }: { house: House }) {
               index === 0 ? "col-span-4 row-span-2 sm:col-span-2" : "hidden sm:block",
             )}
           >
-            <Image
-              src={src}
-              alt={`${house.name} view ${index + 1}`}
-              fill
-              priority={index === 0}
-              className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-              sizes={index === 0 ? "(max-width: 640px) 100vw, 50vw" : "25vw"}
-            />
+            {isVideoMediaUrl(src) ? (
+              <video
+                src={src}
+                preload="metadata"
+                muted
+                playsInline
+                aria-label={`${house.name} video ${index + 1}`}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <Image
+                src={src}
+                alt={`${house.name} view ${index + 1}`}
+                fill
+                priority={index === 0}
+                className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                sizes={index === 0 ? "(max-width: 640px) 100vw, 50vw" : "25vw"}
+              />
+            )}
             <span className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
           </button>
         ))}
@@ -86,7 +99,7 @@ function Gallery({ house }: { house: House }) {
           className="absolute right-4 bottom-4 z-10 h-10 border border-black/10 bg-white/95 px-4 text-slate-950 shadow-lg hover:bg-white"
         >
           <Maximize2 />
-          View all photos
+          {hasVideos ? "View all media" : "View all photos"}
         </Button>
       </div>
 

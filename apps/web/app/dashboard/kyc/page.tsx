@@ -24,6 +24,7 @@ import { ImageDropzone } from "@/components/ui/image-dropzone";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getSession } from "@/lib/auth-client";
+import { apiUrl } from "@/lib/api-url";
 import { fetcher } from "@/lib/fetcher";
 import { kycSubmitSchema, type KycSubmitValues } from "@/lib/validations/kyc";
 
@@ -89,7 +90,7 @@ function UploadForm({ onSuccess }: { onSuccess: () => void }) {
     mutationFn: async (values: KycSubmitValues) => {
       const formData = new FormData();
       formData.append("ID_DOCUMENT", values.document[0]);
-      const response = await fetch("/api/kyc", {
+      const response = await fetch(apiUrl("/v1/kyc"), {
         method: "POST",
         credentials: "include",
         body: formData,
