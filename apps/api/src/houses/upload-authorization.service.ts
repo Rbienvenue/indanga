@@ -95,7 +95,7 @@ export class UploadAuthorizationService {
     for (const url of urls) {
       const key = this.storageService.keyFromHouseMediaUrl(url);
       if (!key) {
-        throw new BadRequestException("Media URL is not in the property storage");
+        throw new BadRequestException(`New media URL is not in the property storage: ${url}`);
       }
       if (!this.storageService.isHouseMediaKeyForUser(key, userId)) {
         throw new BadRequestException("Media URL is not in your upload namespace");
@@ -117,11 +117,7 @@ export class UploadAuthorizationService {
     const owned = new Set(currentMedia);
     for (const url of submitted) {
       if (!owned.has(url)) {
-        throw new BadRequestException("Existing media is not part of this property");
-      }
-      const key = this.storageService.keyFromHouseMediaUrl(url);
-      if (!key) {
-        throw new BadRequestException("Media URL is not in the property storage");
+        throw new BadRequestException(`Existing media is not part of this property: ${url}`);
       }
     }
     return submitted;
