@@ -12,6 +12,12 @@ export default function NewPropertyPage() {
   const searchParams = useSearchParams();
   const propertyId = searchParams.get("propertyId") ?? searchParams.get("houseId") ?? undefined;
   const isEditMode = !!propertyId;
+  const listingLabel =
+    session?.user.providerType === "CAR"
+      ? "vehicle"
+      : session?.user.providerType === "HOUSE"
+        ? "house"
+        : "hotel";
 
   useEffect(() => {
     if (session?.user?.role !== "landlord") {
@@ -24,15 +30,15 @@ export default function NewPropertyPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="w-full space-y-8 rounded-lg border border-border px-3 py-2 sm:px-6 sm:py-4">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          {isEditMode ? "Edit Property" : "Add Property"}
+          {isEditMode ? "Edit listing" : `Add ${listingLabel}`}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {isEditMode
             ? "Update your property details."
-            : "List a new property for tenants to discover and book."}
+            : `List a new ${listingLabel} for customers to discover and book.`}
         </p>
       </div>
 

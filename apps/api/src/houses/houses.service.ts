@@ -48,6 +48,15 @@ export class HousesService {
 
   async createHouse(ownerId: string, role: UserRole, kycStatus: KycStatus, data: CreateHouseDto) {
     this.assertVerified(role, kycStatus);
+    if (role !== "admin") {
+      const owner = await this.db.user.findUniqueOrThrow({
+        where: { id: ownerId },
+        select: { providerType: true },
+      });
+      if (data.propertyType.toUpperCase() !== owner.providerType) {
+        throw new BadRequestException("Property type must match your registered provider category");
+      }
+    }
     const {
       province,
       district,
@@ -248,6 +257,13 @@ export class HousesService {
     const house = await this.getHouseById(id);
     this.assertVerified(role, kycStatus);
     this.isAllowed(house.ownerId, userId, role);
+    if (
+      role !== "admin" &&
+      data.propertyType !== undefined &&
+      data.propertyType !== house.propertyType
+    ) {
+      throw new BadRequestException("An existing property's category cannot be changed");
+    }
 
     const {
       province,
