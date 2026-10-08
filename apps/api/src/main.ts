@@ -11,7 +11,7 @@ async function main() {
   });
   app.use(morgan("dev"));
   app.enableCors({
-    origin: [env.FRONTEND_URL,"www.indanga.com"],
+    origin: [env.FRONTEND_URL, "https://www.indanga.com"],
     credentials: true,
   });
   app.setGlobalPrefix("/v1");
