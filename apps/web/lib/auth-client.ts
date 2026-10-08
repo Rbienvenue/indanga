@@ -32,6 +32,11 @@ export const authClient = createAuthClient({
           required: false,
           input: false,
         },
+        providerType: {
+          type: ["HOUSE", "HOTEL", "CAR"],
+          required: false,
+          input: true,
+        },
       },
     }),
     adminClient(),

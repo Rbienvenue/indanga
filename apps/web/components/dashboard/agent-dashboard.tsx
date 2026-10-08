@@ -1,301 +1,299 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  House,
-  CalendarCheck,
-  CreditCard,
-  Star,
-  PlusCircle,
-  Eye,
-  Check,
-  X,
-  Loader2,
-  User,
-} from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { BedDouble, CalendarCheck, CarFront, Clock3, Plus, WalletCards } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
-
+import type { BookingStatus, ProviderType } from "@indanga/db";
 import type { ApiResponse, PaginationResponse } from "@/@types";
-import { StatCard } from "./stat-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
 import { formatPrice } from "@/lib/utils";
+import { StatCard } from "./stat-card";
 
 type AgentStats = {
   totalProperties: number;
+  availableListings: number;
   activeBookings: number;
-  totalRevenue: number;
-  avgRating: number | null;
+  newRequests: number;
+  bookingsToday: number;
+  pendingPayment: number;
 };
 
-type BookingWithDetails = {
+type Booking = {
   id: string;
-  bookingId?: string | null;
-  status:
-    | "PENDING"
-    | "APPROVED"
-    | "REJECTED"
-    | "CANCELLED"
-    | "COMPLETED"
-    | "REQUESTED"
-    | "AWAITING_PAYMENT"
-    | "CONFIRMED"
-    | "DECLINED"
-    | "EXPIRED";
-  createdAt: string;
-  house: {
-    id: string;
-    name: string;
-    location: string;
-    price: number;
-  };
-  client: {
-    id: string;
-    name: string;
-    email: string;
-    image: string | null;
-  };
+  bookingId: string | null;
+  status: BookingStatus;
+  checkIn: string | null;
+  checkOut: string | null;
+  totalAmount: number | null;
+  roomCount: number | null;
+  roomType: { name: string } | null;
+  house: { id: string; name: string; location: string };
+  client: { name: string; email: string };
 };
 
-const statusColors: Record<string, string> = {
-  PENDING: "bg-amber-100 text-amber-700",
-  APPROVED: "bg-green-100 text-green-700",
-  REJECTED: "bg-red-100 text-red-700",
-  CANCELLED: "bg-gray-100 text-gray-700",
-  COMPLETED: "bg-sky-100 text-sky-700",
-  REQUESTED: "bg-amber-100 text-amber-700",
-  AWAITING_PAYMENT: "bg-violet-100 text-violet-700",
-  CONFIRMED: "bg-green-100 text-green-700",
-  DECLINED: "bg-red-100 text-red-700",
-  EXPIRED: "bg-gray-100 text-gray-700",
-};
-
-function AgentStatCards() {
-  const statsQuery = useQuery<ApiResponse<AgentStats>>({
-    queryKey: ["agent-stats"],
-    queryFn: () => fetcher("/properties/stats"),
-  });
-
-  const stats = statsQuery.data?.data;
-
-  if (statsQuery.isLoading) {
-    return (
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
-            <CardContent className="flex items-center gap-3 px-4 py-3">
-              <Skeleton className="size-10 rounded-lg" />
-              <div className="space-y-2">
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-7 w-16" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </section>
-    );
-  }
-
-  return (
-    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <StatCard
-        title="Total Properties"
-        value={stats?.totalProperties ?? 0}
-        icon={<House className="size-5" />}
-      />
-      <StatCard
-        title="Active Bookings"
-        value={stats?.activeBookings ?? 0}
-        icon={<CalendarCheck className="size-5" />}
-      />
-      <StatCard
-        title="Total Revenue"
-        value={formatPrice(stats?.totalRevenue ?? 0)}
-        icon={<CreditCard className="size-5" />}
-      />
-      <StatCard
-        title="Avg. Rating"
-        value={stats?.avgRating != null ? `${stats.avgRating} ★` : "—"}
-        icon={<Star className="size-5" />}
-      />
-    </section>
-  );
+function formatDate(value: string | null) {
+  return value ? new Date(value).toLocaleDateString() : "—";
 }
 
-function AgentQuickActions() {
-  return (
-    <Card className="border-0 shadow-sm">
-      <CardHeader>
-        <CardTitle>Quick Actions</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Button asChild className="w-full justify-start gap-3" variant="outline" size="lg">
-          <Link href="/dashboard/properties/new">
-            <PlusCircle className="size-5" />
-            Add New Property
-          </Link>
-        </Button>
-        <Button asChild className="w-full justify-start gap-3" variant="outline" size="lg">
-          <Link href="/dashboard/search">
-            <Eye className="size-5" />
-            View All Properties
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
-
-function BookingActionButtons({ bookingId }: { bookingId: string }) {
+function BookingRequestActions({ bookingId }: { bookingId: string }) {
   const queryClient = useQueryClient();
-
-  const statusMutation = useMutation({
-    mutationFn: (status: string) =>
-      fetcher<ApiResponse<unknown>>(`/bookings/${bookingId}/status`, {
+  const mutation = useMutation({
+    mutationFn: (status: "AWAITING_PAYMENT" | "DECLINED") =>
+      fetcher(`/bookings/${bookingId}/status`, {
         method: "PATCH",
         body: JSON.stringify({ status }),
       }),
     onSuccess: () => {
-      toast.success("Booking status updated");
+      toast.success("Booking request updated");
       void queryClient.invalidateQueries({ queryKey: ["recent-bookings"] });
       void queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
       void queryClient.invalidateQueries({ queryKey: ["bookings"] });
     },
-    onError: (error: Error) => {
-      toast.error(error.message ?? "Failed to update booking status");
-    },
+    onError: (error: Error) => toast.error(error.message),
   });
 
   return (
     <div className="flex gap-2">
-      <Button
-        size="sm"
-        variant="outline"
-        className="gap-1.5 text-green-600 hover:bg-green-50 hover:text-green-700"
-        disabled={statusMutation.isPending}
-        onClick={() => statusMutation.mutate("AWAITING_PAYMENT")}
-      >
-        {statusMutation.isPending ? (
-          <Loader2 className="size-3.5 animate-spin" />
-        ) : (
-          <Check className="size-3.5" />
-        )}
-        Approve
+      <Button disabled={mutation.isPending} onClick={() => mutation.mutate("AWAITING_PAYMENT")}>
+        Accept request
       </Button>
       <Button
-        size="sm"
         variant="outline"
-        className="gap-1.5 text-red-600 hover:bg-red-50 hover:text-red-700"
-        disabled={statusMutation.isPending}
-        onClick={() => statusMutation.mutate("DECLINED")}
+        disabled={mutation.isPending}
+        onClick={() => mutation.mutate("DECLINED")}
       >
-        {statusMutation.isPending ? (
-          <Loader2 className="size-3.5 animate-spin" />
-        ) : (
-          <X className="size-3.5" />
-        )}
-        Reject
+        Decline
       </Button>
     </div>
   );
 }
 
-function RecentBookingRequests() {
-  const bookingsQuery = useQuery<PaginationResponse<BookingWithDetails>>({
-    queryKey: ["recent-bookings"],
-    queryFn: () => fetcher("/bookings?page=1&limit=5"),
-  });
-
-  const bookings = bookingsQuery.data?.data ?? [];
-
+function BookingDetails({ booking, isCar }: { booking?: Booking; isCar: boolean }) {
   return (
-    <Card className="shadow-sm md:col-span-2">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Recent Booking Requests</CardTitle>
-        <Button asChild variant="link" size="sm" className="text-xs">
-          <Link href="/dashboard/bookings">View all</Link>
-        </Button>
+    <Card className="h-fit">
+      <CardHeader>
+        <CardTitle>Booking details</CardTitle>
+        <p className="text-sm text-muted-foreground">{booking?.bookingId ?? "Select a booking"}</p>
       </CardHeader>
       <CardContent>
-        {bookingsQuery.isLoading ? (
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <Skeleton className="size-10 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : bookings.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No booking requests yet. They will appear here once tenants book your properties.
-          </p>
-        ) : (
-          <div className="space-y-4">
-            {bookings.map((booking) => (
-              <div
-                key={booking.id}
-                className="flex flex-col gap-3 rounded-lg border border-border/50 p-3 sm:flex-row sm:items-center sm:justify-between"
+        {booking ? (
+          <div className="space-y-5">
+            <div>
+              <Link
+                href={`/properties/${booking.house.id}`}
+                className="font-semibold hover:underline"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-muted">
-                    <User className="size-4 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">{booking.client.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {booking.house.name} • {new Date(booking.createdAt).toLocaleDateString()}
-                    </p>
-                    {booking.bookingId ? (
-                      <p className="text-xs font-medium text-muted-foreground">
-                        {booking.bookingId}
-                      </p>
-                    ) : null}
-                  </div>
+                {booking.house.name}
+              </Link>
+              <p className="mt-1 text-sm text-muted-foreground">{booking.house.location}</p>
+              {booking.roomType ? (
+                <p className="mt-1 text-sm">
+                  {booking.roomType.name} · {booking.roomCount ?? 1} room(s)
+                </p>
+              ) : null}
+            </div>
+            <dl className="grid grid-cols-2 gap-4 text-sm">
+              {booking.checkIn ? (
+                <div>
+                  <dt className="text-muted-foreground">{isCar ? "Pickup" : "Check-in"}</dt>
+                  <dd className="mt-1 font-medium">{formatDate(booking.checkIn)}</dd>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className={statusColors[booking.status]}>
-                    {booking.status.charAt(0) + booking.status.slice(1).toLowerCase()}
-                  </Badge>
-                  {booking.status === "REQUESTED" && (
-                    <BookingActionButtons bookingId={booking.id} />
-                  )}
+              ) : null}
+              {booking.checkOut ? (
+                <div>
+                  <dt className="text-muted-foreground">{isCar ? "Return" : "Check-out"}</dt>
+                  <dd className="mt-1 font-medium">{formatDate(booking.checkOut)}</dd>
                 </div>
+              ) : null}
+              <div>
+                <dt className="text-muted-foreground">Customer</dt>
+                <dd className="mt-1 font-medium">{booking.client.name}</dd>
               </div>
-            ))}
+              <div>
+                <dt className="text-muted-foreground">Total</dt>
+                <dd className="mt-1 font-medium">
+                  {booking.totalAmount != null ? formatPrice(booking.totalAmount) : "—"}
+                </dd>
+              </div>
+            </dl>
+            <p className="break-all rounded-lg bg-muted p-3 text-sm">{booking.client.email}</p>
+            <Badge variant="secondary">{booking.status.replaceAll("_", " ")}</Badge>
+            {booking.status === "REQUESTED" ? (
+              <BookingRequestActions bookingId={booking.id} />
+            ) : null}
           </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Choose a booking to review its details.</p>
         )}
       </CardContent>
     </Card>
   );
 }
 
-export function AgentDashboard({ firstName }: { firstName: string }) {
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+export function AgentDashboard({
+  firstName,
+  providerType,
+}: {
+  firstName: string;
+  providerType: ProviderType;
+}) {
+  const isCar = providerType === "CAR";
+  const isHouse = providerType === "HOUSE";
+  const [selectedId, setSelectedId] = useState<string>();
+  const statsQuery = useQuery<ApiResponse<AgentStats>>({
+    queryKey: ["agent-stats"],
+    queryFn: () => fetcher("/properties/stats"),
+  });
+  const bookingsQuery = useQuery<PaginationResponse<Booking>>({
+    queryKey: ["recent-bookings"],
+    queryFn: () => fetcher("/bookings?page=1&limit=5"),
+  });
+  const stats = statsQuery.data?.data;
+  const bookings = bookingsQuery.data?.data ?? [];
+  const selectedBooking = bookings.find((booking) => booking.id === selectedId) ?? bookings[0];
+  const cards = [
+    { title: "New requests", value: stats?.newRequests, icon: BedDouble },
+    {
+      title: isCar ? "Active rentals" : "Confirmed bookings",
+      value: stats?.activeBookings,
+      icon: CalendarCheck,
+    },
+    {
+      title: isHouse ? "Published houses" : isCar ? "Pickups today" : "Arrivals today",
+      value: isHouse ? stats?.availableListings : stats?.bookingsToday,
+      icon: Clock3,
+    },
+    { title: "Pending payment", value: stats?.pendingPayment, icon: WalletCards },
+  ];
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {greeting}, {firstName}!
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Manage your properties and bookings</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-1 text-sm font-medium text-primary">
+            {isHouse ? "House provider" : isCar ? "Car provider" : "Hotel provider"}
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">Welcome, {firstName}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {isHouse
+              ? "Manage houses, booking requests, and rentals."
+              : isCar
+                ? "Manage vehicles, rentals, and upcoming pickups."
+                : "Manage requests, bookings, and guest arrivals."}
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/dashboard/properties/new">
+            <Plus />
+            {isHouse ? "Add house" : isCar ? "Add vehicle" : "Add hotel"}
+          </Link>
+        </Button>
       </div>
-
-      <AgentStatCards />
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <RecentBookingRequests />
-        <AgentQuickActions />
-      </div>
+      {statsQuery.isError ? (
+        <p role="alert" className="text-sm text-destructive">
+          Unable to load dashboard totals.{" "}
+          <button className="underline" onClick={() => void statsQuery.refetch()}>
+            Retry
+          </button>
+        </p>
+      ) : (
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {cards.map((card) =>
+            statsQuery.isLoading ? (
+              <Skeleton key={card.title} className="h-24 rounded-xl" />
+            ) : (
+              <StatCard
+                key={card.title}
+                title={card.title}
+                value={card.value ?? 0}
+                icon={<card.icon className="size-5" />}
+              />
+            ),
+          )}
+        </section>
+      )}
+      {isCar && stats ? (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Fleet overview</CardTitle>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/dashboard/search">View vehicles</Link>
+            </Button>
+          </CardHeader>
+          <CardContent className="flex items-center gap-3">
+            <CarFront className="size-6 text-primary" />
+            <p>
+              <span className="font-semibold">{stats.availableListings}</span> published vehicles ·{" "}
+              <span className="font-semibold">{stats.totalProperties}</span> total vehicles
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
+      <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Recent bookings</CardTitle>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/dashboard/bookings">View all</Link>
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {bookingsQuery.isLoading ? (
+              <Skeleton className="h-48 w-full" />
+            ) : bookingsQuery.isError ? (
+              <p role="alert" className="text-sm text-destructive">
+                Unable to load bookings.{" "}
+                <button className="underline" onClick={() => void bookingsQuery.refetch()}>
+                  Retry
+                </button>
+              </p>
+            ) : bookings.length === 0 ? (
+              <p className="py-10 text-center text-sm text-muted-foreground">
+                No booking requests yet. Customer requests will appear here.
+              </p>
+            ) : (
+              bookings.map((booking) => (
+                <div
+                  key={booking.id}
+                  className={`rounded-lg border hover:bg-muted/50 ${selectedBooking?.id === booking.id ? "border-primary bg-primary/5" : "border-border"}`}
+                >
+                  <button
+                    type="button"
+                    aria-pressed={selectedBooking?.id === booking.id}
+                    onClick={() => setSelectedId(booking.id)}
+                    className="w-full rounded-lg p-4 text-left"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-medium">{booking.house.name}</p>
+                      <Badge variant="secondary">{booking.status.replaceAll("_", " ")}</Badge>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {booking.client.name} · {booking.bookingId ?? "Booking request"}
+                    </p>
+                    {booking.checkIn && booking.checkOut ? (
+                      <p className="mt-2 text-sm">
+                        {formatDate(booking.checkIn)} → {formatDate(booking.checkOut)}
+                      </p>
+                    ) : null}
+                  </button>
+                  {booking.status === "REQUESTED" ? (
+                    <div className="px-4 pb-4">
+                      <BookingRequestActions bookingId={booking.id} />
+                    </div>
+                  ) : null}
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+        <BookingDetails key={selectedBooking?.id} booking={selectedBooking} isCar={isCar} />
+      </section>
     </div>
   );
 }

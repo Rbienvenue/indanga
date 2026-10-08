@@ -25,6 +25,7 @@ export const signupSchema = z
     firstName: z.string().trim().min(2, "Enter your first name"),
     lastName: z.string().trim().min(2, "Enter your second name"),
     role: z.enum(["tenant", "landlord"], { message: "Select a role" }),
+    providerType: z.enum(["HOUSE", "HOTEL", "CAR"]),
     phoneNumber: z
       .string()
       .trim()

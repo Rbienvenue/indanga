@@ -22,7 +22,7 @@ export default function Page() {
   const firstName = user?.name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "there";
 
   if (user?.role === "landlord") {
-    return <AgentDashboard firstName={firstName} />;
+    return <AgentDashboard firstName={firstName} providerType={user.providerType ?? "HOTEL"} />;
   }
 
   return (

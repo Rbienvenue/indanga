@@ -22,6 +22,12 @@ export class BookingsController {
     return new PaginationResponse(result.data, result.meta);
   }
 
+  @Get("active")
+  async getActiveBooking(@Session() session: UserSession, @Query("houseId") houseId: string) {
+    const booking = await this.bookingsService.getActiveBooking(session.user.id, houseId);
+    return new ApiResponse(booking, "active booking fetched");
+  }
+
   @Get(":id")
   @Roles(["tenant", "landlord", "admin"])
   async getBookingById(@Param("id") id: string, @Session() session: UserSession) {

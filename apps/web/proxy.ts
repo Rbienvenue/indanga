@@ -41,9 +41,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  if (pathname === "/dashboard" && user?.role === "admin") {
-    return NextResponse.redirect(new URL("/admin", request.url));
-  }
+  // if (pathname === "/dashboard" && user?.role === "admin") {
+  //   return NextResponse.redirect(new URL("/admin", request.url));
+  // }
 
   const isKycPage = pathname === "/dashboard/kyc" || pathname.startsWith("/dashboard/kyc/");
   if (

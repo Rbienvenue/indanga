@@ -99,6 +99,9 @@ export class AdminService {
       totalBookings,
       pendingBookings,
       approvedBookings,
+      pendingVerification,
+      pendingListings,
+      failedPayments,
       revenueResult,
       yearPayments,
     ] = await Promise.all([
@@ -111,6 +114,9 @@ export class AdminService {
         where: { status: { in: ["PENDING", "REQUESTED", "AWAITING_PAYMENT"] } },
       }),
       this.db.booking.count({ where: { status: { in: ["APPROVED", "CONFIRMED"] } } }),
+      this.db.user.count({ where: { role: "landlord", kycStatus: "PENDING" } }),
+      this.db.house.count({ where: { status: "PENDING" } }),
+      this.db.payment.count({ where: { status: "FAILED" } }),
       this.db.payment.aggregate({
         _sum: { amount: true },
         where: { status: "COMPLETED" },
@@ -129,6 +135,9 @@ export class AdminService {
       totalBookings,
       pendingBookings,
       approvedBookings,
+      pendingVerification,
+      pendingListings,
+      failedPayments,
       totalRevenue: revenueResult._sum.amount?.toNumber() ?? 0,
       revenueByMonth: bucketRevenueByMonth(yearPayments),
     };

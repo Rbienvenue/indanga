@@ -19,6 +19,9 @@ import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
+import type { BookingPropertyCardBooking } from "@/components/bookings/booking-property-card";
+import { BookingRequestStatus } from "@/components/bookings/booking-request-status";
+import { usePropertyBooking } from "@/components/bookings/use-property-booking";
 import { BookingPriceSummary } from "@/components/houses/BookingPriceSummary";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -48,11 +51,6 @@ import {
 } from "@/lib/validations/booking";
 import { addDays, format, startOfDay } from "date-fns";
 
-type BookingRequestResponse = {
-  id: string;
-  bookingId: string;
-};
-
 type RoomAvailability = {
   roomType: RoomType;
   totalRooms: number;
@@ -77,8 +75,10 @@ export function BookingCard({
   onPolicyAcceptanceChange,
   compact = false,
 }: BookingCardProps) {
-  const [step, setStep] = useState<"booking" | "details" | "submitted">("booking");
-  const [bookingRequest, setBookingRequest] = useState<BookingRequestResponse | null>(null);
+  const [step, setStep] = useState<"booking" | "details">("booking");
+  const [dismissedBookingId, setDismissedBookingId] = useState<string | null>(null);
+  const bookingQuery = usePropertyBooking(house.id);
+  const bookingRequest = bookingQuery.data?.data;
   const [isReporting, setIsReporting] = useState(false);
   const bookingKind = getBookingKind(house.propertyType);
   const isDated = bookingKind === "hotel" || bookingKind === "car";
@@ -145,7 +145,7 @@ export function BookingCard({
 
   const requestMutation = useMutation({
     mutationFn: ({ houseId, checkIn, checkOut, roomTypeId, roomCount }: BookingValues) =>
-      fetcher<ApiResponse<BookingRequestResponse>>("/bookings", {
+      fetcher<ApiResponse<BookingPropertyCardBooking>>("/bookings", {
         method: "POST",
         body: JSON.stringify({
           houseId,
@@ -154,8 +154,9 @@ export function BookingCard({
         }),
       }),
     onSuccess: ({ data }) => {
-      setBookingRequest(data);
-      setStep("submitted");
+      bookingQuery.saveBooking(data);
+      setDismissedBookingId(null);
+      setStep("booking");
       toast.success("Booking request sent", { position: "top-center" });
     },
     onError: (error) => {
@@ -185,6 +186,40 @@ export function BookingCard({
     ) : (
       "Contact for price"
     );
+
+  if (bookingQuery.isLoading || bookingQuery.isError) {
+    return (
+      <div className="rounded-2xl border bg-card p-6">
+        {bookingQuery.isError ? (
+          <Button variant="outline" onClick={() => void bookingQuery.refetch()}>
+            Retry loading your booking
+          </Button>
+        ) : (
+          <p className="flex items-center gap-2 text-sm">
+            <Loader2 className="size-4 animate-spin" /> Loading your booking…
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (bookingRequest && bookingRequest.id !== dismissedBookingId) {
+    return (
+      <div className="rounded-2xl border bg-card p-6">
+        <BookingRequestStatus
+          booking={bookingRequest}
+          onBookAgain={
+            isDated
+              ? () => {
+                  setDismissedBookingId(bookingRequest.id);
+                  setStep("booking");
+                }
+              : undefined
+          }
+        />
+      </div>
+    );
+  }
 
   if (step === "booking") {
     if (compact) {
@@ -311,246 +346,233 @@ export function BookingCard({
         ready={priceReady}
       />
 
-      {step === "submitted" ? (
-        <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
-          <p className="font-semibold">Booking request sent</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Your request was sent to the provider. Your booking is not confirmed yet. We will notify
-            you when the provider responds. No payment is required yet.
-          </p>
-          {bookingRequest ? (
-            <p className="mt-2 text-sm font-medium">Booking ID: {bookingRequest.bookingId}</p>
-          ) : null}
-        </div>
-      ) : (
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit((values) => requestMutation.mutate(values))}
-            className="mt-5 space-y-4"
-          >
-            {isDated ? (
-              <div className="grid grid-cols-2 gap-3">
-                <FormField
-                  control={form.control}
-                  name="checkIn"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <Label className="text-sm font-semibold">
-                        {bookingKind === "car" ? "Pick date" : "Check-in"}
-                      </Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              disabled={submitting}
-                              className={cn(
-                                "mt-2 h-11 justify-start px-3 text-left font-normal",
-                                !field.value && "text-muted-foreground",
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 size-4" />
-                              {checkInDate ? (
-                                format(checkInDate, "LLL dd, y")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={checkInDate}
-                            disabled={{ before: today }}
-                            onSelect={(date) => {
-                              field.onChange(date ? format(date, "yyyy-MM-dd") : "");
-                              const nextCheckOut = form.getValues("checkOut");
-                              if (
-                                date &&
-                                nextCheckOut &&
-                                new Date(`${nextCheckOut}T00:00:00`) <= startOfDay(date)
-                              ) {
-                                form.setValue("checkOut", "", { shouldValidate: true });
-                              }
-                            }}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="checkOut"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <Label className="text-sm font-semibold">
-                        {bookingKind === "car" ? "Return date" : "Check-out"}
-                      </Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              disabled={submitting}
-                              className={cn(
-                                "mt-2 h-11 justify-start px-3 text-left font-normal",
-                                !field.value && "text-muted-foreground",
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 size-4" />
-                              {checkOutDate ? (
-                                format(checkOutDate, "LLL dd, y")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={checkOutDate}
-                            disabled={{ before: checkOutMinDate }}
-                            onSelect={(date) =>
-                              field.onChange(date ? format(date, "yyyy-MM-dd") : "")
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit((values) => requestMutation.mutate(values))}
+          className="mt-5 space-y-4"
+        >
+          {isDated ? (
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="checkIn"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <Label className="text-sm font-semibold">
+                      {bookingKind === "car" ? "Pick date" : "Check-in"}
+                    </Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={submitting}
+                            className={cn(
+                              "mt-2 h-11 justify-start px-3 text-left font-normal",
+                              !field.value && "text-muted-foreground",
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 size-4" />
+                            {checkInDate ? (
+                              format(checkInDate, "LLL dd, y")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={checkInDate}
+                          disabled={{ before: today }}
+                          onSelect={(date) => {
+                            field.onChange(date ? format(date, "yyyy-MM-dd") : "");
+                            const nextCheckOut = form.getValues("checkOut");
+                            if (
+                              date &&
+                              nextCheckOut &&
+                              new Date(`${nextCheckOut}T00:00:00`) <= startOfDay(date)
+                            ) {
+                              form.setValue("checkOut", "", { shouldValidate: true });
                             }
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            ) : null}
-
-            {isHotel ? (
-              <div className="grid grid-cols-2 gap-3">
-                <FormField
-                  control={form.control}
-                  name="roomTypeId"
-                  render={({ field }) => (
-                    <FormItem className="flex min-w-0 flex-col">
-                      <Label className="text-sm font-semibold">Room type</Label>
-                      <Select
-                        value={field.value ?? ""}
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          form.setValue("roomCount", 1, { shouldValidate: true });
-                        }}
-                        disabled={submitting || rooms.length === 0}
-                      >
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="checkOut"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <Label className="text-sm font-semibold">
+                      {bookingKind === "car" ? "Return date" : "Check-out"}
+                    </Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
                         <FormControl>
-                          <SelectTrigger className="mt-2 h-11 w-full">
-                            <SelectValue placeholder="Select a room type" />
-                          </SelectTrigger>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={submitting}
+                            className={cn(
+                              "mt-2 h-11 justify-start px-3 text-left font-normal",
+                              !field.value && "text-muted-foreground",
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 size-4" />
+                            {checkOutDate ? (
+                              format(checkOutDate, "LLL dd, y")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                          </Button>
                         </FormControl>
-                        <SelectContent>
-                          {rooms.map((room) => {
-                            const availability = availabilityByRoom.get(room.id);
-                            const left =
-                              checkIn && checkOut && nights > 0
-                                ? (availability?.availableRooms ?? room.totalRooms)
-                                : room.totalRooms;
-                            return (
-                              <SelectItem key={room.id} value={room.id} disabled={left <= 0}>
-                                <span className="flex items-center gap-2">
-                                  <BedDouble className="size-4 text-muted-foreground" />
-                                  {room.name} · {formatPrice(room.price)} / night
-                                </span>
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="roomCount"
-                  render={({ field }) => (
-                    <FormItem className="min-w-0">
-                      <Label className="text-sm font-semibold">Number of rooms</Label>
-                      <div className="mt-2 flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="size-11 shrink-0"
-                          disabled={submitting || quantity <= 1}
-                          onClick={() => field.onChange(Math.max(quantity - 1, 1))}
-                          aria-label="Fewer rooms"
-                        >
-                          <Minus className="size-4" />
-                        </Button>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min={1}
-                            max={Math.max(maxRooms, 1)}
-                            className="h-11 min-w-0 flex-1 px-1 text-center"
-                            disabled={submitting || !selectedRoom}
-                            {...field}
-                            value={field.value ?? 1}
-                            onChange={(event) => {
-                              const next = Math.floor(Number(event.target.value));
-                              field.onChange(
-                                Number.isNaN(next)
-                                  ? 1
-                                  : Math.min(Math.max(next, 1), Math.max(maxRooms, 1)),
-                              );
-                            }}
-                          />
-                        </FormControl>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="size-11 shrink-0"
-                          disabled={submitting || !selectedRoom || quantity >= maxRooms}
-                          onClick={() =>
-                            field.onChange(Math.min(quantity + 1, Math.max(maxRooms, 1)))
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={checkOutDate}
+                          disabled={{ before: checkOutMinDate }}
+                          onSelect={(date) =>
+                            field.onChange(date ? format(date, "yyyy-MM-dd") : "")
                           }
-                          aria-label="More rooms"
-                        >
-                          <Plus className="size-4" />
-                        </Button>
-                      </div>
-                      {selectedRoom && checkIn && checkOut && nights > 0 ? (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {maxRooms > 0
-                            ? `${maxRooms} ${selectedRoom.name} room${maxRooms > 1 ? "s" : ""} available for these dates`
-                            : `No ${selectedRoom.name} rooms left for these dates`}
-                        </p>
-                      ) : null}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            ) : null}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          ) : null}
 
-            <Button type="submit" className="h-11 w-full font-bold" disabled={submitting}>
-              {submitting ? (
-                <>
-                  <Loader2 className="animate-spin" /> Sending request...
-                </>
-              ) : (
-                <>
-                  Send booking request <ArrowRight className="size-4" />
-                </>
-              )}
-            </Button>
-          </form>
-        </Form>
-      )}
+          {isHotel ? (
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="roomTypeId"
+                render={({ field }) => (
+                  <FormItem className="flex min-w-0 flex-col">
+                    <Label className="text-sm font-semibold">Room type</Label>
+                    <Select
+                      value={field.value ?? ""}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.setValue("roomCount", 1, { shouldValidate: true });
+                      }}
+                      disabled={submitting || rooms.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="mt-2 h-11 w-full">
+                          <SelectValue placeholder="Select a room type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {rooms.map((room) => {
+                          const availability = availabilityByRoom.get(room.id);
+                          const left =
+                            checkIn && checkOut && nights > 0
+                              ? (availability?.availableRooms ?? room.totalRooms)
+                              : room.totalRooms;
+                          return (
+                            <SelectItem key={room.id} value={room.id} disabled={left <= 0}>
+                              <span className="flex items-center gap-2">
+                                <BedDouble className="size-4 text-muted-foreground" />
+                                {room.name} · {formatPrice(room.price)} / night
+                              </span>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="roomCount"
+                render={({ field }) => (
+                  <FormItem className="min-w-0">
+                    <Label className="text-sm font-semibold">Number of rooms</Label>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="size-11 shrink-0"
+                        disabled={submitting || quantity <= 1}
+                        onClick={() => field.onChange(Math.max(quantity - 1, 1))}
+                        aria-label="Fewer rooms"
+                      >
+                        <Minus className="size-4" />
+                      </Button>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={Math.max(maxRooms, 1)}
+                          className="h-11 min-w-0 flex-1 px-1 text-center"
+                          disabled={submitting || !selectedRoom}
+                          {...field}
+                          value={field.value ?? 1}
+                          onChange={(event) => {
+                            const next = Math.floor(Number(event.target.value));
+                            field.onChange(
+                              Number.isNaN(next)
+                                ? 1
+                                : Math.min(Math.max(next, 1), Math.max(maxRooms, 1)),
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="size-11 shrink-0"
+                        disabled={submitting || !selectedRoom || quantity >= maxRooms}
+                        onClick={() =>
+                          field.onChange(Math.min(quantity + 1, Math.max(maxRooms, 1)))
+                        }
+                        aria-label="More rooms"
+                      >
+                        <Plus className="size-4" />
+                      </Button>
+                    </div>
+                    {selectedRoom && checkIn && checkOut && nights > 0 ? (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {maxRooms > 0
+                          ? `${maxRooms} ${selectedRoom.name} room${maxRooms > 1 ? "s" : ""} available for these dates`
+                          : `No ${selectedRoom.name} rooms left for these dates`}
+                      </p>
+                    ) : null}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          ) : null}
+
+          <Button type="submit" className="h-11 w-full font-bold" disabled={submitting}>
+            {submitting ? (
+              <>
+                <Loader2 className="animate-spin" /> Sending request...
+              </>
+            ) : (
+              <>
+                Send booking request <ArrowRight className="size-4" />
+              </>
+            )}
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 }

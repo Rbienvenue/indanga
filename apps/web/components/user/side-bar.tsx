@@ -33,6 +33,9 @@ import {
   ShieldCheck,
   BadgeCheck,
   Settings,
+  CarFront,
+  MessageSquare,
+  FileChartColumn,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -42,7 +45,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
 const tenantItems = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { title: "My Bookings", href: "/dashboard/bookings", icon: Calendar },
   { title: "My Favorites", href: "/dashboard/favorites", icon: Heart },
   { title: "Search", href: "/dashboard/search", icon: Search },
@@ -53,23 +56,46 @@ const tenantItems = [
 ];
 
 const agentItems = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { title: "My Properties", href: "/dashboard/search", icon: House },
-  { title: "Add Property", href: "/dashboard/properties/new", icon: PlusCircle },
+  { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { title: "Listings", href: "/dashboard/search", icon: House },
   { title: "Bookings", href: "/dashboard/bookings", icon: Calendar },
+  { title: "Calendar", href: "/dashboard/calendar", icon: Calendar },
+  { title: "Messages", href: "/dashboard/messages", icon: MessageSquare },
   { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
+  { title: "Reviews", href: "/dashboard/reviews", icon: Star },
   { title: "Profile Settings", href: "/dashboard/profile", icon: User },
   { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
 ];
 
+const carItems = agentItems
+  .filter((item) => item.href !== "/dashboard/reviews")
+  .map((item) => {
+    if (item.href === "/dashboard/search") return { ...item, title: "Vehicles", icon: CarFront };
+    if (item.href === "/dashboard/calendar") return { ...item, title: "Fleet Calendar" };
+    if (item.href === "/dashboard/payments")
+      return { ...item, title: "Payouts", href: "/dashboard/payouts" };
+    return item;
+  });
+carItems.splice(7, 0, { title: "Compliance", href: "/dashboard/compliance", icon: ShieldCheck });
+
+const houseItems = agentItems
+  .filter((item) => item.href !== "/dashboard/calendar")
+  .map((item) => {
+    if (item.href === "/dashboard/search") return { ...item, title: "Houses" };
+    if (item.href === "/dashboard/properties/new") return { ...item, title: "Add House" };
+    return item;
+  });
+
 const adminItems = [
   { title: "Overview", href: "/admin", icon: Shield },
   { title: "Users", href: "/admin/users", icon: Users },
-  { title: "KYC", href: "/admin/kyc", icon: BadgeCheck },
+  { title: "Verification", href: "/admin/kyc", icon: BadgeCheck },
   { title: "Properties", href: "/admin/properties", icon: House },
-  { title: "Bookings", href: "/admin/bookings", icon: Calendar },
-  { title: "Payments", href: "/admin/payments", icon: CreditCard },
+  { title: "Booking Queue", href: "/admin/bookings", icon: Calendar },
+  { title: "Payments & Refunds", href: "/admin/payments", icon: CreditCard },
+  { title: "Support Inbox", href: "/admin/support", icon: LifeBuoy },
+  { title: "Reports", href: "/admin/reports", icon: FileChartColumn },
   { title: "Reviews", href: "/admin/reviews", icon: Star },
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ];
@@ -93,14 +119,18 @@ export function AppSidebar() {
       : session?.user?.role === "landlord"
         ? session.user.kycStatus !== "APPROVED"
           ? kycItems
-          : agentItems
+          : session.user.providerType === "CAR"
+            ? carItems
+            : session.user.providerType === "HOUSE"
+              ? houseItems
+              : agentItems
         : tenantItems;
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border p-2">
         <Link
-          href="/dashboard"
+          href={session?.user?.role === "admin" ? "/admin" : "/dashboard"}
           onClick={closeMobileSidebar}
           className="flex h-12 items-center justify-center px-2 group-data-[collapsible=icon]:px-0"
         >
@@ -121,7 +151,9 @@ export function AppSidebar() {
               {items.map((item) => {
                 const active =
                   pathname === item.href ||
-                  (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
+                  (item.href !== "/dashboard" &&
+                    item.href !== "/admin" &&
+                    pathname.startsWith(`${item.href}/`));
 
                 return (
                   <SidebarMenuItem key={item.href}>

@@ -16,6 +16,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { signUp } from "@/lib/auth-client";
 import { combineFullName, signupSchema, type SignupValues } from "@/lib/validations/auth";
 
@@ -27,6 +34,7 @@ export default function SignupPage() {
       firstName: "",
       lastName: "",
       role: "tenant",
+      providerType: "HOTEL",
       phoneNumber: "",
       nationalId: "",
       email: "",
@@ -42,6 +50,7 @@ export default function SignupPage() {
     confirmPassword: _,
     nationalId,
     role,
+    providerType,
     termsAccepted,
     firstName,
     lastName,
@@ -55,6 +64,7 @@ export default function SignupPage() {
       name: combineFullName(firstName, lastName),
       termsAccepted,
       accountType: role,
+      providerType: role === "landlord" ? providerType : "HOTEL",
       nationalId: nationalId?.trim() ? nationalId.trim() : undefined,
     };
     const { error } = await signUp.email(payload);
@@ -100,6 +110,31 @@ export default function SignupPage() {
               </FormItem>
             )}
           />
+
+          {selectedRole === "landlord" ? (
+            <FormField
+              control={form.control}
+              name="providerType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>What do you provide?</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+                    <FormControl>
+                      <SelectTrigger className="h-11 w-full">
+                        <SelectValue placeholder="Select provider type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="HOUSE">House</SelectItem>
+                      <SelectItem value="HOTEL">Hotel</SelectItem>
+                      <SelectItem value="CAR">Car</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : null}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField

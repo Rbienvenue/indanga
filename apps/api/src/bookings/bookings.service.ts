@@ -153,6 +153,21 @@ export class BookingsService {
     return booking;
   }
 
+  async getActiveBooking(clientId: string, houseId: string) {
+    if (!houseId) throw new BadRequestException("Property is required");
+    return this.db.booking.findFirst({
+      where: {
+        clientId,
+        houseId,
+        status: {
+          in: [BookingStatus.REQUESTED, BookingStatus.AWAITING_PAYMENT, BookingStatus.CONFIRMED],
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      include: { house: true, roomType: true },
+    });
+  }
+
   async getBookingsByUser(user: UserSession["user"], data: FilterBookingDto) {
     const { page = 1, limit = 20 } = data;
     const where: Prisma.BookingWhereInput = {};

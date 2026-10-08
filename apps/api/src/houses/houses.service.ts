@@ -453,12 +453,44 @@ export class HousesService {
   }
 
   async getAgentStats(ownerId: string) {
-    const [totalProperties, activeBookings, revenueResult, ratingResult] = await Promise.all([
-      this.db.house.count({ where: { ownerId } }),
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const [
+      properties,
+      newRequests,
+      activeBookings,
+      bookingsToday,
+      pendingPayment,
+      revenueResult,
+      ratingResult,
+    ] = await Promise.all([
+      this.db.house.findMany({ where: { ownerId }, select: { status: true } }),
+      this.db.booking.count({
+        where: {
+          house: { ownerId },
+          status: { in: [BookingStatus.PENDING, BookingStatus.REQUESTED] },
+        },
+      }),
       this.db.booking.count({
         where: {
           house: { ownerId },
           status: { in: [BookingStatus.APPROVED, BookingStatus.CONFIRMED] },
+        },
+      }),
+      this.db.booking.count({
+        where: {
+          house: { ownerId },
+          checkIn: { gte: today, lt: tomorrow },
+          status: { in: [BookingStatus.APPROVED, BookingStatus.CONFIRMED] },
+        },
+      }),
+      this.db.booking.count({
+        where: {
+          house: { ownerId },
+          status: BookingStatus.AWAITING_PAYMENT,
         },
       }),
       this.db.payment.aggregate({
@@ -475,8 +507,12 @@ export class HousesService {
     ]);
 
     return {
-      totalProperties,
+      totalProperties: properties.length,
+      availableListings: properties.filter(({ status }) => status === "AVAILABLE").length,
       activeBookings,
+      newRequests,
+      bookingsToday,
+      pendingPayment,
       totalRevenue: revenueResult._sum.amount?.toNumber() ?? 0,
       avgRating: ratingResult._avg.rating ? Math.round(ratingResult._avg.rating * 10) / 10 : null,
     };

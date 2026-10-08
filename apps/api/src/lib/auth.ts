@@ -58,6 +58,11 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      providerType: {
+        type: ["HOUSE", "HOTEL", "CAR"],
+        required: false,
+        input: true,
+      },
     },
   },
   databaseHooks: {
@@ -77,11 +82,23 @@ export const auth = betterAuth({
           }
 
           const accountType = (ctx?.body as { accountType?: unknown } | undefined)?.accountType;
+          const providerType = (ctx?.body as { providerType?: unknown } | undefined)?.providerType;
 
           if (accountType !== undefined && accountType !== "tenant" && accountType !== "landlord") {
             throw APIError.from("BAD_REQUEST", {
               message: "Invalid account type",
               code: "INVALID_ACCOUNT_TYPE",
+            });
+          }
+          if (
+            providerType !== undefined &&
+            providerType !== "HOUSE" &&
+            providerType !== "HOTEL" &&
+            providerType !== "CAR"
+          ) {
+            throw APIError.from("BAD_REQUEST", {
+              message: "Invalid provider type",
+              code: "INVALID_PROVIDER_TYPE",
             });
           }
 
@@ -114,6 +131,7 @@ export const auth = betterAuth({
           return {
             data: {
               role: accountType === "landlord" ? "landlord" : "tenant",
+              providerType: accountType === "landlord" ? (providerType ?? "HOTEL") : "HOTEL",
             },
           };
         },
