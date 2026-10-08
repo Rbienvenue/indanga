@@ -11,7 +11,7 @@ function startOfTodayUTC(): Date {
 
 function currentStay(today: Date): Prisma.BookingWhereInput {
   return {
-    status: BookingStatus.APPROVED,
+    status: { in: [BookingStatus.APPROVED, BookingStatus.CONFIRMED] },
     AND: [
       { OR: [{ checkIn: null }, { checkIn: { lte: today } }] },
       { OR: [{ checkOut: null }, { checkOut: { gte: today } }] },
@@ -28,16 +28,17 @@ export class CronService {
 
   async expireBookings() {
     const completed = await this.completeExpiredBookings();
+    const paymentExpired = await this.expirePaymentDeadlines();
     const staleCancelled = await this.cancelStalePendingBookings();
     const { markedBooked, markedAvailable } = await this.reconcileHouseAvailability();
-    return { completed, staleCancelled, markedBooked, markedAvailable };
+    return { completed, paymentExpired, staleCancelled, markedBooked, markedAvailable };
   }
 
   private async completeExpiredBookings(): Promise<number> {
     const today = startOfTodayUTC();
     const expired = await this.db.booking.findMany({
       where: {
-        status: BookingStatus.APPROVED,
+        status: { in: [BookingStatus.APPROVED, BookingStatus.CONFIRMED] },
         checkOut: { lt: today },
       },
       select: { id: true, houseId: true, clientId: true },
@@ -49,12 +50,17 @@ export class CronService {
         where: { id: booking.id },
         include: { house: { include: { rooms: true } }, client: true },
       });
-      if (!full || full.status !== BookingStatus.APPROVED) continue;
+      if (
+        !full ||
+        (full.status !== BookingStatus.APPROVED && full.status !== BookingStatus.CONFIRMED)
+      ) {
+        continue;
+      }
 
       const stillActive = await this.db.booking.count({
         where: {
           houseId: full.houseId,
-          status: BookingStatus.APPROVED,
+          status: { in: [BookingStatus.APPROVED, BookingStatus.CONFIRMED] },
           id: { not: full.id },
           OR: [{ checkOut: null }, { checkOut: { gte: today } }],
         },
@@ -93,6 +99,33 @@ export class CronService {
       count += 1;
     }
     return count;
+  }
+
+  private async expirePaymentDeadlines(): Promise<number> {
+    const expired = await this.db.booking.findMany({
+      where: {
+        status: BookingStatus.AWAITING_PAYMENT,
+        paymentDeadline: { lt: new Date() },
+        payments: { none: { status: "PENDING" } },
+      },
+      include: { house: true },
+    });
+
+    for (const booking of expired) {
+      await this.db.booking.update({
+        where: { id: booking.id },
+        data: { status: BookingStatus.EXPIRED },
+      });
+      await this.notifications.create({
+        type: "BOOKING_CANCELLED",
+        title: "Booking request expired",
+        message: `The payment deadline for ${booking.house.name} has passed.`,
+        userId: booking.clientId,
+        bookingId: booking.id,
+      });
+    }
+
+    return expired.length;
   }
 
   private async reconcileHouseAvailability(): Promise<{

@@ -12,20 +12,12 @@ import { randomUUID } from "node:crypto";
 import { NotificationsService } from "src/notifications/notifications.service";
 import { ITECService } from "./itec";
 import { WsGateway } from "src/ws/ws.gateway";
-import { getBookingKind, isDatedProperty } from "src/houses/booking-kind.util";
-import { countOverlappingRooms } from "src/houses/houses.service";
-import { ServiceFeesService } from "src/service-fees/service-fees.service";
-import { calcServiceFee } from "src/service-fees/service-fee.util";
+import { getBookingKind } from "src/houses/booking-kind.util";
 
 function startOfDay(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
   return d;
-}
-
-function differenceInCalendarDays(end: Date, start: Date): number {
-  const msPerDay = 24 * 60 * 60 * 1000;
-  return Math.round((startOfDay(end).getTime() - startOfDay(start).getTime()) / msPerDay);
 }
 
 @Injectable()
@@ -35,122 +27,69 @@ export class PaymentsService {
     private readonly notifications: NotificationsService,
     private readonly itec: ITECService,
     private readonly ws: WsGateway,
-    private readonly serviceFees: ServiceFeesService,
   ) {}
   async initiatePayment(clientId: string, data: CreateOrderDto) {
+    return this.initiateAcceptedBookingPayment(clientId, data.bookingId, data);
+  }
+
+  private async initiateAcceptedBookingPayment(
+    clientId: string,
+    bookingId: string,
+    data: CreateOrderDto,
+  ) {
+    const existing = await this.db.booking.findFirst({
+      where: { id: bookingId, clientId },
+      select: { id: true, status: true, paymentDeadline: true },
+    });
+    if (!existing) throw new NotFoundException("Booking not found");
+    if (
+      existing.status === BookingStatus.AWAITING_PAYMENT &&
+      (!existing.paymentDeadline || existing.paymentDeadline <= new Date())
+    ) {
+      await this.db.booking.update({
+        where: { id: existing.id },
+        data: { status: BookingStatus.EXPIRED },
+      });
+      throw new BadRequestException("The payment deadline has passed");
+    }
+
     const { booking, payment, result } = await this.db.$transaction(
       async (tx) => {
-        const house = await tx.house.findUnique({ where: { id: data.houseId } });
-        if (!house) {
-          throw new NotFoundException("Property not found");
-        }
-        const dated = isDatedProperty(house.propertyType);
-        if (!dated && house.status !== HouseStatus.AVAILABLE) {
-          throw new ConflictException("Property is already booked");
-        }
-
-        let checkIn: Date | undefined;
-        let checkOut: Date | undefined;
-        let nights: number | undefined;
-        let roomTypeId: string | undefined;
-        let roomCount = 1;
-        let unitPrice: number | undefined;
-        const isHotel = getBookingKind(house.propertyType) === "hotel";
-        if (house.price == null && !isHotel) {
-          throw new BadRequestException("This property has no price set");
-        }
-        let amount = house.price ?? 0;
-
-        if (dated) {
-          if (!data.checkIn || !data.checkOut) {
-            throw new BadRequestException("Check-in and check-out dates are required");
-          }
-          checkIn = new Date(data.checkIn);
-          checkOut = new Date(data.checkOut);
-          if (Number.isNaN(checkIn.getTime()) || Number.isNaN(checkOut.getTime())) {
-            throw new BadRequestException("Invalid check-in or check-out date");
-          }
-          const today = startOfDay(new Date());
-          if (startOfDay(checkIn) < today) {
-            throw new BadRequestException("Check-in date cannot be in the past");
-          }
-          if (startOfDay(checkOut) <= startOfDay(checkIn)) {
-            throw new BadRequestException("Check-out date must be after check-in date");
-          }
-          nights = differenceInCalendarDays(checkOut, checkIn);
-          if (nights < 1) {
-            throw new BadRequestException("Check-out date must be after check-in date");
-          }
-          if (isHotel) {
-            if (!data.roomTypeId) {
-              throw new BadRequestException("Selecting a room type is required for hotels");
-            }
-            roomCount = data.roomCount ?? 1;
-            if (!Number.isInteger(roomCount) || roomCount < 1) {
-              throw new BadRequestException("Room count must be at least 1");
-            }
-            const room = await tx.roomType.findUnique({ where: { id: data.roomTypeId } });
-            if (!room || room.houseId !== house.id) {
-              throw new BadRequestException("Selected room type is not part of this hotel");
-            }
-            const booked = await countOverlappingRooms(tx, room.id, checkIn, checkOut);
-            if (roomCount > room.totalRooms - booked) {
-              throw new ConflictException("Not enough rooms available for those dates");
-            }
-            roomTypeId = room.id;
-            unitPrice = room.price;
-            amount = room.price * roomCount * nights;
-          } else {
-            const overlapping = await tx.booking.count({
-              where: {
-                houseId: house.id,
-                status: BookingStatus.APPROVED,
-                checkIn: { lt: checkOut },
-                checkOut: { gt: checkIn },
-              },
-            });
-            if (overlapping > 0) {
-              throw new ConflictException("Property is already booked for those dates");
-            }
-            amount = (house.price ?? 0) * nights;
-          }
-        }
-
-        const bookingKind = getBookingKind(house.propertyType);
-        const feeConfig = await this.serviceFees.getByKind(bookingKind);
-        const serviceFee = calcServiceFee(amount, feeConfig);
-        amount += serviceFee;
-
-        const booking = await tx.booking.create({
-          data: {
-            clientId,
-            houseId: data.houseId,
-            status: BookingStatus.PENDING,
-            checkIn,
-            checkOut,
-            nights,
-            roomTypeId,
-            roomCount: isHotel ? roomCount : undefined,
-            unitPrice: nights ? (unitPrice ?? house.price ?? undefined) : undefined,
-            serviceFee,
-            totalAmount: amount,
-          },
-          include: {
-            house: true,
-            client: true,
-          },
+        const booking = await tx.booking.findUnique({
+          where: { id: bookingId },
+          include: { house: true, client: true },
         });
+        if (!booking || booking.clientId !== clientId) {
+          throw new NotFoundException("Booking not found");
+        }
+        if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
+          throw new BadRequestException("This booking is not awaiting payment");
+        }
+        if (!booking.paymentDeadline || booking.paymentDeadline <= new Date()) {
+          throw new BadRequestException("The payment deadline has passed");
+        }
+        if (booking.totalAmount == null) {
+          throw new BadRequestException("This booking has no payment amount");
+        }
+        const activePayment = await tx.payment.findFirst({
+          where: { bookingId: booking.id, status: { in: ["PENDING", "COMPLETED"] } },
+        });
+        if (activePayment?.status === "COMPLETED") {
+          throw new BadRequestException("This booking has already been paid");
+        }
+        if (activePayment) {
+          throw new ConflictException("A payment is already pending for this booking");
+        }
 
         const payment = await tx.payment.create({
           data: {
-            amount,
+            amount: booking.totalAmount,
             bookingId: booking.id,
             status: "PENDING",
             method: data.method,
             transactionReference: randomUUID(),
           },
         });
-
         const result = await this.itec.initiatePayment({
           id: payment.transactionReference,
           amount: Number(payment.amount),
@@ -255,7 +194,12 @@ export class PaymentsService {
       await tx.payment.update({ where: { transactionReference }, data: { status: "COMPLETED" } });
       await tx.booking.update({
         where: { id: booking.id },
-        data: { status: BookingStatus.APPROVED },
+        data: {
+          status:
+            booking.status === BookingStatus.AWAITING_PAYMENT
+              ? BookingStatus.CONFIRMED
+              : BookingStatus.APPROVED,
+        },
       });
       if (stayStarted && !isHotel) {
         await tx.house.update({
@@ -289,7 +233,23 @@ export class PaymentsService {
   ) {
     await this.db.$transaction(async (tx) => {
       await tx.payment.update({ where: { transactionReference }, data: { status: "FAILED" } });
-      await tx.booking.update({ where: { id: booking.id }, data: { status: "CANCELLED" } });
+      const canRetry =
+        booking.status === BookingStatus.AWAITING_PAYMENT &&
+        booking.paymentDeadline != null &&
+        booking.paymentDeadline > new Date();
+      if (booking.status === BookingStatus.AWAITING_PAYMENT) {
+        await tx.booking.update({
+          where: { id: booking.id },
+          data: {
+            status: canRetry ? BookingStatus.AWAITING_PAYMENT : BookingStatus.EXPIRED,
+          },
+        });
+      } else if (booking.status === BookingStatus.PENDING) {
+        await tx.booking.update({
+          where: { id: booking.id },
+          data: { status: BookingStatus.CANCELLED },
+        });
+      }
     });
     this.ws.emitPaymentUpdate(payment.id, "failed");
     return { ...payment, status: "FAILED" as const };

@@ -34,7 +34,18 @@ type AgentStats = {
 
 type BookingWithDetails = {
   id: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
+  bookingId?: string | null;
+  status:
+    | "PENDING"
+    | "APPROVED"
+    | "REJECTED"
+    | "CANCELLED"
+    | "COMPLETED"
+    | "REQUESTED"
+    | "AWAITING_PAYMENT"
+    | "CONFIRMED"
+    | "DECLINED"
+    | "EXPIRED";
   createdAt: string;
   house: {
     id: string;
@@ -56,6 +67,11 @@ const statusColors: Record<string, string> = {
   REJECTED: "bg-red-100 text-red-700",
   CANCELLED: "bg-gray-100 text-gray-700",
   COMPLETED: "bg-sky-100 text-sky-700",
+  REQUESTED: "bg-amber-100 text-amber-700",
+  AWAITING_PAYMENT: "bg-violet-100 text-violet-700",
+  CONFIRMED: "bg-green-100 text-green-700",
+  DECLINED: "bg-red-100 text-red-700",
+  EXPIRED: "bg-gray-100 text-gray-700",
 };
 
 function AgentStatCards() {
@@ -161,7 +177,7 @@ function BookingActionButtons({ bookingId }: { bookingId: string }) {
         variant="outline"
         className="gap-1.5 text-green-600 hover:bg-green-50 hover:text-green-700"
         disabled={statusMutation.isPending}
-        onClick={() => statusMutation.mutate("APPROVED")}
+        onClick={() => statusMutation.mutate("AWAITING_PAYMENT")}
       >
         {statusMutation.isPending ? (
           <Loader2 className="size-3.5 animate-spin" />
@@ -175,7 +191,7 @@ function BookingActionButtons({ bookingId }: { bookingId: string }) {
         variant="outline"
         className="gap-1.5 text-red-600 hover:bg-red-50 hover:text-red-700"
         disabled={statusMutation.isPending}
-        onClick={() => statusMutation.mutate("REJECTED")}
+        onClick={() => statusMutation.mutate("DECLINED")}
       >
         {statusMutation.isPending ? (
           <Loader2 className="size-3.5 animate-spin" />
@@ -237,13 +253,20 @@ function RecentBookingRequests() {
                     <p className="text-xs text-muted-foreground">
                       {booking.house.name} • {new Date(booking.createdAt).toLocaleDateString()}
                     </p>
+                    {booking.bookingId ? (
+                      <p className="text-xs font-medium text-muted-foreground">
+                        {booking.bookingId}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary" className={statusColors[booking.status]}>
                     {booking.status.charAt(0) + booking.status.slice(1).toLowerCase()}
                   </Badge>
-                  {booking.status === "PENDING" && <BookingActionButtons bookingId={booking.id} />}
+                  {booking.status === "REQUESTED" && (
+                    <BookingActionButtons bookingId={booking.id} />
+                  )}
                 </div>
               </div>
             ))}

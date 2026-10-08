@@ -96,6 +96,7 @@ model ServiceFee {
 
 model Booking {
   id            String         @id @default(cuid())
+  bookingId     String?
   clientId      String
   houseId       String
   roomTypeId    String?
@@ -107,6 +108,7 @@ model Booking {
   unitPrice     Int?
   serviceFee    Int?           @default(0)
   totalAmount   Int?
+  paymentDeadline DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   client        User           @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)
@@ -315,6 +317,11 @@ enum BookingStatus {
   REJECTED
   CANCELLED
   COMPLETED
+  REQUESTED
+  AWAITING_PAYMENT
+  CONFIRMED
+  DECLINED
+  EXPIRED
 }
 
 enum VerificationStatus {

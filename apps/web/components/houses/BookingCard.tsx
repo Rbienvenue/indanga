@@ -13,10 +13,8 @@ import {
   Minus,
   Plus,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -36,7 +34,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { fetcher } from "@/lib/fetcher";
-import { useSocketIo } from "@/components/providers/socket-io-provider";
 import { getBookingKind } from "@/lib/booking-kind";
 import { calcServiceFee, type ServiceFee } from "@/lib/service-fee";
 import { getDisplayPrice } from "@/lib/room-pricing";
@@ -46,32 +43,15 @@ import {
   bookingSchema,
   BookingValues,
   datedBookingSchema,
-  Gateway,
   getNights,
   hotelBookingSchema,
-  requiresPhone,
 } from "@/lib/validations/booking";
 import { addDays, format, startOfDay } from "date-fns";
 
-type PaymentMethod = {
-  method: "MOMO" | "AIRTEL" | "CARD";
-  label: string;
-  gateway: Gateway;
-  logo: string;
-};
-
-const paymentMethods: PaymentMethod[] = [
-  { label: "MoMo", gateway: "momo", method: "MOMO", logo: "/mtn.png" },
-  { label: "Airtel Money", gateway: "airtel", method: "AIRTEL", logo: "/airtel.png" },
-  { label: "Card", gateway: "card", method: "CARD", logo: "/cards.png" },
-];
-
-type PaymentResponse = {
+type BookingRequestResponse = {
   id: string;
-  link?: string;
+  bookingId: string;
 };
-
-type PaymentStatus = "pending" | "successful" | "failed";
 
 type RoomAvailability = {
   roomType: RoomType;
@@ -97,13 +77,9 @@ export function BookingCard({
   onPolicyAcceptanceChange,
   compact = false,
 }: BookingCardProps) {
-  const [step, setStep] = useState<"booking" | "payment" | "submitted">("booking");
-  const [payment, setPayment] = useState<{ id: string; status: PaymentStatus } | null>(null);
+  const [step, setStep] = useState<"booking" | "details" | "submitted">("booking");
+  const [bookingRequest, setBookingRequest] = useState<BookingRequestResponse | null>(null);
   const [isReporting, setIsReporting] = useState(false);
-  const paymentId = payment?.id;
-  const needsPaymentSocket = step === "payment" || payment?.status === "pending";
-  const { socket, isConnected } = useSocketIo(needsPaymentSocket);
-  const router = useRouter();
   const bookingKind = getBookingKind(house.propertyType);
   const isDated = bookingKind === "hotel" || bookingKind === "car";
   const isHotel = bookingKind === "hotel";
@@ -115,15 +91,12 @@ export function BookingCard({
     ),
     defaultValues: {
       houseId: house.id,
-      gateway: "momo",
-      phone: "",
       checkIn: "",
       checkOut: "",
       roomTypeId: "",
       roomCount: 1,
     },
   });
-  const gateway = useWatch({ control: form.control, name: "gateway" });
   const checkIn = useWatch({ control: form.control, name: "checkIn" });
   const checkOut = useWatch({ control: form.control, name: "checkOut" });
   const roomTypeId = useWatch({ control: form.control, name: "roomTypeId" });
@@ -153,7 +126,7 @@ export function BookingCard({
       fetcher<ApiResponse<RoomAvailability[]>>(
         `/properties/${house.id}/availability?checkIn=${checkIn}&checkOut=${checkOut}`,
       ),
-    enabled: isHotel && step === "payment" && Boolean(checkIn) && Boolean(checkOut) && nights > 0,
+    enabled: isHotel && step === "details" && Boolean(checkIn) && Boolean(checkOut) && nights > 0,
   });
   const availabilityByRoom = new Map(
     (availabilityQuery.data?.data ?? []).map((entry) => [entry.roomType.id, entry]),
@@ -166,88 +139,38 @@ export function BookingCard({
   const checkInDate = checkIn ? new Date(`${checkIn}T00:00:00`) : undefined;
   const checkOutDate = checkOut ? new Date(`${checkOut}T00:00:00`) : undefined;
   const checkOutMinDate = checkInDate ? addDays(checkInDate, 1) : addDays(today, 1);
-  const bookThisLabel = `Book this ${bookingKind === "car" ? "car" : "room"}`;
+  const bookThisLabel = `Book this ${bookingKind === "hotel" ? "room" : bookingKind}`;
   const priceUnitLabel =
     bookingKind === "hotel" ? "per night" : bookingKind === "car" ? "per day" : "per month";
 
-  const paymentMutation = useMutation({
-    mutationFn: async ({
-      houseId,
-      gateway,
-      phone,
-      checkIn,
-      checkOut,
-      roomTypeId,
-      roomCount,
-    }: BookingValues) => {
-      const method = paymentMethods.find((item) => item.gateway === gateway)!.method;
-      return fetcher<ApiResponse<PaymentResponse>>("/payments", {
+  const requestMutation = useMutation({
+    mutationFn: ({ houseId, checkIn, checkOut, roomTypeId, roomCount }: BookingValues) =>
+      fetcher<ApiResponse<BookingRequestResponse>>("/bookings", {
         method: "POST",
         body: JSON.stringify({
           houseId,
-          method,
-          phone: phone?.replace(/\D/g, ""),
           ...(isDated ? { checkIn, checkOut } : {}),
           ...(isHotel ? { roomTypeId, roomCount: Number(roomCount) || 1 } : {}),
         }),
-      });
-    },
-    onSuccess: ({ data }, values) => {
-      if (values.gateway === "card") {
-        if (data.link) {
-          window.location.assign(data.link);
-          return;
-        }
-        toast.error("Could not start card payment", {
-          description: "Please try again or choose another payment method.",
-        });
-        return;
-      }
-
-      setPayment({ id: data.id, status: "pending" });
+      }),
+    onSuccess: ({ data }) => {
+      setBookingRequest(data);
       setStep("submitted");
-      toast.success("Payment prompt sent", {
-        description: "Follow the instructions on your phone to complete payment.",
-        position: "top-center",
-      });
+      toast.success("Booking request sent", { position: "top-center" });
     },
     onError: (error) => {
-      toast.error("Could not start booking", {
+      toast.error("Could not send booking request", {
         description: error instanceof Error ? error.message : "Please try again.",
         position: "top-center",
       });
     },
   });
 
-  useEffect(() => {
-    if (!socket || !isConnected || !paymentId) return;
-
-    function handlePaymentUpdate(update: { paymentId: string; status: PaymentStatus }) {
-      if (update.paymentId !== paymentId) return;
-      setPayment({ id: update.paymentId, status: update.status });
-      if (update.status === "successful") {
-        toast.success("Booking confirmed", { position: "top-center" });
-        router.push("/dashboard/bookings");
-      } else if (update.status === "failed") {
-        toast.error("Payment failed", {
-          description: "Please try again or choose another payment method.",
-          position: "top-center",
-        });
-      }
-    }
-
-    socket.on("payment.update", handlePaymentUpdate);
-    socket.emit("subscribe:payment", { paymentId });
-    return () => {
-      socket.off("payment.update", handlePaymentUpdate);
-    };
-  }, [isConnected, paymentId, router, socket]);
-
   function beginCheckout() {
-    if (onBook()) setStep("payment");
+    if (onBook()) setStep("details");
   }
 
-  const submitting = paymentMutation.isPending;
+  const submitting = requestMutation.isPending;
   const { displayPrice: cardPrice, fromRooms } = getDisplayPrice(house.price, rooms);
   const cardPriceLabel =
     cardPrice != null ? (
@@ -390,25 +313,19 @@ export function BookingCard({
 
       {step === "submitted" ? (
         <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
-          <p className="font-semibold">
-            {payment?.status === "successful"
-              ? "Booking confirmed"
-              : payment?.status === "failed"
-                ? "Payment failed"
-                : "Payment pending"}
-          </p>
+          <p className="font-semibold">Booking request sent</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {payment?.status === "successful"
-              ? `Your payment was successful and the ${bookingKind} is booked.`
-              : payment?.status === "failed"
-                ? "The payment could not be completed. Please try again."
-                : "Check your phone and approve the payment to finish booking."}
+            Your request was sent to the provider. Your booking is not confirmed yet. We will notify
+            you when the provider responds. No payment is required yet.
           </p>
+          {bookingRequest ? (
+            <p className="mt-2 text-sm font-medium">Booking ID: {bookingRequest.bookingId}</p>
+          ) : null}
         </div>
       ) : (
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit((values) => paymentMutation.mutate(values))}
+            onSubmit={form.handleSubmit((values) => requestMutation.mutate(values))}
             className="mt-5 space-y-4"
           >
             {isDated ? (
@@ -620,92 +537,14 @@ export function BookingCard({
               </div>
             ) : null}
 
-            <FormField
-              control={form.control}
-              name="gateway"
-              render={({ field }) => (
-                <FormItem>
-                  <Label className="text-sm font-semibold">Choose a payment method</Label>
-                  <div className="mt-2 grid grid-cols-3 gap-2">
-                    {paymentMethods.map(({ gateway: methodGateway, label, logo }) => {
-                      const selected = field.value === methodGateway;
-                      return (
-                        <button
-                          key={methodGateway}
-                          type="button"
-                          disabled={submitting}
-                          aria-pressed={selected}
-                          onClick={() => {
-                            field.onChange(methodGateway);
-                            form.clearErrors("phone");
-                          }}
-                          className={cn(
-                            "flex min-h-20 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center transition-colors disabled:opacity-50",
-                            selected
-                              ? "border-primary bg-primary/5 text-primary"
-                              : "border-border text-muted-foreground hover:border-primary/40",
-                          )}
-                        >
-                          <Image
-                            src={logo}
-                            alt=""
-                            width={72}
-                            height={32}
-                            className="h-8 w-auto object-contain"
-                          />
-                          <span className="text-xs font-medium">{label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {requiresPhone(gateway) ? (
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <Label htmlFor="booking-phone" className="text-sm font-semibold">
-                      {gateway === "momo" ? "MTN phone number" : "Airtel  phone number"}
-                    </Label>
-                    <FormControl>
-                      <Input
-                        id="booking-phone"
-                        type="tel"
-                        inputMode="tel"
-                        autoComplete="tel"
-                        placeholder="07X XXX XXXX"
-                        className="mt-2 h-11"
-                        disabled={submitting}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            ) : null}
-
             <Button type="submit" className="h-11 w-full font-bold" disabled={submitting}>
               {submitting ? (
                 <>
-                  <Loader2 className="animate-spin" /> Starting payment...
+                  <Loader2 className="animate-spin" /> Sending request...
                 </>
               ) : (
                 <>
-                  {priceReady ? (
-                    <>
-                      Pay {formatPrice(total)} <ArrowRight className="size-4" />
-                    </>
-                  ) : (
-                    <>
-                      Continue to payment <ArrowRight className="size-4" />
-                    </>
-                  )}
+                  Send booking request <ArrowRight className="size-4" />
                 </>
               )}
             </Button>

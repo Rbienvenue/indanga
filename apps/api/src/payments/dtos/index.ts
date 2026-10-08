@@ -1,13 +1,5 @@
 import { Type } from "class-transformer";
-import {
-  IsDateString,
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsString,
-  ValidateIf,
-  ValidateNested,
-} from "class-validator";
+import { IsEnum, IsInt, IsOptional, IsString, ValidateIf, ValidateNested } from "class-validator";
 import { PaymentStatus } from "@indanga/db";
 
 export class FilterPaymentsDto {
@@ -29,7 +21,7 @@ const paymentMethods = ["MOMO", "AIRTEL", "CARD"] as const;
 
 export class CreateOrderDto {
   @IsString()
-  houseId: string;
+  bookingId: string;
 
   @ValidateIf((o) => o.method !== "CARD")
   @IsString()
@@ -37,23 +29,6 @@ export class CreateOrderDto {
 
   @IsEnum(paymentMethods)
   method: (typeof paymentMethods)[number];
-
-  @IsOptional()
-  @IsDateString()
-  checkIn?: string;
-
-  @IsOptional()
-  @IsDateString()
-  checkOut?: string;
-
-  @IsOptional()
-  @IsString()
-  roomTypeId?: string;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  roomCount?: number;
 }
 
 class PaymentCallbackDataDto {
@@ -83,15 +58,11 @@ export class RefreshPaymentDto {
   transactionReference: string;
 }
 
-export function isCardPaymentCallback(
-  body: Record<string, unknown>,
-) {
+export function isCardPaymentCallback(body: Record<string, unknown>) {
   return typeof body.PCODE === "string";
 }
 
-export function isMobilePaymentCallback(
-  body: Record<string, unknown>,
-) {
+export function isMobilePaymentCallback(body: Record<string, unknown>) {
   return (
     typeof body.data === "object" &&
     body.data !== null &&

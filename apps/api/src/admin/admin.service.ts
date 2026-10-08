@@ -107,8 +107,10 @@ export class AdminService {
       this.db.user.count({ where: { role: "landlord" } }),
       this.db.house.count(),
       this.db.booking.count(),
-      this.db.booking.count({ where: { status: "PENDING" } }),
-      this.db.booking.count({ where: { status: "APPROVED" } }),
+      this.db.booking.count({
+        where: { status: { in: ["PENDING", "REQUESTED", "AWAITING_PAYMENT"] } },
+      }),
+      this.db.booking.count({ where: { status: { in: ["APPROVED", "CONFIRMED"] } } }),
       this.db.payment.aggregate({
         _sum: { amount: true },
         where: { status: "COMPLETED" },

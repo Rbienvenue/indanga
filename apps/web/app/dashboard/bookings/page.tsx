@@ -1,13 +1,14 @@
 "use client";
 
 import type { House } from "@indanga/db";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Check, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 
-import type { PaginationResponse } from "@/@types";
+import type { ApiResponse, PaginationResponse } from "@/@types";
 import { useSession } from "@/components/providers/session-provider";
 import { BookingPropertyCard } from "@/components/bookings/booking-property-card";
 import { ProductCardSkeleton } from "@/components/product-card";
@@ -21,7 +22,19 @@ const PAGE_SIZE = 6;
 
 type BookingWithHouse = {
   id: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
+  bookingId?: string | null;
+  status:
+    | "PENDING"
+    | "APPROVED"
+    | "REJECTED"
+    | "CANCELLED"
+    | "COMPLETED"
+    | "REQUESTED"
+    | "AWAITING_PAYMENT"
+    | "CONFIRMED"
+    | "DECLINED"
+    | "EXPIRED";
+  paymentDeadline?: string | null;
   createdAt: string;
   checkIn?: string | null;
   checkOut?: string | null;
@@ -50,7 +63,51 @@ const statusColors: Record<string, string> = {
   REJECTED: "bg-red-100 text-red-700",
   CANCELLED: "bg-gray-100 text-gray-700",
   COMPLETED: "bg-sky-100 text-sky-700",
+  REQUESTED: "bg-amber-100 text-amber-700",
+  AWAITING_PAYMENT: "bg-violet-100 text-violet-700",
+  CONFIRMED: "bg-green-100 text-green-700",
+  DECLINED: "bg-red-100 text-red-700",
+  EXPIRED: "bg-gray-100 text-gray-700",
 };
+
+function BookingRequestActions({ bookingId }: { bookingId: string }) {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (status: "AWAITING_PAYMENT" | "DECLINED") =>
+      fetcher<ApiResponse<unknown>>(`/bookings/${bookingId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      }),
+    onSuccess: () => {
+      toast.success("Booking request updated");
+      void queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      void queryClient.invalidateQueries({ queryKey: ["recent-bookings"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  return (
+    <div className="flex gap-2">
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={mutation.isPending}
+        onClick={() => mutation.mutate("AWAITING_PAYMENT")}
+      >
+        {mutation.isPending ? <Loader2 className="animate-spin" /> : <Check />}
+        Accept
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={mutation.isPending}
+        onClick={() => mutation.mutate("DECLINED")}
+      >
+        <X /> Decline
+      </Button>
+    </div>
+  );
+}
 
 function EmptyBookings({ isAgent }: { isAgent: boolean }) {
   return (
@@ -84,6 +141,9 @@ const agentColumns: ColumnDef<BookingWithHouse>[] = [
       <div>
         <p className="font-medium">{row.original.client.name}</p>
         <p className="text-xs text-muted-foreground">{row.original.client.email}</p>
+        {row.original.bookingId ? (
+          <p className="text-xs font-medium text-muted-foreground">{row.original.bookingId}</p>
+        ) : null}
       </div>
     ),
   },
@@ -154,6 +214,14 @@ const agentColumns: ColumnDef<BookingWithHouse>[] = [
         {row.original.status.charAt(0) + row.original.status.slice(1).toLowerCase()}
       </Badge>
     ),
+  },
+  {
+    id: "actions",
+    header: "",
+    cell: ({ row }) =>
+      row.original.status === "REQUESTED" ? (
+        <BookingRequestActions bookingId={row.original.id} />
+      ) : null,
   },
 ];
 

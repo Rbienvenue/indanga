@@ -31,7 +31,9 @@ export async function countOverlappingRooms(
   const bookings = await db.booking.findMany({
     where: {
       roomTypeId,
-      status: BookingStatus.APPROVED,
+      status: {
+        in: [BookingStatus.APPROVED, BookingStatus.AWAITING_PAYMENT, BookingStatus.CONFIRMED],
+      },
       OR: [{ checkIn: null }, { checkIn: { lt: checkOut } }],
       AND: [{ OR: [{ checkOut: null }, { checkOut: { gt: checkIn } }] }],
     },
@@ -191,7 +193,12 @@ export class HousesService {
     return house;
   }
 
-  async getRoomAvailability(houseId: string, roomTypeId?: string, checkIn?: string, checkOut?: string) {
+  async getRoomAvailability(
+    houseId: string,
+    roomTypeId?: string,
+    checkIn?: string,
+    checkOut?: string,
+  ) {
     await this.getHouseById(houseId);
     const rooms = await this.db.roomType.findMany({
       where: { houseId, ...(roomTypeId ? { id: roomTypeId } : {}) },
@@ -311,9 +318,7 @@ export class HousesService {
       if (room.totalRooms < current.totalRooms) {
         const active = await this.countActiveRoomBookings(tx, room.id);
         if (room.totalRooms < active) {
-          throw new ConflictException(
-            `Cannot reduce rooms below ${active} currently booked`,
-          );
+          throw new ConflictException(`Cannot reduce rooms below ${active} currently booked`);
         }
       }
       await tx.roomType.update({
@@ -339,7 +344,14 @@ export class HousesService {
     const active = await db.booking.findMany({
       where: {
         roomTypeId,
-        status: { in: [BookingStatus.PENDING, BookingStatus.APPROVED] },
+        status: {
+          in: [
+            BookingStatus.PENDING,
+            BookingStatus.APPROVED,
+            BookingStatus.AWAITING_PAYMENT,
+            BookingStatus.CONFIRMED,
+          ],
+        },
         OR: [{ checkOut: null }, { checkOut: { gte: today } }],
       },
       select: { roomCount: true },
@@ -446,7 +458,7 @@ export class HousesService {
       this.db.booking.count({
         where: {
           house: { ownerId },
-          status: "APPROVED",
+          status: { in: [BookingStatus.APPROVED, BookingStatus.CONFIRMED] },
         },
       }),
       this.db.payment.aggregate({

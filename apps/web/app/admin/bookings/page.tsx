@@ -13,7 +13,18 @@ import { formatPrice } from "@/lib/utils";
 
 type BookingWithDetails = {
   id: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
+  bookingId?: string | null;
+  status:
+    | "PENDING"
+    | "APPROVED"
+    | "REJECTED"
+    | "CANCELLED"
+    | "COMPLETED"
+    | "REQUESTED"
+    | "AWAITING_PAYMENT"
+    | "CONFIRMED"
+    | "DECLINED"
+    | "EXPIRED";
   createdAt: string;
   checkIn?: string | null;
   checkOut?: string | null;
@@ -29,6 +40,11 @@ const statusColors: Record<string, string> = {
   REJECTED: "bg-red-100 text-red-700",
   CANCELLED: "bg-gray-100 text-gray-700",
   COMPLETED: "bg-sky-100 text-sky-700",
+  REQUESTED: "bg-amber-100 text-amber-700",
+  AWAITING_PAYMENT: "bg-violet-100 text-violet-700",
+  CONFIRMED: "bg-green-100 text-green-700",
+  DECLINED: "bg-red-100 text-red-700",
+  EXPIRED: "bg-gray-100 text-gray-700",
 };
 
 const columns: ColumnDef<BookingWithDetails>[] = [
@@ -40,6 +56,9 @@ const columns: ColumnDef<BookingWithDetails>[] = [
       <div>
         <p className="font-medium">{row.original.client.name}</p>
         <p className="text-xs text-muted-foreground">{row.original.client.email}</p>
+        {row.original.bookingId ? (
+          <p className="text-xs font-medium text-muted-foreground">{row.original.bookingId}</p>
+        ) : null}
       </div>
     ),
   },
@@ -147,6 +166,11 @@ export default function AdminBookingsPage() {
               { label: "Rejected", value: "REJECTED" },
               { label: "Cancelled", value: "CANCELLED" },
               { label: "Completed", value: "COMPLETED" },
+              { label: "Requested", value: "REQUESTED" },
+              { label: "Awaiting payment", value: "AWAITING_PAYMENT" },
+              { label: "Confirmed", value: "CONFIRMED" },
+              { label: "Declined", value: "DECLINED" },
+              { label: "Expired", value: "EXPIRED" },
             ],
           },
         ]}
