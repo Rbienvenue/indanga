@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   Carousel,
@@ -10,6 +10,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
+import { Video } from "@/components/ui/video";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isVideoMediaUrl } from "@/lib/property-media";
@@ -26,6 +27,11 @@ export function HousePhotoSlideshow({
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(initialIndex + 1);
   const [count, setCount] = useState(media.length);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const pauseAllVideos = useCallback(() => {
+    rootRef.current?.querySelectorAll("video").forEach((video) => video.pause());
+  }, []);
 
   useEffect(() => {
     if (!api) return;
@@ -33,7 +39,10 @@ export function HousePhotoSlideshow({
     setCurrent(api.selectedScrollSnap() + 1);
     api.scrollTo(initialIndex, true);
 
-    const onSelect = () => setCurrent(api.selectedScrollSnap() + 1);
+    const onSelect = () => {
+      pauseAllVideos();
+      setCurrent(api.selectedScrollSnap() + 1);
+    };
     const onReInit = () => {
       setCount(api.scrollSnapList().length);
       setCurrent(api.selectedScrollSnap() + 1);
@@ -45,14 +54,14 @@ export function HousePhotoSlideshow({
       api.off("select", onSelect);
       api.off("reInit", onReInit);
     };
-  }, [api, initialIndex]);
+  }, [api, initialIndex, pauseAllVideos]);
 
   const scrollTo = useCallback((index: number) => api?.scrollTo(index), [api]);
 
   if (media.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div ref={rootRef} className="flex flex-col gap-4">
       <Carousel setApi={setApi} opts={{ startIndex: initialIndex, loop: true }} className="w-full">
         <div className="relative">
           <CarouselContent className="ml-0">
@@ -60,14 +69,7 @@ export function HousePhotoSlideshow({
               <CarouselItem key={`${src}-${index}`} className="pl-0">
                 <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-muted">
                   {isVideoMediaUrl(src) ? (
-                    <video
-                      src={src}
-                      controls
-                      preload="metadata"
-                      playsInline
-                      aria-label={`${houseName} video ${index + 1}`}
-                      className="h-full w-full object-contain bg-black"
-                    />
+                    <Video src={src} title={`${houseName} video ${index + 1}`} />
                   ) : (
                     <Image
                       src={src}
