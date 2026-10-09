@@ -3,7 +3,7 @@
 import { Bath, BedDouble, CalendarDays, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { BookingPaymentPanel } from "./booking-payment";
+import { BookingRequestStatus } from "./booking-request-status";
 import { MessageButton } from "@/components/messages/message-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -151,24 +151,11 @@ export function BookingPropertyCard({ booking }: { booking: BookingPropertyCardB
           </div>
         )}
 
-        {booking.bookingId ? (
-          <p className="relative z-10 mt-3 text-xs font-medium text-muted-foreground">
-            Booking ID: {booking.bookingId}
-          </p>
-        ) : null}
-
-        {status === "REQUESTED" ? (
-          <p className="relative z-10 mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-            Your request was sent to the provider. Your booking is not confirmed yet. We will notify
-            you when the provider responds. No payment is required yet.
-          </p>
-        ) : null}
+        <BookingRequestStatus booking={booking} inlinePayment={false} />
 
         <div className="relative z-10 mt-3">
           <MessageButton bookingId={booking.id} />
         </div>
-
-        {status === "AWAITING_PAYMENT" ? <BookingPaymentPanel booking={booking} /> : null}
 
         <div className="mt-3 flex items-center gap-3 border-t border-border/50 pt-3">
           {house.bedrooms > 0 && (

@@ -84,14 +84,14 @@ export class CronService {
       await this.notifications.create({
         type: "BOOKING_COMPLETED",
         title: "Booking completed",
-        message: `Your booking for ${updated.house.name} has ended.`,
+        message: `Booking ${updated.bookingId ?? updated.id} for ${updated.house.name} has ended. Review your payment history and contact support if you have an unresolved issue.`,
         userId: updated.clientId,
         bookingId: updated.id,
       });
       await this.notifications.create({
         type: "BOOKING_COMPLETED",
         title: "Booking completed",
-        message: `${updated.client.name} booking for ${updated.house.name} has ended.`,
+        message: `Booking ${updated.bookingId ?? updated.id}: ${updated.client.name} booking for ${updated.house.name} has ended. Contact support if there is an unresolved issue.`,
         userId: updated.house.ownerId,
         bookingId: updated.id,
       });
@@ -122,7 +122,7 @@ export class CronService {
       await this.notifications.create({
         type: "BOOKING_CANCELLED",
         title: "Booking request expired",
-        message: `The payment deadline for ${booking.house.name} has passed.`,
+        message: `Booking ${booking.bookingId ?? booking.id}: the payment deadline for ${booking.house.name} has passed. Explore another listing. If you made a payment, contact support.`,
         userId: booking.clientId,
         bookingId: booking.id,
       });
@@ -193,7 +193,7 @@ export class CronService {
       await this.notifications.create({
         type: "BOOKING_CANCELLED",
         title: "Booking cancelled",
-        message: `Your booking for ${updated.house.name} expired before payment was completed.`,
+        message: `Booking ${updated.bookingId ?? updated.id} for ${updated.house.name} expired before payment was completed. Explore another listing or contact support if you made a payment.`,
         userId: updated.clientId,
         bookingId: updated.id,
       });

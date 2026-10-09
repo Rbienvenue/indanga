@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,6 +14,7 @@ import type { BookingPropertyCardBooking } from "./booking-property-card";
 import { BookingPriceSummary } from "@/components/houses/BookingPriceSummary";
 import { useSocketIo } from "@/components/providers/socket-io-provider";
 import { Button } from "@/components/ui/button";
+import { MessageButton } from "@/components/messages/message-button";
 import {
   Dialog,
   DialogContent,
@@ -242,9 +244,24 @@ function BookingPaymentForm({
             )}
           </Button>
           {paymentId ? (
-            <p className="text-sm text-muted-foreground">
-              Approve the payment on your phone to secure your booking.
-            </p>
+            <div role="status" className="space-y-3 rounded-lg bg-muted p-3">
+              <p className="text-sm">
+                Your payment is being confirmed. Do not submit another payment. If prompted, approve
+                the payment on your phone and wait for confirmation.
+              </p>
+              {booking.bookingId ? (
+                <p className="break-all text-xs">Booking ID: {booking.bookingId}</p>
+              ) : null}
+              <div className="flex flex-wrap gap-2">
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/dashboard/payments">Payment history</Link>
+                </Button>
+                <MessageButton label="Contact support" size="sm" />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Include your booking reference when contacting support.
+              </p>
+            </div>
           ) : null}
         </form>
       </Form>

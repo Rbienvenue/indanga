@@ -27,6 +27,10 @@ export class CreateBookingDto {
 
 export class FilterBookingDto {
   @IsOptional()
+  @IsEnum(BookingStatus)
+  status?: BookingStatus;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   page?: number;

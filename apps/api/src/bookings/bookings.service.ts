@@ -141,7 +141,7 @@ export class BookingsService {
     await this.notifications.create({
       type: "BOOKING_CREATED",
       title: "New booking request",
-      message: `${booking.client.name} sent a booking request for ${booking.house.name}.`,
+      message: `Booking ${booking.bookingId ?? booking.id}: ${booking.client.name} requested ${booking.house.name}. Accept or decline the request in your dashboard.`,
       userId: booking.house.ownerId,
       bookingId: booking.id,
     });
@@ -165,6 +165,7 @@ export class BookingsService {
   async getBookingsByUser(user: UserSession["user"], data: FilterBookingDto) {
     const { page = 1, limit = 20 } = data;
     const where: Prisma.BookingWhereInput = {};
+    if (data.status) where.status = data.status;
     if (user.role === "tenant") {
       where.clientId = user.id;
     }
@@ -347,7 +348,7 @@ export class BookingsService {
         await this.notifications.create({
           type: "SYSTEM",
           title: "Booking request declined",
-          message: `${declined.house.name} could not accept your booking request.`,
+          message: `Booking ${declined.bookingId ?? declined.id}: ${declined.house.name} could not accept your request. Explore another listing or contact support.`,
           userId: declined.clientId,
           bookingId: declined.id,
         });
@@ -418,7 +419,7 @@ export class BookingsService {
       await this.notifications.create({
         type: "SYSTEM",
         title: "Availability confirmed",
-        message: `The provider accepted your request. Complete payment by ${paymentDeadline.toLocaleString("en-RW", { timeZone: "Africa/Kigali" })} to secure the booking.`,
+        message: `Booking ${accepted.bookingId ?? accepted.id}: the provider accepted your request. Complete payment by ${paymentDeadline.toLocaleString("en-RW", { timeZone: "Africa/Kigali" })} to secure the booking.`,
         userId: accepted.clientId,
         bookingId: accepted.id,
       });
@@ -464,7 +465,7 @@ export class BookingsService {
     await this.notifications.create({
       type: "BOOKING_CANCELLED",
       title: "Booking cancelled",
-      message: `Your booking for ${updated.house.name} was cancelled.`,
+      message: `Booking ${updated.bookingId ?? updated.id} for ${updated.house.name} was cancelled. Review your payment history and contact support about refund eligibility.`,
       userId: updated.clientId,
       bookingId: updated.id,
     });
