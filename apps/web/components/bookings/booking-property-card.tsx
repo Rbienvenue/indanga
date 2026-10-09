@@ -55,6 +55,7 @@ export interface BookingPropertyCardBooking {
   status: BookingCardStatus;
   paymentDeadline?: string | null;
   declineReason?: string | null;
+  responseDeadline?: string | null;
   checkIn?: string | null;
   checkOut?: string | null;
   nights?: number | null;

@@ -12,6 +12,7 @@ import type { UserSession } from "@thallesp/nestjs-better-auth";
 import { getBookingKind } from "src/houses/booking-kind.util";
 import { countOverlappingRooms, reservingBookingsWhere } from "./booking-inventory";
 import type { UpdateBookingStatusDto } from "./dtos";
+import { providerResponseDeadline, unansweredRequestsWhere } from "./booking-deadlines";
 const PAYMENT_WINDOW_MS = 30 * 60 * 1000;
 @Injectable()
 export class BookingStatusService {
@@ -38,11 +39,13 @@ export class BookingStatusService {
       booking.status === BookingStatus.REQUESTED &&
       (status === BookingStatus.AWAITING_PAYMENT || status === BookingStatus.DECLINED)
     ) {
+      if (providerResponseDeadline(booking) <= new Date())
+        throw new BadRequestException("The provider response deadline has passed");
       if (status === BookingStatus.DECLINED) {
         if (!data.declineReason?.trim())
           throw new BadRequestException("A decline reason is required");
         const claimed = await this.db.booking.updateMany({
-          where: { id, status: BookingStatus.REQUESTED },
+          where: { id, status: BookingStatus.REQUESTED, NOT: unansweredRequestsWhere() },
           data: { status: BookingStatus.DECLINED, declineReason: data.declineReason.trim() },
         });
         if (!claimed.count)
@@ -71,6 +74,8 @@ export class BookingStatusService {
           if (!current || current.status !== BookingStatus.REQUESTED) {
             throw new BadRequestException("This booking request has already been handled");
           }
+          if (providerResponseDeadline(current) <= new Date())
+            throw new BadRequestException("The provider response deadline has passed");
           const kind = getBookingKind(current.house.propertyType);
           if (kind === "hotel") {
             if (!current.roomTypeId || !current.checkIn || !current.checkOut) {

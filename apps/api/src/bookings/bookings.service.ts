@@ -16,6 +16,11 @@ import { ServiceFeesService } from "src/service-fees/service-fees.service";
 import { calcServiceFee } from "src/service-fees/service-fee.util";
 
 import type { User } from "src/lib/auth";
+import {
+  PROVIDER_RESPONSE_MS,
+  providerResponseDeadline,
+  unansweredRequestsWhere,
+} from "./booking-deadlines";
 
 function startOfDay(date: Date): Date {
   const value = new Date(date);
@@ -126,6 +131,7 @@ export class BookingsService {
         roomTypeId,
         roomCount,
         status: BookingStatus.REQUESTED,
+        responseDeadline: new Date(Date.now() + PROVIDER_RESPONSE_MS),
         checkIn,
         checkOut,
         nights,
@@ -139,7 +145,7 @@ export class BookingsService {
     await this.notifications.create({
       type: "BOOKING_CREATED",
       title: "New booking request",
-      message: `Booking ${booking.bookingId ?? booking.id}: ${booking.client.name} requested ${booking.house.name}. Accept or decline the request in your dashboard.`,
+      message: `Booking ${booking.bookingId ?? booking.id}: ${booking.client.name} requested ${booking.house.name}. Accept or decline by ${providerResponseDeadline(booking).toLocaleString("en-RW", { timeZone: "Africa/Kigali" })} in your dashboard.`,
       userId: booking.house.ownerId,
       bookingId: booking.id,
     });
@@ -149,15 +155,19 @@ export class BookingsService {
 
   async getActiveBooking(clientId: string, houseId: string) {
     if (!houseId) throw new BadRequestException("Property is required");
-    return this.db.booking.findFirst({
+    const booking = await this.db.booking.findFirst({
       where: {
         clientId,
         houseId,
-        OR: [{ status: BookingStatus.REQUESTED }, reservingBookingsWhere()],
+        OR: [
+          { status: BookingStatus.REQUESTED, NOT: unansweredRequestsWhere() },
+          reservingBookingsWhere(),
+        ],
       },
       orderBy: { createdAt: "desc" },
       include: { house: true, roomType: true },
     });
+    return booking ? { ...booking, responseDeadline: providerResponseDeadline(booking) } : null;
   }
 
   async getBookingsByUser(user: UserSession["user"], data: FilterBookingDto) {
@@ -189,7 +199,10 @@ export class BookingsService {
     ]);
 
     return {
-      data: bookings,
+      data: bookings.map((booking) => ({
+        ...booking,
+        responseDeadline: providerResponseDeadline(booking),
+      })),
       meta: {
         total,
         page,

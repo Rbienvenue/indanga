@@ -8,34 +8,34 @@ datasource db {
 }
 
 model User {
-  id                 String         @id
+  id                 String          @id
   name               String
-  email              String         @unique
+  email              String          @unique
   password           String?
-  phoneNumber        String?        @unique
-  role               UserRole       @default(tenant)
-  providerType       ProviderType   @default(HOTEL)
-  nationalId         String?        @unique
-  emailVerified      Boolean        @default(false)
+  phoneNumber        String?         @unique
+  role               UserRole        @default(tenant)
+  providerType       ProviderType    @default(HOTEL)
+  nationalId         String?         @unique
+  emailVerified      Boolean         @default(false)
   image              String?
-  status             Status         @default(ACTIVE)
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-  twoFactorEnabled   Boolean?       @default(false)
+  status             Status          @default(ACTIVE)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  twoFactorEnabled   Boolean?        @default(false)
   banExpires         DateTime?
   banReason          String?
-  banned             Boolean        @default(false)
+  banned             Boolean         @default(false)
   kycRejectionReason String?
   kycReviewedAt      DateTime?
-  kycStatus          KycStatus      @default(NOT_SUBMITTED)
+  kycStatus          KycStatus       @default(NOT_SUBMITTED)
   kycSubmittedAt     DateTime?
   accounts           Account[]
-  bookings           Booking[]      @relation("BookingClient")
+  bookings           Booking[]       @relation("BookingClient")
   favorites          Favorite[]
-  houses             House[]        @relation("HouseOwner")
+  houses             House[]         @relation("HouseOwner")
   kycDocuments       KycDocument[]
   notifications      Notification[]
-  reviews            Review[]       @relation("ReviewTenant")
+  reviews            Review[]        @relation("ReviewTenant")
   sessions           Session[]
   twofactors         TwoFactor[]
 
@@ -104,28 +104,29 @@ model ServiceFee {
 }
 
 model Booking {
-  id              String         @id @default(cuid())
-  bookingId       String?
-  clientId        String
-  houseId         String
-  roomTypeId      String?
-  roomCount       Int?           @default(1)
-  status          BookingStatus  @default(PENDING)
-  checkIn         DateTime?
-  checkOut        DateTime?
-  nights          Int?
-  unitPrice       Int?
-  serviceFee      Int?           @default(0)
-  totalAmount     Int?
-  declineReason   String?
-  paymentDeadline DateTime?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  client          User           @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)
-  house           House          @relation(fields: [houseId], references: [id], onDelete: Cascade)
-  roomType        RoomType?      @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
-  notifications   Notification[]
-  payments        Payment[]
+  id               String         @id @default(cuid())
+  bookingId        String?
+  clientId         String
+  houseId          String
+  roomTypeId       String?
+  roomCount        Int?           @default(1)
+  status           BookingStatus  @default(PENDING)
+  checkIn          DateTime?
+  checkOut         DateTime?
+  nights           Int?
+  unitPrice        Int?
+  serviceFee       Int?           @default(0)
+  totalAmount      Int?
+  declineReason    String?
+  responseDeadline DateTime?
+  paymentDeadline  DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  client           User           @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)
+  house            House          @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  roomType         RoomType?      @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
+  notifications    Notification[]
+  payments         Payment[]
 
   conversation Conversation?
 

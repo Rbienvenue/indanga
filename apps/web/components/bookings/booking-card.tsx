@@ -42,6 +42,7 @@ export type Booking = {
   bookingId: string | null;
   status: BookingStatus;
   declineReason?: string | null;
+  responseDeadline?: string | null;
   checkIn: string | null;
   checkOut: string | null;
   totalAmount: number | null;
@@ -76,7 +77,14 @@ function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString() : "—";
 }
 
-function BookingRequestActions({ bookingId }: { bookingId: string }) {
+function BookingRequestActions({
+  bookingId,
+  responseDeadline,
+}: {
+  bookingId: string;
+  responseDeadline?: string | null;
+}) {
+  const expired = Boolean(responseDeadline && new Date(responseDeadline) <= new Date());
   const [open, setOpen] = useState(false);
   const form = useForm<z.infer<typeof declineSchema>>({
     resolver: zodResolver(declineSchema),
@@ -103,14 +111,14 @@ function BookingRequestActions({ bookingId }: { bookingId: string }) {
   return (
     <div className="flex flex-wrap gap-2">
       <Button
-        disabled={mutation.isPending}
+        disabled={mutation.isPending || expired}
         onClick={() => mutation.mutate({ status: "AWAITING_PAYMENT" })}
       >
         Accept request
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" disabled={mutation.isPending}>
+          <Button variant="outline" disabled={mutation.isPending || expired}>
             Decline
           </Button>
         </DialogTrigger>
@@ -206,11 +214,23 @@ export function BookingDetails({ booking, isCar }: { booking?: Booking; isCar: b
               Include the booking reference above when contacting support.
             </p>
             <BookingStatusBadge status={booking.status} />
+            {booking.status === "REQUESTED" && booking.responseDeadline ? (
+              <p className="text-sm">
+                Respond by{" "}
+                {new Date(booking.responseDeadline).toLocaleString("en-RW", {
+                  timeZone: "Africa/Kigali",
+                })}{" "}
+                (Kigali).
+              </p>
+            ) : null}
             {booking.declineReason ? (
               <p className="break-words text-sm">Decline reason: {booking.declineReason}</p>
             ) : null}
             {booking.status === "REQUESTED" ? (
-              <BookingRequestActions bookingId={booking.id} />
+              <BookingRequestActions
+                bookingId={booking.id}
+                responseDeadline={booking.responseDeadline}
+              />
             ) : null}
           </div>
         ) : (
@@ -265,7 +285,10 @@ export function BookingCard({
       </button>
       {booking.status === "REQUESTED" ? (
         <div className="px-4 pb-4">
-          <BookingRequestActions bookingId={booking.id} />
+          <BookingRequestActions
+            bookingId={booking.id}
+            responseDeadline={booking.responseDeadline}
+          />
         </div>
       ) : null}
     </div>

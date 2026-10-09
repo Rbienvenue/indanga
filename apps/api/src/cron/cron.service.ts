@@ -3,6 +3,7 @@ import { BookingStatus, HouseStatus, Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
 import { NotificationsService } from "src/notifications/notifications.service";
 import { env } from "src/lib/env";
+import { unansweredRequestsWhere } from "src/bookings/booking-deadlines";
 
 function startOfTodayUTC(): Date {
   const now = new Date();
@@ -27,11 +28,43 @@ export class CronService {
   ) {}
 
   async expireBookings() {
+    const requestExpired = await this.expireUnansweredRequests();
     const completed = await this.completeExpiredBookings();
     const paymentExpired = await this.expirePaymentDeadlines();
     const staleCancelled = await this.cancelStalePendingBookings();
     const { markedBooked, markedAvailable } = await this.reconcileHouseAvailability();
-    return { completed, paymentExpired, staleCancelled, markedBooked, markedAvailable };
+    return {
+      requestExpired,
+      completed,
+      paymentExpired,
+      staleCancelled,
+      markedBooked,
+      markedAvailable,
+    };
+  }
+
+  private async expireUnansweredRequests() {
+    const where = unansweredRequestsWhere();
+    const requests = await this.db.booking.findMany({ where, include: { house: true } });
+    let count = 0;
+    for (const booking of requests) {
+      const changed = await this.db.booking.updateMany({
+        where: { id: booking.id, ...where },
+        data: { status: "EXPIRED" },
+      });
+      if (!changed.count) continue;
+      count++;
+      for (const userId of [booking.clientId, booking.house.ownerId]) {
+        await this.notifications.create({
+          userId,
+          bookingId: booking.id,
+          type: "SYSTEM",
+          title: "Provider response deadline passed",
+          message: `Booking ${booking.bookingId ?? booking.id} for ${booking.house.name} expired because the provider did not respond. No payment was required. Explore another listing or contact support.`,
+        });
+      }
+    }
+    return count;
   }
 
   private async completeExpiredBookings(): Promise<number> {
