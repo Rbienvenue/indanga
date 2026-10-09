@@ -179,7 +179,14 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
           {/* Desktop CTA - Show avatar if authenticated, otherwise show auth links */}
           <div className="hidden items-center gap-3 md:flex">
             {session ? (
-              <UserAvatar />
+              <>
+                <UserAvatar />
+                {pathname === "/" && (
+                  <Button asChild size="lg" className="font-semibold">
+                    <Link href="/dashboard">Open Dashboard</Link>
+                  </Button>
+                )}
+              </>
             ) : (
               <>
                 <Button size="lg" variant="outline" className="px-6 font-semibold" asChild>
@@ -196,7 +203,14 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
         {/* Mobile Auth and Menu */}
         <div className="flex items-center gap-1.5 md:hidden">
           {session ? (
-            <UserAvatar />
+            <>
+              <UserAvatar />
+              {pathname === "/" && (
+                <Button asChild size="sm">
+                  <Link href="/dashboard">Open Dashboard</Link>
+                </Button>
+              )}
+            </>
           ) : (
             <>
               <Button

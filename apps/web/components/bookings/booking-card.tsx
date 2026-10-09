@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ReceiptDialog } from "@/components/payments/receipt-dialog";
 import { MessageButton } from "@/components/messages/message-button";
 import { fetcher } from "@/lib/fetcher";
 import { firstImageUrl } from "@/lib/property-media";
@@ -42,6 +43,7 @@ export type Booking = {
   bookingId: string | null;
   status: BookingStatus;
   declineReason?: string | null;
+  payments?: { id: string }[];
   responseDeadline?: string | null;
   checkIn: string | null;
   checkOut: string | null;
@@ -283,6 +285,13 @@ export function BookingCard({
           ) : null}
         </div>
       </button>
+      {booking.payments?.length ? (
+        <div className="flex flex-wrap gap-2 px-4 pb-4">
+          {booking.payments.map((payment) => (
+            <ReceiptDialog key={payment.id} paymentId={payment.id} />
+          ))}
+        </div>
+      ) : null}
       {booking.status === "REQUESTED" ? (
         <div className="px-4 pb-4">
           <BookingRequestActions

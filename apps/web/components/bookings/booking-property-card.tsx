@@ -4,6 +4,7 @@ import { Bath, BedDouble, CalendarDays, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { BookingRequestStatus } from "./booking-request-status";
+import { ReceiptDialog } from "@/components/payments/receipt-dialog";
 import { MessageButton } from "@/components/messages/message-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,6 +55,7 @@ export interface BookingPropertyCardBooking {
   bookingId?: string | null;
   status: BookingCardStatus;
   paymentDeadline?: string | null;
+  payments?: { id: string }[];
   declineReason?: string | null;
   responseDeadline?: string | null;
   checkIn?: string | null;
@@ -155,8 +157,11 @@ export function BookingPropertyCard({ booking }: { booking: BookingPropertyCardB
 
         <BookingRequestStatus booking={booking} inlinePayment={false} />
 
-        <div className="relative z-10 mt-3">
+        <div className="relative z-10 mt-3 flex flex-wrap gap-2">
           <MessageButton bookingId={booking.id} />
+          {booking.payments?.map((payment) => (
+            <ReceiptDialog key={payment.id} paymentId={payment.id} />
+          ))}
         </div>
 
         <div className="mt-3 flex items-center gap-3 border-t border-border/50 pt-3">

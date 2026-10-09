@@ -129,7 +129,7 @@ export function PropertyFeed({
                 propertyType={house.propertyType}
                 badge={house.propertyType}
                 showManageActions={!!ownerId}
-                status={ownerId ? house.status : undefined}
+                status={house.status}
                 verificationStatus={house.verificationStatus}
               />
             ))}

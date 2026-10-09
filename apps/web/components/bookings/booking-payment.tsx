@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,7 +14,7 @@ import { BookingPriceSummary } from "@/components/houses/BookingPriceSummary";
 import { useSession } from "@/components/providers/session-provider";
 import { useSocketIo } from "@/components/providers/socket-io-provider";
 import { Button } from "@/components/ui/button";
-import { MessageButton } from "@/components/messages/message-button";
+import { ReceiptDialog } from "@/components/payments/receipt-dialog";
 import {
   Dialog,
   DialogContent,
@@ -218,9 +217,7 @@ function BookingPaymentForm({
               ? "Payment received. Your booking is confirmed."
               : "Payment received. Contact support to review your booking before making another payment."}
           </p>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/dashboard/payments">View receipt in payment history</Link>
-          </Button>
+          <ReceiptDialog paymentId={payment.id} />
         </div>
       ) : null}
       <Form {...form}>
@@ -333,24 +330,6 @@ function BookingPaymentForm({
                   <a href={payment.checkoutUrl}>Continue card payment</a>
                 </Button>
               ) : null}
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  type="button"
-                  disabled={recovery.isFetching}
-                  onClick={() => void refreshPayment()}
-                >
-                  Check status
-                </Button>
-                <Button asChild variant="outline" size="sm">
-                  <Link href="/dashboard/payments">Payment history</Link>
-                </Button>
-                <MessageButton label="Contact support" size="sm" />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Include your booking reference when contacting support.
-              </p>
             </div>
           ) : null}
         </form>

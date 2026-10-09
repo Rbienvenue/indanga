@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Collapsible } from "radix-ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ApiResponse } from "@/@types";
 import { useSocketIo } from "@/components/providers/socket-io-provider";
@@ -17,6 +18,7 @@ import {
   SidebarMenuButton,
   SidebarMenuBadge,
   SidebarMenuItem,
+  SidebarMenuSub,
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
@@ -29,7 +31,6 @@ import {
   LifeBuoy,
   LogOut,
   House,
-  PlusCircle,
   Search,
   Bell,
   Users,
@@ -42,6 +43,7 @@ import {
   MessageSquare,
   FileChartColumn,
   BedDouble,
+  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -57,7 +59,6 @@ const tenantItems = [
   { title: "Messages", href: "/dashboard/messages", icon: MessageSquare },
   { title: "My Favorites", href: "/dashboard/favorites", icon: Heart },
   { title: "Search", href: "/dashboard/search", icon: Search },
-  { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { title: "Profile Settings", href: "/dashboard/profile", icon: User },
   { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
 ];
@@ -69,7 +70,6 @@ const agentItems = [
   { title: "Calendar", href: "/dashboard/calendar", icon: Calendar },
   { title: "Guests", href: "/dashboard/guest", icon: Users },
   { title: "Messages", href: "/dashboard/messages", icon: MessageSquare },
-  { title: "Reviews", href: "/dashboard/reviews", icon: Star },
   { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
   { title: "Profile Settings", href: "/dashboard/profile", icon: User },
 ];
@@ -92,16 +92,30 @@ const houseItems = agentItems
     return item;
   });
 
+const adminGroups = [
+  {
+    title: "Users",
+    icon: Users,
+    items: [
+      { title: "Users", href: "/admin/users", icon: Users },
+      { title: "Verification", href: "/admin/kyc", icon: BadgeCheck },
+    ],
+  },
+  {
+    title: "Listings",
+    icon: House,
+    items: [
+      { title: "Listing", href: "/admin/properties", icon: House },
+      { title: "Listing Reports", href: "/admin/reports", icon: FileChartColumn },
+    ],
+  },
+];
+
 const adminItems = [
   { title: "Overview", href: "/admin", icon: Shield },
-  { title: "Users", href: "/admin/users", icon: Users },
-  { title: "Verification", href: "/admin/kyc", icon: BadgeCheck },
-  { title: "Properties", href: "/admin/properties", icon: House },
   { title: "Booking Queue", href: "/admin/bookings", icon: Calendar },
   { title: "Payments & Refunds", href: "/admin/payments", icon: CreditCard },
   { title: "Support Inbox", href: "/admin/support", icon: LifeBuoy },
-  { title: "Reports", href: "/admin/reports", icon: FileChartColumn },
-  { title: "Reviews", href: "/admin/reviews", icon: Star },
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
@@ -111,7 +125,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const session = useSession();
-  const { setOpenMobile } = useSidebar();
+  const { setOpenMobile, setOpen } = useSidebar();
   const closeMobileSidebar = React.useCallback(() => setOpenMobile(false), [setOpenMobile]);
 
   React.useEffect(() => {
@@ -163,6 +177,37 @@ export function AppSidebar() {
     };
   }, [socket, isConnected, session, hasMessages, queryClient]);
 
+  function renderMenuItem(item: (typeof adminItems)[number]) {
+    const active =
+      pathname === item.href ||
+      (item.href !== "/dashboard" &&
+        item.href !== "/admin" &&
+        pathname.startsWith(`${item.href}/`));
+
+    const messageItem = item.href === "/dashboard/messages" || item.href === "/admin/support";
+    const label =
+      messageItem && unreadCount > 0 ? `${item.title}, ${unreadCount} unread messages` : item.title;
+
+    return (
+      <SidebarMenuItem key={item.href}>
+        <SidebarMenuButton asChild isActive={active} tooltip={label}>
+          <Link href={item.href} onClick={closeMobileSidebar} aria-label={label}>
+            <item.icon />
+            <span>{item.title}</span>
+          </Link>
+        </SidebarMenuButton>
+        {messageItem && unreadCount > 0 ? (
+          <SidebarMenuBadge
+            aria-hidden="true"
+            className="rounded-full bg-destructive text-white peer-hover/menu-button:text-white peer-data-active/menu-button:text-white group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:-right-1 group-data-[collapsible=icon]:min-w-4 group-data-[collapsible=icon]:h-4 group-data-[collapsible=icon]:text-[9px]"
+          >
+            {unreadCount > 99 ? "99+" : unreadCount}
+          </SidebarMenuBadge>
+        ) : null}
+      </SidebarMenuItem>
+    );
+  }
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border p-2">
@@ -185,39 +230,38 @@ export function AppSidebar() {
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => {
-                const active =
-                  pathname === item.href ||
-                  (item.href !== "/dashboard" &&
-                    item.href !== "/admin" &&
-                    pathname.startsWith(`${item.href}/`));
-
-                const messageItem =
-                  item.href === "/dashboard/messages" || item.href === "/admin/support";
-                const label =
-                  messageItem && unreadCount > 0
-                    ? `${item.title}, ${unreadCount} unread messages`
-                    : item.title;
-
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={active} tooltip={label}>
-                      <Link href={item.href} onClick={closeMobileSidebar} aria-label={label}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    {messageItem && unreadCount > 0 ? (
-                      <SidebarMenuBadge
-                        aria-hidden="true"
-                        className="rounded-full bg-destructive text-white peer-hover/menu-button:text-white peer-data-active/menu-button:text-white group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:-right-1 group-data-[collapsible=icon]:min-w-4 group-data-[collapsible=icon]:h-4 group-data-[collapsible=icon]:text-[9px]"
-                      >
-                        {unreadCount > 99 ? "99+" : unreadCount}
-                      </SidebarMenuBadge>
-                    ) : null}
-                  </SidebarMenuItem>
-                );
-              })}
+              {session?.user?.role === "admin" ? (
+                <>
+                  {adminItems.slice(0, 1).map(renderMenuItem)}
+                  {adminGroups.map((group) => (
+                    <Collapsible.Root key={group.title} asChild defaultOpen={false}>
+                      <SidebarMenuItem>
+                        <Collapsible.Trigger asChild>
+                          <SidebarMenuButton
+                            tooltip={group.title}
+                            isActive={group.items.some(
+                              (item) =>
+                                pathname === item.href || pathname.startsWith(`${item.href}/`),
+                            )}
+                            onClick={() => setOpen(true)}
+                            className="group/collapsible"
+                          >
+                            <group.icon />
+                            <span>{group.title}</span>
+                            <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                          </SidebarMenuButton>
+                        </Collapsible.Trigger>
+                        <Collapsible.Content>
+                          <SidebarMenuSub>{group.items.map(renderMenuItem)}</SidebarMenuSub>
+                        </Collapsible.Content>
+                      </SidebarMenuItem>
+                    </Collapsible.Root>
+                  ))}
+                  {adminItems.slice(1).map(renderMenuItem)}
+                </>
+              ) : (
+                items.map(renderMenuItem)
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

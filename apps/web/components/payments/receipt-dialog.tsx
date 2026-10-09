@@ -190,20 +190,11 @@ export function ReceiptDialog({ paymentId }: { paymentId: string }) {
                   </div>
                 ))}
               </dl>
-              <div className="mt-7 border-t border-slate-200 pt-4 text-xs text-slate-500">
-                <p>Booking status: {receipt.bookingStatus.replaceAll("_", " ")}</p>
-                <p className="mt-2 break-all">
-                  Transaction reference: {receipt.transactionReference}
+              {["EXPIRED", "CANCELLED", "DECLINED", "REJECTED"].includes(receipt.bookingStatus) ? (
+                <p className="mt-7 border-t border-slate-200 pt-4 text-xs text-amber-800">
+                  Payment was received. This booking is not active. Contact support for assistance.
                 </p>
-                {["EXPIRED", "CANCELLED", "DECLINED", "REJECTED"].includes(
-                  receipt.bookingStatus,
-                ) ? (
-                  <p className="mt-3 text-amber-800">
-                    Payment was received. This booking is not active. Contact support for
-                    assistance.
-                  </p>
-                ) : null}
-              </div>
+              ) : null}
             </section>
             <footer className="border-t border-slate-200 px-6 py-5 text-center text-xs text-slate-500">
               Questions? Contact support@indanga.com and include your booking reference.

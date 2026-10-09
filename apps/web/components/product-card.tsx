@@ -44,7 +44,7 @@ export type ProductCardProps = {
   className?: string;
   isFavorite?: boolean;
   showManageActions?: boolean;
-  status?: PropertyStatus;
+  status: PropertyStatus;
   verificationStatus?: House["verificationStatus"] | null;
 };
 
@@ -224,6 +224,7 @@ export function ProductCard({
         {verificationStatus && (
           <PropertyVerificationBadge
             status={verificationStatus}
+            listingStatus={status}
             className="absolute bottom-3 left-3 z-10 shadow-md"
           />
         )}

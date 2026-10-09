@@ -79,7 +79,10 @@ export function ListingDetails({ listing }: { listing: HouseWithRooms }) {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <PropertyStatusBadge status={listing.status} />
-          <PropertyVerificationBadge status={listing.verificationStatus} />
+          <PropertyVerificationBadge
+            status={listing.verificationStatus}
+            listingStatus={listing.status}
+          />
         </div>
         <dl className="grid grid-cols-2 gap-4 text-sm">
           <div>

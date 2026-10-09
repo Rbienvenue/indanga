@@ -111,14 +111,6 @@ export function generateReceiptPdf(receipt: Receipt): Buffer {
   }
   line(y);
   y += 9;
-  text(`Booking status: ${receipt.bookingStatus.replaceAll("_", " ")}`, left, y, 9, "bold");
-  y += 7;
-  const reference = doc.splitTextToSize(
-    `Transaction reference: ${receipt.transactionReference}`,
-    174,
-  ) as string[];
-  text(reference.join("\n"), left, y, 8);
-  y += reference.length * 4 + 5;
   if (["EXPIRED", "CANCELLED", "DECLINED", "REJECTED"].includes(receipt.bookingStatus)) {
     text(
       "Payment was received. This booking is not active. Contact support for assistance.",

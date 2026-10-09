@@ -37,14 +37,16 @@ const verificationDescriptions: Record<VerificationStatus, string> = {
 
 export function PropertyVerificationBadge({
   status,
+  listingStatus,
   className,
   lastReviewed,
 }: {
   status?: VerificationStatus | null;
+  listingStatus: House["status"];
   className?: string;
   lastReviewed?: string | Date | null;
 }) {
-  if (!status) return null;
+  if (!status || listingStatus === "PENDING") return null;
 
   const reviewedLabel = lastReviewed
     ? `${status === "VerifiedByIndanga" ? "Verified" : "Reviewed"} on ${new Date(lastReviewed).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`
@@ -82,9 +84,8 @@ export function PropertyVerificationBadge({
           <p className="text-xs font-semibold text-foreground">{reviewedLabel}</p>
         ) : null}
         <p className="text-xs leading-5 text-muted-foreground">
-          Verification does not guarantee future availability, unchanged pricing, or the
-          quality of every service. Review the listing and booking terms before making a
-          payment.
+          Verification does not guarantee future availability, unchanged pricing, or the quality of
+          every service. Review the listing and booking terms before making a payment.
         </p>
         <Link
           href="/support#faqs"

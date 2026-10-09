@@ -14,6 +14,7 @@ import { countOverlappingRooms, reservingBookingsWhere } from "./booking-invento
 import type { UpdateBookingStatusDto } from "./dtos";
 import { providerResponseDeadline, unansweredRequestsWhere } from "./booking-deadlines";
 const PAYMENT_WINDOW_MS = 30 * 60 * 1000;
+
 @Injectable()
 export class BookingStatusService {
   constructor(

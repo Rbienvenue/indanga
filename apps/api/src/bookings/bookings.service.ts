@@ -193,6 +193,11 @@ export class BookingsService {
           house: { include: { rooms: true } },
           roomType: true,
           client: true,
+          payments: {
+            where: { status: "COMPLETED" },
+            select: { id: true },
+            orderBy: { createdAt: "desc" },
+          },
         },
       }),
       this.db.booking.count({ where }),
