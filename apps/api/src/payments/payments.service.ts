@@ -104,7 +104,7 @@ export class PaymentsService {
           data.method === "CARD" && "PCODE" in result
             ? await tx.payment.update({
                 where: { transactionReference: payment.transactionReference },
-                data: { transactionReference: result.PCODE },
+                data: { transactionReference: result.PCODE, checkoutUrl: result.link },
               })
             : payment;
 
@@ -298,17 +298,20 @@ export class PaymentsService {
   }
 
   async getPayments(user: UserSession["user"], data: FilterPaymentsDto) {
-    const { page = 1, limit = 20, status } = data;
+    const { page = 1, limit = 20, status, bookingId } = data;
     const where: Prisma.PaymentWhereInput = {};
 
     if (status) where.status = status;
+    if (bookingId) where.bookingId = bookingId;
 
     if (user.role === "tenant") {
       where.booking = { clientId: user.id };
     }
 
     if (user.role === "landlord") {
-      where.booking = { house: { ownerId: user.id } };
+      where.booking = bookingId
+        ? { OR: [{ clientId: user.id }, { house: { ownerId: user.id } }] }
+        : { house: { ownerId: user.id } };
     }
 
     const [payments, total] = await Promise.all([
@@ -321,7 +324,9 @@ export class PaymentsService {
           booking: {
             select: {
               id: true,
+              clientId: true,
               bookingId: true,
+              status: true,
               checkIn: true,
               checkOut: true,
               nights: true,
@@ -338,6 +343,7 @@ export class PaymentsService {
     return {
       data: payments.map((payment) => ({
         ...payment,
+        checkoutUrl: payment.booking.clientId === user.id ? payment.checkoutUrl : null,
         bookingAmount: payment.amount.toNumber() - (payment.booking.serviceFee ?? 0),
       })),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },

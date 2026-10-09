@@ -329,6 +329,12 @@ export class BookingsService {
       throw new ForbiddenException("You do not have access to this booking");
     }
 
-    return booking;
+    return {
+      ...booking,
+      payments: booking.payments.map((payment) => ({
+        ...payment,
+        checkoutUrl: booking.clientId === user.id ? payment.checkoutUrl : null,
+      })),
+    };
   }
 }
