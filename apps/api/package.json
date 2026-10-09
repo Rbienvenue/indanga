@@ -37,6 +37,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "file-type": "^22.0.1",
+    "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "morgan": "^1.10.0",
     "nanoid": "^5.1.15",
