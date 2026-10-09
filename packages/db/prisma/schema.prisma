@@ -36,6 +36,7 @@ model User {
   kycDocuments       KycDocument[]
   notifications      Notification[]
   reviews            Review[]        @relation("ReviewTenant")
+  listingReports     ListingReport[]
   sessions           Session[]
   twofactors         TwoFactor[]
 
@@ -69,6 +70,7 @@ model House {
   rooms              RoomType[]
   reviews            Review[]
   favorites          Favorite[]
+  reports            ListingReport[]
 
   conversations Conversation[]
 
@@ -411,4 +413,29 @@ model ConversationRead {
 
   @@id([conversationId, userId])
   @@map("conversation_read")
+}
+
+model ListingReport {
+  id          String       @id @default(cuid())
+  houseId     String?
+  listingName String
+  reporterId  String?
+  reason      String
+  status      ReportStatus @default(OPEN)
+  reviewNote  String?
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime     @default(now())
+  house       House?       @relation(fields: [houseId], references: [id], onDelete: SetNull)
+  reporter    User?        @relation(fields: [reporterId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([houseId, reporterId])
+  @@map("listing_report")
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
 }
