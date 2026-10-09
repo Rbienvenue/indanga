@@ -80,6 +80,9 @@ export function BookingRequestStatus({
         <>
           <p className="font-semibold">{guidance.title}</p>
           <p className="mt-1 text-sm text-muted-foreground">{guidance.message}</p>
+          {booking.status === "DECLINED" && booking.declineReason ? (
+            <p className="mt-2 break-words text-sm">Reason: {booking.declineReason}</p>
+          ) : null}
           {booking.bookingId ? (
             <p className="mt-2 break-all text-sm font-medium">Booking ID: {booking.bookingId}</p>
           ) : null}
