@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { RolePicker } from "@/components/auth/role-picker";
+import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -253,8 +254,7 @@ export default function SignupPage() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       autoComplete="new-password"
                       placeholder="At least 8 characters"
                       className="h-11 bg-white px-3"
@@ -273,8 +273,7 @@ export default function SignupPage() {
                 <FormItem>
                   <FormLabel>Confirm password</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       autoComplete="new-password"
                       placeholder="Repeat password"
                       className="h-11 bg-white px-3"
