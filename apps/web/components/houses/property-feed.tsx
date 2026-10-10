@@ -15,7 +15,9 @@ import { buildPropertiesUrl } from "@/lib/property-filters";
 export function PropertyFeed({
   ownerId,
   lockedType,
-}: { ownerId?: string; lockedType?: string } = {}) {
+  columns = 4,
+}: { ownerId?: string; lockedType?: string; columns?: 3 | 4 } = {}) {
+  const gridClassName = `mt-10 grid gap-6 sm:grid-cols-2 ${columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"}`;
   const [propertyType, setPropertyType] = useQueryState("type", parseAsString.withDefault("all"));
   const [subType, setSubType] = useQueryState("subType", parseAsString.withDefault("all"));
   const [budget, setBudget] = useQueryState("budget", parseAsString.withDefault("any"));
@@ -78,7 +80,7 @@ export function PropertyFeed({
       <SearchBar className="mt-0 px-0" lockedType={lockedType} />
 
       {housesQuery.isLoading ? (
-        <section className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <section className={gridClassName}>
           {Array.from({ length: 20 }).map((_, index) => (
             <ProductCardSkeleton key={index} />
           ))}
@@ -111,7 +113,7 @@ export function PropertyFeed({
         </div>
       ) : (
         <>
-          <section className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <section className={gridClassName}>
             {houses.map((house) => (
               <ProductCard
                 key={house.id}

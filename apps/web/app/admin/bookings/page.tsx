@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import type { BookingStatus } from "@indanga/db";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 
@@ -8,6 +10,16 @@ import type { PaginationResponse } from "@/@types";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { BookingRequestActions } from "@/components/bookings/booking-card";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
 import { formatPrice } from "@/lib/utils";
@@ -15,27 +27,29 @@ import { formatPrice } from "@/lib/utils";
 type BookingWithDetails = {
   id: string;
   bookingId?: string | null;
-  status:
-    | "PENDING"
-    | "APPROVED"
-    | "REJECTED"
-    | "CANCELLED"
-    | "COMPLETED"
-    | "REQUESTED"
-    | "AWAITING_PAYMENT"
-    | "CONFIRMED"
-    | "DECLINED"
-    | "EXPIRED";
+  status: BookingStatus;
   createdAt: string;
   checkIn?: string | null;
   checkOut?: string | null;
   nights?: number | null;
   totalAmount?: number | null;
-  house: { id: string; name: string; location: string; price: number; propertyType: string };
+  responseDeadline: string | null;
+  paymentDeadline: string | null;
+  declineReason: string | null;
+  roomCount: number | null;
+  roomType: { id: string; name: string } | null;
+  house: {
+    id: string;
+    name: string;
+    location: string;
+    price: number;
+    propertyType: string;
+    owner: { id: string; name: string; email: string };
+  };
   client: { id: string; name: string; email: string };
 };
 
-const statusColors: Record<string, string> = {
+const statusColors: Record<BookingStatus, string> = {
   PENDING: "bg-amber-100 text-amber-700",
   APPROVED: "bg-green-100 text-green-700",
   REJECTED: "bg-red-100 text-red-700",
@@ -47,6 +61,133 @@ const statusColors: Record<string, string> = {
   DECLINED: "bg-red-100 text-red-700",
   EXPIRED: "bg-gray-100 text-gray-700",
 };
+
+function AdminBookingActions({ booking }: { booking: BookingWithDetails }) {
+  const isCar = getBookingKind(booking.house.propertyType) === "car";
+
+  return (
+    <div className="flex flex-col items-start gap-2">
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline" size="sm">
+            View details
+          </Button>
+        </SheetTrigger>
+        <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+          <SheetHeader className="border-b p-6">
+            <SheetTitle>Booking details</SheetTitle>
+            <SheetDescription>{booking.bookingId ?? booking.id}</SheetDescription>
+          </SheetHeader>
+          <div className="space-y-6 px-6 pb-6">
+            <div>
+              <Link
+                href={`/properties/${booking.house.id}`}
+                className="font-semibold hover:underline"
+              >
+                {booking.house.name}
+              </Link>
+              <p className="mt-1 text-sm text-muted-foreground">{booking.house.location}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{booking.house.propertyType}</p>
+              {booking.roomType ? (
+                <p className="mt-2 text-sm">
+                  {booking.roomType.name} · {booking.roomCount ?? 1} room(s)
+                </p>
+              ) : null}
+            </div>
+            <dl className="grid grid-cols-2 gap-4 text-sm">
+              <div className="min-w-0">
+                <dt className="text-muted-foreground">Customer</dt>
+                <dd className="mt-1 font-medium">{booking.client.name}</dd>
+                <dd className="break-all text-muted-foreground">{booking.client.email}</dd>
+              </div>
+              <div className="min-w-0">
+                <dt className="text-muted-foreground">Provider</dt>
+                <dd className="mt-1 font-medium">{booking.house.owner.name}</dd>
+                <dd className="break-all text-muted-foreground">{booking.house.owner.email}</dd>
+              </div>
+              {booking.checkIn ? (
+                <div>
+                  <dt className="text-muted-foreground">{isCar ? "Pickup" : "Check-in"}</dt>
+                  <dd className="mt-1 font-medium">
+                    {new Date(booking.checkIn).toLocaleDateString()}
+                  </dd>
+                </div>
+              ) : null}
+              {booking.checkOut ? (
+                <div>
+                  <dt className="text-muted-foreground">{isCar ? "Return" : "Check-out"}</dt>
+                  <dd className="mt-1 font-medium">
+                    {new Date(booking.checkOut).toLocaleDateString()}
+                  </dd>
+                </div>
+              ) : null}
+              {booking.nights ? (
+                <div>
+                  <dt className="text-muted-foreground">Duration</dt>
+                  <dd className="mt-1 font-medium">
+                    {booking.nights} {isCar ? "day" : "night"}
+                    {booking.nights > 1 ? "s" : ""}
+                  </dd>
+                </div>
+              ) : null}
+              <div>
+                <dt className="text-muted-foreground">Total</dt>
+                <dd className="mt-1 font-medium">
+                  {booking.totalAmount != null ? formatPrice(booking.totalAmount) : "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Requested on</dt>
+                <dd className="mt-1 font-medium">
+                  {new Date(booking.createdAt).toLocaleDateString()}
+                </dd>
+              </div>
+            </dl>
+            <Badge variant="secondary" className={statusColors[booking.status]}>
+              {booking.status.replaceAll("_", " ")}
+            </Badge>
+            {booking.status === "REQUESTED" && booking.responseDeadline ? (
+              <p className="text-sm">
+                Respond by{" "}
+                {new Date(booking.responseDeadline).toLocaleString("en-RW", {
+                  timeZone: "Africa/Kigali",
+                })}{" "}
+                (Kigali).
+              </p>
+            ) : null}
+            {booking.status === "AWAITING_PAYMENT" && booking.paymentDeadline ? (
+              <p className="text-sm">
+                Payment due by{" "}
+                {new Date(booking.paymentDeadline).toLocaleString("en-RW", {
+                  timeZone: "Africa/Kigali",
+                })}{" "}
+                (Kigali).
+              </p>
+            ) : null}
+            {booking.declineReason ? (
+              <p className="break-words text-sm">Decline reason: {booking.declineReason}</p>
+            ) : null}
+            {booking.status === "REQUESTED" ? (
+              <div className="space-y-3 border-t pt-4">
+                <p className="text-sm text-muted-foreground">
+                  Respond on behalf of the provider. Accepting moves this booking to awaiting
+                  payment.
+                </p>
+                <BookingRequestActions
+                  bookingId={booking.id}
+                  responseDeadline={booking.responseDeadline}
+                />
+              </div>
+            ) : null}
+          </div>
+        </SheetContent>
+      </Sheet>
+      {booking.status === "REQUESTED" ? (
+        <BookingRequestActions bookingId={booking.id} responseDeadline={booking.responseDeadline} />
+      ) : null}
+    </div>
+  );
+}
 
 const columns: ColumnDef<BookingWithDetails>[] = [
   {
@@ -66,21 +207,10 @@ const columns: ColumnDef<BookingWithDetails>[] = [
   {
     id: "property",
     header: "Property",
+    size: 220,
     accessorFn: (row) => row.house.name,
     cell: ({ row }) => (
-      <div>
-        <p>{row.original.house.name}</p>
-        <p className="text-xs text-muted-foreground">{row.original.house.location}</p>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Date",
-    cell: ({ row }) => (
-      <span className="text-muted-foreground">
-        {new Date(row.original.createdAt).toLocaleDateString()}
-      </span>
+      <p className="max-w-48 whitespace-normal break-words">{row.original.house.name}</p>
     ),
   },
   {
@@ -95,28 +225,6 @@ const columns: ColumnDef<BookingWithDetails>[] = [
       ),
   },
   {
-    id: "stay",
-    header: "Booking period",
-    cell: ({ row }) => {
-      const { checkIn, checkOut, nights } = row.original;
-      const unit = getBookingKind(row.original.house.propertyType) === "car" ? "day" : "night";
-      if (!checkIn || !checkOut) return <span className="text-muted-foreground">—</span>;
-      return (
-        <div>
-          <p className="text-sm">
-            {new Date(checkIn).toLocaleDateString()} → {new Date(checkOut).toLocaleDateString()}
-          </p>
-          {nights ? (
-            <p className="text-xs text-muted-foreground">
-              {nights} {unit}
-              {nights > 1 ? "s" : ""}
-            </p>
-          ) : null}
-        </div>
-      );
-    },
-  },
-  {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
@@ -124,6 +232,11 @@ const columns: ColumnDef<BookingWithDetails>[] = [
         {row.original.status.charAt(0) + row.original.status.slice(1).toLowerCase()}
       </Badge>
     ),
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => <AdminBookingActions booking={row.original} />,
   },
 ];
 
@@ -149,6 +262,15 @@ export default function AdminBookingsPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <PageHeader title="Bookings" description={`${meta?.total ?? 0} total bookings`} />
+
+      {query.isError ? (
+        <div role="alert" className="flex items-center justify-between gap-4 rounded-lg border p-4">
+          <p className="text-sm text-muted-foreground">Unable to load bookings.</p>
+          <Button variant="outline" size="sm" onClick={() => void query.refetch()}>
+            Retry
+          </Button>
+        </div>
+      ) : null}
 
       <DataTable
         columns={columns}

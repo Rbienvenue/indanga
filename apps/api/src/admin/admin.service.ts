@@ -162,7 +162,8 @@ export class AdminService {
         skip: (page - 1) * limit,
         take: limit,
         include: {
-          house: true,
+          house: { include: { owner: { select: { id: true, name: true, email: true } } } },
+          roomType: { select: { id: true, name: true } },
           client: true,
         },
       }),

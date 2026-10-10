@@ -9,8 +9,10 @@ import { useState } from "react";
 import type { PaginationResponse } from "@/@types";
 import { useSession } from "@/components/providers/session-provider";
 import { BookingCard, BookingDetails, type Booking } from "@/components/bookings/booking-card";
-import { BookingPropertyCard } from "@/components/bookings/booking-property-card";
-import { ProductCardSkeleton } from "@/components/product-card";
+import {
+  BookingPropertyCard,
+  BookingPropertyDetails,
+} from "@/components/bookings/booking-property-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -178,19 +180,11 @@ export default function BookingsPage() {
         </TabsList>
         <TabsContent value={status}>
           {bookingsQuery.isLoading ? (
-            isAgent ? (
-              <section className="mt-6 space-y-3">
-                {Array.from({ length: PAGE_SIZE }).map((_, index) => (
-                  <Skeleton key={index} className="h-24 w-full rounded-lg" />
-                ))}
-              </section>
-            ) : (
-              <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {Array.from({ length: PAGE_SIZE }).map((_, index) => (
-                  <ProductCardSkeleton key={index} />
-                ))}
-              </section>
-            )
+            <section className="mt-6 space-y-3">
+              {Array.from({ length: PAGE_SIZE }).map((_, index) => (
+                <Skeleton key={index} className="h-24 w-full rounded-lg" />
+              ))}
+            </section>
           ) : bookingsQuery.isError ? (
             <div className="mt-6 rounded-2xl border border-dashed border-border/70 bg-muted/30 px-6 py-16 text-center">
               <p className="text-sm text-muted-foreground">
@@ -236,19 +230,29 @@ export default function BookingsPage() {
             </>
           ) : (
             <>
-              <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {bookings.map((booking) => (
-                  <BookingPropertyCard key={booking.id} booking={booking} />
-                ))}
+              <section className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+                <div className="space-y-3">
+                  {bookings.map((booking) => (
+                    <BookingPropertyCard
+                      key={booking.id}
+                      booking={booking}
+                      selected={selectedBooking?.id === booking.id}
+                      onSelect={() => setSelectedId(booking.id)}
+                    />
+                  ))}
+                  {meta && (
+                    <Pagination
+                      page={meta.page}
+                      totalPages={meta.totalPages}
+                      isFetching={bookingsQuery.isFetching}
+                      onPageChange={setPage}
+                    />
+                  )}
+                </div>
+                {selectedBooking ? (
+                  <BookingPropertyDetails key={selectedBooking.id} booking={selectedBooking} />
+                ) : null}
               </section>
-              {meta && (
-                <Pagination
-                  page={meta.page}
-                  totalPages={meta.totalPages}
-                  isFetching={bookingsQuery.isFetching}
-                  onPageChange={setPage}
-                />
-              )}
             </>
           )}
         </TabsContent>

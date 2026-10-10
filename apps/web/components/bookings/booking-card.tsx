@@ -79,7 +79,7 @@ function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString() : "—";
 }
 
-function BookingRequestActions({
+export function BookingRequestActions({
   bookingId,
   responseDeadline,
 }: {
@@ -106,6 +106,7 @@ function BookingRequestActions({
       void queryClient.invalidateQueries({ queryKey: ["recent-bookings"] });
       void queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
       void queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -120,7 +121,7 @@ function BookingRequestActions({
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" disabled={mutation.isPending || expired}>
+          <Button variant="destructive" disabled={mutation.isPending || expired}>
             Decline
           </Button>
         </DialogTrigger>
@@ -148,7 +149,7 @@ function BookingRequestActions({
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={mutation.isPending}>
+              <Button type="submit" variant="destructive" disabled={mutation.isPending}>
                 {mutation.isPending ? "Declining…" : "Decline request"}
               </Button>
             </form>
