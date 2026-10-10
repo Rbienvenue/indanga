@@ -1,11 +1,12 @@
 "use client";
 
-import { Building2, Car, Home, MapPin, Search } from "lucide-react";
+import { Building2, Car, Home, MapPin, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { parseAsString, useQueryState } from "nuqs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -86,9 +87,11 @@ function buildSearchHref(
     province: string;
     district: string;
     sector: string;
+    search: string;
   },
 ) {
   const params = new URLSearchParams();
+  if (filters.search.trim() !== "") params.set("search", filters.search.trim());
   if (filters.type !== "all") params.set("type", filters.type);
   if (filters.subType !== "all") params.set("subType", filters.subType);
   if (filters.budget !== "any") params.set("budget", filters.budget);
@@ -126,12 +129,27 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
     "budget",
     parseAsString.withDefault("any").withOptions({ shallow: false }),
   );
+  const [searchQuery, setSearchQuery] = useQueryState(
+    "search",
+    parseAsString.withDefault("").withOptions({ shallow: false }),
+  );
   const [draftType, setDraftType] = useState("all");
+  const [draftSearch, setDraftSearch] = useState("");
+  const [inputValue, setInputValue] = useState(searchQuery);
   const [draftBudget, setDraftBudget] = useState("any");
   const [draftSubType, setDraftSubType] = useState("all");
   const [draftProvince, setDraftProvince] = useState("all");
   const [draftDistrict, setDraftDistrict] = useState("all");
   const [draftSector, setDraftSector] = useState("all");
+
+  // The text field stays editable without firing a request per keystroke;
+  // it commits to the URL on Search/Enter. Homepage draft mode navigates instead.
+  useEffect(() => {
+    if (!redirectTo) setInputValue(searchQuery);
+  }, [searchQuery, redirectTo]);
+
+  const search = redirectTo ? draftSearch : searchQuery;
+  const inputText = redirectTo ? draftSearch : inputValue;
 
   const propertyType = lockedType ?? (redirectTo ? draftType : typeQuery);
   const budget = redirectTo ? draftBudget : budgetQuery;
@@ -209,10 +227,12 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
           province,
           district,
           sector,
+          search,
         }),
       );
       return;
     }
+    void setSearchQuery(inputValue.trim() === "" ? null : inputValue.trim());
     void setTypeQuery(propertyType === "all" ? null : propertyType);
     void setSubTypeQuery(subType === "all" ? null : subType);
     void setBudgetQuery(budget === "any" ? null : budget);
@@ -221,10 +241,44 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
     void setSectorQuery(sectorQuery === "all" ? null : sectorQuery);
   }
 
+  function handleClearSearch() {
+    if (redirectTo) {
+      setDraftSearch("");
+      return;
+    }
+    setInputValue("");
+    void setSearchQuery(null);
+  }
+
   return (
     <section className={cn("relative z-20 -mt-10 px-4 sm:px-6 lg:px-8", className)}>
       <div className="mx-auto max-w-5xl rounded-xl border border-border/60 bg-card/95 px-5 py-4 shadow-xl shadow-black/10 backdrop-blur-sm sm:px-6">
         <div className="flex flex-col gap-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={inputText}
+              onChange={(e) =>
+                redirectTo ? setDraftSearch(e.target.value) : setInputValue(e.target.value)
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSearch();
+              }}
+              placeholder="Search by name, location, or keyword..."
+              className="h-10 pr-9 pl-9"
+            />
+            {inputText ? (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                aria-label="Clear search"
+                className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <X className="size-4" />
+              </button>
+            ) : null}
+          </div>
+
           {!lockedType ? (
             <Tabs value={propertyType} onValueChange={handleTypeChange}>
               <TabsList className="mx-auto w-fit bg-muted p-1">

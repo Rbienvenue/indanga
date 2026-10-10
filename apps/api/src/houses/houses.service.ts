@@ -106,8 +106,21 @@ export class HousesService {
       limit = 20,
     } = data;
     const where: Prisma.HouseWhereInput = {};
+    const andConditions: Prisma.HouseWhereInput[] = [];
 
-    if (search) where.name = { startsWith: search, mode: "insensitive" };
+    if (search) {
+      const term = search.trim();
+      if (term) {
+        andConditions.push({
+          OR: [
+            { name: { contains: term, mode: "insensitive" } },
+            { location: { contains: term, mode: "insensitive" } },
+            { description: { contains: term, mode: "insensitive" } },
+            { address: { contains: term, mode: "insensitive" } },
+          ],
+        });
+      }
+    }
     if (ownerId) where.ownerId = ownerId;
     if (subType) {
       where.subType = { equals: subType, mode: "insensitive" };
@@ -127,9 +140,11 @@ export class HousesService {
         .filter(Boolean);
 
       if (normalizedPropertyTypes.length > 1) {
-        where.OR = normalizedPropertyTypes.map((value) => ({
-          propertyType: { equals: value, mode: "insensitive" },
-        }));
+        andConditions.push({
+          OR: normalizedPropertyTypes.map((value) => ({
+            propertyType: { equals: value, mode: "insensitive" },
+          })),
+        });
       } else if (normalizedPropertyTypes.length === 1) {
         where.propertyType = {
           equals: normalizedPropertyTypes[0],
@@ -143,11 +158,13 @@ export class HousesService {
         lte: maxPrice,
       };
       // Match either the base price or any room price so null-priced hotels still filter.
-      where.AND = [
-        {
-          OR: [{ price: priceRange }, { rooms: { some: { price: priceRange } } }],
-        },
-      ];
+      andConditions.push({
+        OR: [{ price: priceRange }, { rooms: { some: { price: priceRange } } }],
+      });
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     const [houses, total] = await Promise.all([

@@ -24,6 +24,7 @@ export function PropertyFeed({
   const [province, setProvince] = useQueryState("province", parseAsString.withDefault("all"));
   const [district, setDistrict] = useQueryState("district", parseAsString.withDefault("all"));
   const [sector, setSector] = useQueryState("sector", parseAsString.withDefault("all"));
+  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
 
   const effectivePropertyType = lockedType ?? propertyType;
 
@@ -33,7 +34,8 @@ export function PropertyFeed({
     budget !== "any" ||
     province !== "all" ||
     district !== "all" ||
-    sector !== "all";
+    sector !== "all" ||
+    search.trim() !== "";
 
   function clearFilters() {
     if (!lockedType) void setPropertyType(null);
@@ -42,6 +44,7 @@ export function PropertyFeed({
     void setProvince(null);
     void setDistrict(null);
     void setSector(null);
+    void setSearch(null);
   }
 
   const effectiveLocation =
@@ -57,6 +60,7 @@ export function PropertyFeed({
     subType,
     budget,
     location: effectiveLocation,
+    search,
   };
   const status = ownerId ? null : "AVAILABLE";
 

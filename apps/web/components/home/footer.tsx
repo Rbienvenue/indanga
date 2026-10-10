@@ -139,7 +139,7 @@ export function Footer() {
                 +250 788 765 547
               </a>
               <span className="text-[11px]">
-                Mon&ndash;Sat, 8:00 AM&ndash;6:00 PM &middot; Usually replies within 24 hours
+                24/7 available
               </span>
               <span className="inline-flex items-center gap-2">
                 <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
