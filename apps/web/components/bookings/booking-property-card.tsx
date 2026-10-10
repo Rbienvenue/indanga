@@ -3,10 +3,11 @@
 import { Bath, BedDouble, CalendarDays, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { BookingPaymentPanel } from "./booking-payment";
+import { BookingRequestStatus } from "./booking-request-status";
+import { ReceiptDialog } from "@/components/payments/receipt-dialog";
 import { MessageButton } from "@/components/messages/message-button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getBookingKind } from "@/lib/booking-kind";
 import { firstImageUrl } from "@/lib/property-media";
 import { cn, formatPrice } from "@/lib/utils";
@@ -54,6 +55,9 @@ export interface BookingPropertyCardBooking {
   bookingId?: string | null;
   status: BookingCardStatus;
   paymentDeadline?: string | null;
+  payments?: { id: string }[];
+  declineReason?: string | null;
+  responseDeadline?: string | null;
   checkIn?: string | null;
   checkOut?: string | null;
   nights?: number | null;
@@ -74,47 +78,78 @@ export interface BookingPropertyCardBooking {
   };
 }
 
-export function BookingPropertyCard({ booking }: { booking: BookingPropertyCardBooking }) {
+export function BookingPropertyCard({
+  booking,
+  selected,
+  onSelect,
+}: {
+  booking: BookingPropertyCardBooking;
+  selected: boolean;
+  onSelect: () => void;
+}) {
   const { house, status } = booking;
-  const image = firstImageUrl(house.media);
+
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={onSelect}
+      className={cn(
+        "flex w-full items-start gap-3 rounded-lg border p-4 text-left hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        selected ? "border-primary bg-primary/5" : "border-border",
+      )}
+    >
+      <Image
+        src={firstImageUrl(house.media)}
+        alt={house.name}
+        width={64}
+        height={64}
+        sizes="64px"
+        className="size-16 shrink-0 rounded-md object-contain"
+      />
+      <div className="min-w-0 flex-1 break-words">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="font-medium">{house.name}</p>
+          <Badge className={statusStyles[status]}>{statusLabels[status]}</Badge>
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {booking.bookingId ?? "Booking request"}
+          {house.propertyType ? ` · ${house.propertyType}` : ""}
+        </p>
+        {booking.checkIn && booking.checkOut ? (
+          <p className="mt-2 text-sm">
+            {new Date(booking.checkIn).toLocaleDateString()} →{" "}
+            {new Date(booking.checkOut).toLocaleDateString()}
+          </p>
+        ) : null}
+        {booking.totalAmount != null ? (
+          <p className="mt-2 text-sm font-medium">{formatPrice(booking.totalAmount)} total</p>
+        ) : null}
+      </div>
+    </button>
+  );
+}
+
+export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCardBooking }) {
+  const { house } = booking;
   const dayLabel = getBookingKind(house.propertyType) === "car" ? "day" : "night";
   const hasStay = !!booking.checkIn && !!booking.checkOut;
 
   return (
-    <Card className="group relative h-full w-full gap-0 overflow-hidden border-border/50 py-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-foreground/5">
-      <Link
-        href={`/properties/${house.id}`}
-        aria-label={`View ${house.name}`}
-        className="absolute inset-0 z-[1] rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      />
-      <div className="relative aspect-[16/10] w-full overflow-hidden">
-        <Image
-          src={image}
-          alt={house.name}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 33vw"
-        />
-        {house.propertyType && (
-          <Badge className="absolute top-3 left-3 z-10 rounded-md bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground shadow-md">
-            {house.propertyType}
-          </Badge>
-        )}
-        <Badge
-          className={cn(
-            "absolute top-3 right-3 z-10 rounded-md px-2.5 py-1 text-xs font-semibold shadow-md",
-            statusStyles[status],
-          )}
-        >
-          {statusLabels[status]}
-        </Badge>
-      </div>
-
+    <Card className="h-fit gap-0">
+      <CardHeader>
+        <CardTitle>Booking details</CardTitle>
+        <p className="break-all text-sm text-muted-foreground">
+          {booking.bookingId ?? "Booking request"}
+        </p>
+      </CardHeader>
       <CardContent className="p-4">
-        <h3 className="text-base font-semibold text-foreground">{house.name}</h3>
+        <Link href={`/properties/${house.id}`} className="text-base font-semibold hover:underline">
+          {house.name}
+        </Link>
         <div className="mt-1.5 flex items-center gap-1 text-sm text-muted-foreground">
           <MapPin className="size-3.5 shrink-0" />
-          <span className="truncate">{house.location}</span>
+          <span className="break-words">{house.location}</span>
         </div>
 
         {booking.totalAmount != null && (
@@ -151,24 +186,14 @@ export function BookingPropertyCard({ booking }: { booking: BookingPropertyCardB
           </div>
         )}
 
-        {booking.bookingId ? (
-          <p className="relative z-10 mt-3 text-xs font-medium text-muted-foreground">
-            Booking ID: {booking.bookingId}
-          </p>
-        ) : null}
+        <BookingRequestStatus booking={booking} inlinePayment={false} />
 
-        {status === "REQUESTED" ? (
-          <p className="relative z-10 mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-            Your request was sent to the provider. Your booking is not confirmed yet. We will notify
-            you when the provider responds. No payment is required yet.
-          </p>
-        ) : null}
-
-        <div className="relative z-10 mt-3">
+        <div className="relative z-10 mt-3 flex flex-wrap gap-2">
           <MessageButton bookingId={booking.id} />
+          {booking.payments?.map((payment) => (
+            <ReceiptDialog key={payment.id} paymentId={payment.id} />
+          ))}
         </div>
-
-        {status === "AWAITING_PAYMENT" ? <BookingPaymentPanel booking={booking} /> : null}
 
         <div className="mt-3 flex items-center gap-3 border-t border-border/50 pt-3">
           {house.bedrooms > 0 && (

@@ -325,6 +325,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                   </span>
                   <PropertyVerificationBadge
                     status={house.verificationStatus}
+                    listingStatus={house.status}
                     lastReviewed={house.updatedAt}
                   />
                   <span
@@ -518,26 +519,28 @@ function ListingInformation({
           account.
         </p>
       </AccordionRow>
-      <AccordionRow icon={BadgeCheck} title="Verification and listing information">
-        <p>
-          {house.verificationStatus === "VerifiedByIndanga"
-            ? "Verified by INDANGA. INDANGA checked the provider&apos;s identity and reviewed key listing information, including the location, photos, pricing, and availability."
-            : "Reviewed by INDANGA. We checked the information submitted by the provider before publishing this listing. Prices and availability can change, so review the latest details before booking."}
-        </p>
-        <p className="mt-3 text-muted-foreground">
-          {house.verificationStatus === "VerifiedByIndanga" ? "Verified" : "Reviewed"} on{" "}
-          {new Date(house.updatedAt).toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
-          . Verification does not guarantee future availability, unchanged pricing, or the quality
-          of every service. Review the listing and booking terms before making a payment.
-        </p>
-        <p className="mt-3">
-          Availability: {isAvailable ? "available to book now" : "currently unavailable"}.
-        </p>
-      </AccordionRow>
+      {house.status !== "PENDING" && (
+        <AccordionRow icon={BadgeCheck} title="Verification and listing information">
+          <p>
+            {house.verificationStatus === "VerifiedByIndanga"
+              ? "Verified by INDANGA. INDANGA checked the provider&apos;s identity and reviewed key listing information, including the location, photos, pricing, and availability."
+              : "Reviewed by INDANGA. We checked the information submitted by the provider before publishing this listing. Prices and availability can change, so review the latest details before booking."}
+          </p>
+          <p className="mt-3 text-muted-foreground">
+            {house.verificationStatus === "VerifiedByIndanga" ? "Verified" : "Reviewed"} on{" "}
+            {new Date(house.updatedAt).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+            . Verification does not guarantee future availability, unchanged pricing, or the quality
+            of every service. Review the listing and booking terms before making a payment.
+          </p>
+          <p className="mt-3">
+            Availability: {isAvailable ? "available to book now" : "currently unavailable"}.
+          </p>
+        </AccordionRow>
+      )}
       <AccordionRow icon={RotateCcw} title="Cancellation and refunds">
         <p>
           Cancellation and refund eligibility depends on the booking status and the provider&apos;s

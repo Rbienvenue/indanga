@@ -9,7 +9,7 @@ export default function PropertiesPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <PropertyFeed ownerId={isAgent ? session?.user?.id : undefined} />
+      <PropertyFeed ownerId={isAgent ? session?.user?.id : undefined} columns={3} />
     </div>
   );
 }

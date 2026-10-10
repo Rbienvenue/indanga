@@ -8,40 +8,41 @@ datasource db {
 }
 
 model User {
-  id                 String         @id
+  id                 String          @id
   name               String
-  email              String         @unique
+  email              String          @unique
   password           String?
-  phoneNumber        String?        @unique
-  role               UserRole       @default(tenant)
-  providerType       ProviderType   @default(HOTEL)
-  nationalId         String?        @unique
-  emailVerified      Boolean        @default(false)
+  phoneNumber        String?         @unique
+  role               UserRole        @default(tenant)
+  providerType       ProviderType    @default(HOTEL)
+  nationalId         String?         @unique
+  emailVerified      Boolean         @default(false)
   image              String?
-  status             Status         @default(ACTIVE)
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-  twoFactorEnabled   Boolean?       @default(false)
+  status             Status          @default(ACTIVE)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  twoFactorEnabled   Boolean?        @default(false)
   banExpires         DateTime?
   banReason          String?
-  banned             Boolean        @default(false)
+  banned             Boolean         @default(false)
   kycRejectionReason String?
   kycReviewedAt      DateTime?
-  kycStatus          KycStatus      @default(NOT_SUBMITTED)
+  kycStatus          KycStatus       @default(NOT_SUBMITTED)
   kycSubmittedAt     DateTime?
   accounts           Account[]
-  bookings           Booking[]      @relation("BookingClient")
+  bookings           Booking[]       @relation("BookingClient")
   favorites          Favorite[]
-  houses             House[]        @relation("HouseOwner")
+  houses             House[]         @relation("HouseOwner")
   kycDocuments       KycDocument[]
   notifications      Notification[]
-  reviews            Review[]       @relation("ReviewTenant")
+  reviews            Review[]        @relation("ReviewTenant")
+  listingReports     ListingReport[]
   sessions           Session[]
   twofactors         TwoFactor[]
 
-  conversations      Conversation[]
-  messages           Message[]
-  conversationReads  ConversationRead[]
+  conversations     Conversation[]
+  messages          Message[]
+  conversationReads ConversationRead[]
 
   @@map("user")
 }
@@ -62,33 +63,36 @@ model House {
   metadata           Json               @default("[]")
   status             HouseStatus        @default(PENDING)
   createdAt          DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+  updatedAt          DateTime           @updatedAt
   verificationStatus VerificationStatus @default(ReviewedByIndanga)
   owner              User               @relation("HouseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   bookings           Booking[]
   rooms              RoomType[]
   reviews            Review[]
   favorites          Favorite[]
+  reports            ListingReport[]
 
-  conversations      Conversation[]
+  conversations Conversation[]
 
   @@index([ownerId])
   @@map("house")
 }
+
 model RoomType {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   houseId    String
   name       String
   price      Int
   totalRooms Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  house      House    @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  house      House     @relation(fields: [houseId], references: [id], onDelete: Cascade)
   bookings   Booking[]
 
   @@index([houseId])
   @@map("room_type")
 }
+
 model ServiceFee {
   id          String   @id @default(cuid())
   bookingKind String   @unique
@@ -102,41 +106,45 @@ model ServiceFee {
 }
 
 model Booking {
-  id            String         @id @default(cuid())
-  bookingId     String?
-  clientId      String
-  houseId       String
-  roomTypeId    String?
-  roomCount     Int?           @default(1)
-  status        BookingStatus  @default(PENDING)
-  checkIn       DateTime?
-  checkOut      DateTime?
-  nights        Int?
-  unitPrice     Int?
-  serviceFee    Int?           @default(0)
-  totalAmount   Int?
-  paymentDeadline DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  client        User           @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)
-  house         House          @relation(fields: [houseId], references: [id], onDelete: Cascade)
-  roomType      RoomType?      @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
-  notifications Notification[]
-  payments      Payment[]
+  id               String         @id @default(cuid())
+  bookingId        String?
+  clientId         String
+  houseId          String
+  roomTypeId       String?
+  roomCount        Int?           @default(1)
+  status           BookingStatus  @default(PENDING)
+  checkIn          DateTime?
+  checkOut         DateTime?
+  nights           Int?
+  unitPrice        Int?
+  serviceFee       Int?           @default(0)
+  totalAmount      Int?
+  declineReason    String?
+  responseDeadline DateTime?
+  paymentDeadline  DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  client           User           @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)
+  house            House          @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  roomType         RoomType?      @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
+  notifications    Notification[]
+  payments         Payment[]
 
-  conversation  Conversation?
+  conversation Conversation?
 
   @@index([clientId])
   @@index([houseId])
   @@index([roomTypeId])
   @@map("booking")
 }
+
 model Payment {
   id                   String         @id @default(cuid())
   amount               Decimal        @db.Decimal(12, 2)
   bookingId            String
   status               PaymentStatus  @default(PENDING)
   method               String
+  checkoutUrl          String?
   transactionReference String         @unique
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
@@ -362,18 +370,18 @@ enum MessageSenderType {
 }
 
 model Conversation {
-  id           String           @id @default(cuid())
-  key          String           @unique
+  id           String             @id @default(cuid())
+  key          String             @unique
   type         ConversationType
   clientId     String?
-  bookingId    String?          @unique
+  bookingId    String?            @unique
   houseId      String?
   propertyName String?
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @default(now()) @updatedAt
-  client       User?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  booking      Booking?         @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  house        House?           @relation(fields: [houseId], references: [id], onDelete: SetNull)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @default(now()) @updatedAt
+  client       User?              @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  booking      Booking?           @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  house        House?             @relation(fields: [houseId], references: [id], onDelete: SetNull)
   messages     Message[]
   reads        ConversationRead[]
 
@@ -406,4 +414,29 @@ model ConversationRead {
 
   @@id([conversationId, userId])
   @@map("conversation_read")
+}
+
+model ListingReport {
+  id          String       @id @default(cuid())
+  houseId     String?
+  listingName String
+  reporterId  String?
+  reason      String
+  status      ReportStatus @default(OPEN)
+  reviewNote  String?
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime     @default(now())
+  house       House?       @relation(fields: [houseId], references: [id], onDelete: SetNull)
+  reporter    User?        @relation(fields: [reporterId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([houseId, reporterId])
+  @@map("listing_report")
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
 }

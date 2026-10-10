@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getBookingKind } from "@/lib/booking-kind";
 import { fetcher } from "@/lib/fetcher";
 import { formatPrice } from "@/lib/utils";
+import { ReceiptDialog } from "@/components/payments/receipt-dialog";
 
 type Payment = {
   id: string;
@@ -116,14 +117,19 @@ export default function PaymentsPage() {
       id: "details",
       header: "",
       cell: ({ row }) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSelected(row.original)}
-          aria-label={`View transaction ${row.original.transactionReference}`}
-        >
-          View <ArrowUpRight className="size-3.5" />
-        </Button>
+        <div className="flex gap-2">
+          {row.original.status === "COMPLETED" ? (
+            <ReceiptDialog paymentId={row.original.id} />
+          ) : null}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelected(row.original)}
+            aria-label={`View transaction ${row.original.transactionReference}`}
+          >
+            View <ArrowUpRight className="size-3.5" />
+          </Button>
+        </div>
       ),
     },
   ];

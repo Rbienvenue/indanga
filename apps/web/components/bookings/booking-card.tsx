@@ -8,15 +8,43 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ReceiptDialog } from "@/components/payments/receipt-dialog";
 import { MessageButton } from "@/components/messages/message-button";
 import { fetcher } from "@/lib/fetcher";
 import { firstImageUrl } from "@/lib/property-media";
 import { formatPrice } from "@/lib/utils";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+
+const declineSchema = z.object({
+  declineReason: z.string().trim().min(3, "Explain why you cannot accept this request").max(500),
+});
 
 export type Booking = {
   id: string;
   bookingId: string | null;
   status: BookingStatus;
+  declineReason?: string | null;
+  payments?: { id: string }[];
+  responseDeadline?: string | null;
   checkIn: string | null;
   checkOut: string | null;
   totalAmount: number | null;
@@ -51,35 +79,83 @@ function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString() : "—";
 }
 
-function BookingRequestActions({ bookingId }: { bookingId: string }) {
+export function BookingRequestActions({
+  bookingId,
+  responseDeadline,
+}: {
+  bookingId: string;
+  responseDeadline?: string | null;
+}) {
+  const expired = Boolean(responseDeadline && new Date(responseDeadline) <= new Date());
+  const [open, setOpen] = useState(false);
+  const form = useForm<z.infer<typeof declineSchema>>({
+    resolver: zodResolver(declineSchema),
+    defaultValues: { declineReason: "" },
+  });
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (status: "AWAITING_PAYMENT" | "DECLINED") =>
+    mutationFn: (data: { status: "AWAITING_PAYMENT" | "DECLINED"; declineReason?: string }) =>
       fetcher(`/bookings/${bookingId}/status`, {
         method: "PATCH",
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(data),
       }),
     onSuccess: () => {
       toast.success("Booking request updated");
+      setOpen(false);
+      form.reset();
       void queryClient.invalidateQueries({ queryKey: ["recent-bookings"] });
       void queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
       void queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Button disabled={mutation.isPending} onClick={() => mutation.mutate("AWAITING_PAYMENT")}>
+      <Button
+        disabled={mutation.isPending || expired}
+        onClick={() => mutation.mutate({ status: "AWAITING_PAYMENT" })}
+      >
         Accept request
       </Button>
-      <Button
-        variant="outline"
-        disabled={mutation.isPending}
-        onClick={() => mutation.mutate("DECLINED")}
-      >
-        Decline
-      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button variant="destructive" disabled={mutation.isPending || expired}>
+            Decline
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Decline booking request</DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form
+              className="space-y-4"
+              onSubmit={form.handleSubmit((values) =>
+                mutation.mutate({ status: "DECLINED", ...values }),
+              )}
+            >
+              <FormField
+                control={form.control}
+                name="declineReason"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Reason shown to the customer</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} maxLength={500} disabled={mutation.isPending} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" variant="destructive" disabled={mutation.isPending}>
+                {mutation.isPending ? "Declining…" : "Decline request"}
+              </Button>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -133,10 +209,31 @@ export function BookingDetails({ booking, isCar }: { booking?: Booking; isCar: b
               </div>
             </dl>
             <p className="break-all rounded-lg bg-muted p-3 text-sm">{booking.client.email}</p>
-            <MessageButton bookingId={booking.id} label="Message guest" />
+            <div className="flex flex-wrap gap-2">
+              <MessageButton bookingId={booking.id} label="Message guest" />
+              <MessageButton label="Contact support" />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Include the booking reference above when contacting support.
+            </p>
             <BookingStatusBadge status={booking.status} />
+            {booking.status === "REQUESTED" && booking.responseDeadline ? (
+              <p className="text-sm">
+                Respond by{" "}
+                {new Date(booking.responseDeadline).toLocaleString("en-RW", {
+                  timeZone: "Africa/Kigali",
+                })}{" "}
+                (Kigali).
+              </p>
+            ) : null}
+            {booking.declineReason ? (
+              <p className="break-words text-sm">Decline reason: {booking.declineReason}</p>
+            ) : null}
             {booking.status === "REQUESTED" ? (
-              <BookingRequestActions bookingId={booking.id} />
+              <BookingRequestActions
+                bookingId={booking.id}
+                responseDeadline={booking.responseDeadline}
+              />
             ) : null}
           </div>
         ) : (
@@ -189,9 +286,19 @@ export function BookingCard({
           ) : null}
         </div>
       </button>
+      {booking.payments?.length ? (
+        <div className="flex flex-wrap gap-2 px-4 pb-4">
+          {booking.payments.map((payment) => (
+            <ReceiptDialog key={payment.id} paymentId={payment.id} />
+          ))}
+        </div>
+      ) : null}
       {booking.status === "REQUESTED" ? (
         <div className="px-4 pb-4">
-          <BookingRequestActions bookingId={booking.id} />
+          <BookingRequestActions
+            bookingId={booking.id}
+            responseDeadline={booking.responseDeadline}
+          />
         </div>
       ) : null}
     </div>

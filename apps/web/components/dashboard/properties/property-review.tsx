@@ -53,6 +53,9 @@ export function PropertyReview({
     .join(", ");
   return (
     <div className="space-y-4">
+      <p role="note" className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm">
+        Your listing will be reviewed by indanga before publishion.
+      </p>
       <ReviewSection title="Basics" onEdit={() => onEdit(0)}>
         <p className="text-lg font-medium">{values.name}</p>
         <p className="text-sm text-muted-foreground">

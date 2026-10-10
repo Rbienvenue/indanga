@@ -61,6 +61,7 @@ export function ContinueBrowsing() {
               bathrooms={house.bathrooms}
               propertyType={house.propertyType}
               badge="Featured"
+              status={house.status}
               verificationStatus={house.verificationStatus}
             />
           ))}

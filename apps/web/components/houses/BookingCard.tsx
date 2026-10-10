@@ -4,7 +4,6 @@ import type { House, RoomType } from "@indanga/db";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-  AlertTriangle,
   ArrowRight,
   BedDouble,
   CalendarIcon,
@@ -20,6 +19,7 @@ import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
 import type { BookingPropertyCardBooking } from "@/components/bookings/booking-property-card";
+import { ReportListingDialog } from "@/components/properties/report-listing-dialog";
 import { BookingRequestStatus } from "@/components/bookings/booking-request-status";
 import { usePropertyBooking } from "@/components/bookings/use-property-booking";
 import { BookingPriceSummary } from "@/components/houses/BookingPriceSummary";
@@ -79,7 +79,6 @@ export function BookingCard({
   const [dismissedBookingId, setDismissedBookingId] = useState<string | null>(null);
   const bookingQuery = usePropertyBooking(house.id);
   const bookingRequest = bookingQuery.data?.data;
-  const [isReporting, setIsReporting] = useState(false);
   const bookingKind = getBookingKind(house.propertyType);
   const isDated = bookingKind === "hotel" || bookingKind === "car";
   const isHotel = bookingKind === "hotel";
@@ -300,27 +299,7 @@ export function BookingCard({
           </div>
         </div>
 
-        <Button
-          variant="outline"
-          disabled={isReporting}
-          className="h-10 w-full border-rose-300 text-[13px] font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950/30"
-          onClick={() => {
-            if (isReporting) return;
-            setIsReporting(true);
-            // Placeholder delay until the report-listing flow is implemented.
-            setTimeout(() => {
-              setIsReporting(false);
-              toast.info("Thanks. We will review this listing.");
-            }, 1200);
-          }}
-        >
-          {isReporting ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <AlertTriangle className="size-4" />
-          )}
-          {isReporting ? "Reporting..." : "Report this listing"}
-        </Button>
+        <ReportListingDialog houseId={house.id} />
       </div>
     );
   }

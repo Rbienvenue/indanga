@@ -6,7 +6,19 @@ import { API_BASE_URL } from "./api-url";
  * @param options - The options to pass to the fetch API
  * @returns The response from the API
  */
-export async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
+export function fetcher(
+  url: string,
+  options: RequestInit & { responseType: "blob" },
+): Promise<Blob>;
+export function fetcher<T>(
+  url: string,
+  options?: RequestInit & { responseType?: "json" },
+): Promise<T>;
+export async function fetcher<T>(
+  url: string,
+  options?: RequestInit & { responseType?: "json" | "blob" },
+): Promise<T | Blob> {
+  const { responseType, ...requestOptions } = options ?? {};
   const target = url.startsWith("http") ? url : `${API_BASE_URL}/v1${url}`;
   // Only send a JSON Content-Type when a body is actually present. Adding
   // it to bodyless requests triggers a needless CORS preflight, and setting
@@ -14,7 +26,7 @@ export async function fetcher<T>(url: string, options?: RequestInit): Promise<T>
   const hasJsonBody =
     options?.body !== undefined && options?.body !== null && !(options.body instanceof FormData);
   const response = await fetch(target, {
-    ...options,
+    ...requestOptions,
     credentials: "include",
     headers: {
       ...(hasJsonBody ? { "Content-Type": "application/json" } : undefined),
@@ -26,5 +38,5 @@ export async function fetcher<T>(url: string, options?: RequestInit): Promise<T>
     const error = await response.json().catch(() => null);
     throw new Error(error?.message || "Request failed");
   }
-  return response.json() as T;
+  return responseType === "blob" ? response.blob() : (response.json() as Promise<T>);
 }

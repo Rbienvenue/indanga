@@ -75,7 +75,7 @@ export default function AdminPage() {
               icon={<Users className="size-5" />}
             />
             <StatCard
-              title="Tenants"
+              title="Clients"
               value={stats?.totalTenants ?? 0}
               icon={<Users className="size-5" />}
             />

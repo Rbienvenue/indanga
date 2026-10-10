@@ -3,16 +3,18 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ArrowRight, Loader2 } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import type { ApiResponse } from "@/@types";
+import type { ApiResponse, PaginationResponse } from "@/@types";
 import type { BookingPropertyCardBooking } from "./booking-property-card";
 import { BookingPriceSummary } from "@/components/houses/BookingPriceSummary";
+import { useSession } from "@/components/providers/session-provider";
 import { useSocketIo } from "@/components/providers/socket-io-provider";
 import { Button } from "@/components/ui/button";
+import { ReceiptDialog } from "@/components/payments/receipt-dialog";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +51,14 @@ const paymentSchema = z
     }
   });
 
+type BookingPayment = {
+  id: string;
+  status: "PENDING" | "COMPLETED" | "FAILED";
+  method: string;
+  checkoutUrl: string | null;
+  booking: { status: string };
+};
+
 function BookingPaymentForm({
   booking,
   onPaid,
@@ -60,9 +70,21 @@ function BookingPaymentForm({
     resolver: zodResolver(paymentSchema),
     defaultValues: { method: "MOMO", phone: "" },
   });
-  const method = useWatch({ control: form.control, name: "method" });
-  const [paymentId, setPaymentId] = useState<string | null>(null);
+  const chosenMethod = useWatch({ control: form.control, name: "method" });
+  const session = useSession();
   const queryClient = useQueryClient();
+  const paymentKey = ["booking-payment", session?.user.id, booking.id];
+  const recovery = useQuery<PaginationResponse<BookingPayment>>({
+    queryKey: paymentKey,
+    queryFn: () => fetcher(`/payments?bookingId=${encodeURIComponent(booking.id)}&limit=1`),
+    enabled: Boolean(session?.user),
+    refetchInterval: (query) => (query.state.data?.data[0]?.status === "PENDING" ? 15000 : false),
+  });
+  const { refetch: refreshPayment } = recovery;
+  const payment = recovery.data?.data[0];
+  const paymentId = payment?.status === "PENDING" ? payment.id : null;
+  const method = paymentId ? payment?.method : chosenMethod;
+  const completed = payment?.status === "COMPLETED";
   const { socket, isConnected } = useSocketIo(Boolean(paymentId));
   const deadlinePassed =
     !booking.paymentDeadline || new Date(booking.paymentDeadline) <= new Date();
@@ -81,45 +103,72 @@ function BookingPaymentForm({
       });
     },
     onSuccess: ({ data }, values) => {
+      queryClient.setQueryData<PaginationResponse<BookingPayment>>(paymentKey, {
+        data: [
+          {
+            id: data.id,
+            status: "PENDING",
+            method: values.method,
+            checkoutUrl: data.link ?? null,
+            booking: { status: booking.status },
+          },
+        ],
+        meta: { total: 1, page: 1, limit: 1, totalPages: 1 },
+      });
+      void refreshPayment();
       if (values.method === "CARD") {
         if (data.link) window.location.assign(data.link);
         else toast.error("Could not start card payment");
         return;
       }
-      setPaymentId(data.id);
       toast.success("Payment prompt sent", {
         description: "Follow the instructions on your phone to complete payment.",
       });
     },
-    onError: (error: Error) =>
-      toast.error("Could not start payment", { description: error.message }),
+    onError: (error: Error) => {
+      void refreshPayment();
+      toast.error("Could not start payment", { description: error.message });
+    },
   });
 
   useEffect(() => {
     if (!socket || !isConnected || !paymentId) return;
-    const handleUpdate = (update: {
-      paymentId: string;
-      status: "pending" | "successful" | "failed";
-    }) => {
-      if (update.paymentId !== paymentId || update.status === "pending") return;
-      setPaymentId(null);
-      void queryClient.invalidateQueries({ queryKey: ["bookings"] });
-      if (update.status === "successful") {
-        toast.success("Booking confirmed.", {
-          description:
-            "Keep your booking reference for check-in, pickup, changes, cancellation, and support.",
-        });
-        onPaid?.();
-      } else toast.error("Payment failed", { description: "You can retry before the deadline." });
+    const refresh = () => {
+      void refreshPayment();
     };
+    const handleUpdate = async (update: { paymentId: string; status: string }) => {
+      if (update.paymentId !== paymentId) return;
+      const result = await refreshPayment();
+      const latest = result.data?.data[0];
+      if (latest?.status === "COMPLETED") {
+        void queryClient.invalidateQueries({ queryKey: ["bookings"] });
+        void queryClient.invalidateQueries({ queryKey: ["payments"] });
+        if (latest.booking.status === "CONFIRMED" || latest.booking.status === "APPROVED") {
+          toast.success("Booking confirmed.");
+          onPaid?.();
+        } else toast.info("Payment received. Contact support to review your booking.");
+      } else if (latest?.status === "FAILED") {
+        toast.error("Payment failed", { description: "You can retry before the deadline." });
+      }
+    };
+    // Recheck after joining the room to recover any update missed while disconnected.
+    socket.on("subscribed:payment", refresh);
     socket.on("payment.update", handleUpdate);
     socket.emit("subscribe:payment", { paymentId });
     return () => {
+      socket.off("subscribed:payment", refresh);
       socket.off("payment.update", handleUpdate);
     };
-  }, [isConnected, onPaid, paymentId, queryClient, socket]);
+  }, [isConnected, onPaid, paymentId, queryClient, refreshPayment, socket]);
 
-  const disabled = mutation.isPending || Boolean(paymentId);
+  useEffect(() => {
+    if (payment?.status !== "COMPLETED") return;
+    void queryClient.invalidateQueries({ queryKey: ["bookings"] });
+    void queryClient.invalidateQueries({ queryKey: ["payments"] });
+  }, [payment?.status, queryClient]);
+
+  const disabled =
+    mutation.isPending || Boolean(paymentId) || completed || recovery.isPending || recovery.isError;
   const kind = getBookingKind(booking.house.propertyType);
   const quantity = booking.roomCount ?? 1;
   const duration = kind === "home" ? 1 : (booking.nights ?? 1);
@@ -153,6 +202,24 @@ function BookingPaymentForm({
           {booking.roomType ? ` · ${booking.roomType.name}` : ""}
         </p>
       ) : null}
+      {recovery.isError ? (
+        <div role="alert" className="space-y-2 text-sm">
+          <p>Could not check your previous payment. Check its status before paying again.</p>
+          <Button variant="outline" size="sm" onClick={() => void refreshPayment()}>
+            Check payment status
+          </Button>
+        </div>
+      ) : null}
+      {completed ? (
+        <div role="status" className="space-y-3 rounded-lg bg-muted p-3">
+          <p className="text-sm">
+            {payment.booking.status === "CONFIRMED" || payment.booking.status === "APPROVED"
+              ? "Payment received. Your booking is confirmed."
+              : "Payment received. Contact support to review your booking before making another payment."}
+          </p>
+          <ReceiptDialog paymentId={payment.id} />
+        </div>
+      ) : null}
       <Form {...form}>
         <form
           className="space-y-4"
@@ -170,14 +237,14 @@ function BookingPaymentForm({
                       key={item.method}
                       type="button"
                       disabled={disabled || deadlinePassed}
-                      aria-pressed={field.value === item.method}
+                      aria-pressed={method === item.method}
                       onClick={() => {
                         field.onChange(item.method);
                         form.clearErrors("phone");
                       }}
                       className={cn(
                         "flex min-h-20 flex-col items-center justify-center gap-2 rounded-xl border p-2 text-center transition-colors disabled:opacity-50",
-                        field.value === item.method
+                        method === item.method
                           ? "border-primary bg-primary/5 text-primary"
                           : "border-border text-muted-foreground hover:border-primary/40",
                       )}
@@ -228,7 +295,13 @@ function BookingPaymentForm({
             className="h-11 w-full font-bold"
             disabled={disabled || deadlinePassed}
           >
-            {deadlinePassed ? (
+            {completed ? (
+              "Payment received"
+            ) : recovery.isPending ? (
+              "Checking previous payment…"
+            ) : recovery.isError ? (
+              "Check payment status first"
+            ) : deadlinePassed ? (
               "Payment deadline passed"
             ) : disabled ? (
               <>
@@ -242,9 +315,22 @@ function BookingPaymentForm({
             )}
           </Button>
           {paymentId ? (
-            <p className="text-sm text-muted-foreground">
-              Approve the payment on your phone to secure your booking.
-            </p>
+            <div role="status" className="space-y-3 rounded-lg bg-muted p-3">
+              <p className="text-sm">
+                {payment?.method === "CARD"
+                  ? "Your card payment is awaiting confirmation. Continue the same checkout to finish."
+                  : "Your payment is being confirmed. If prompted, approve it on your phone."}{" "}
+                Do not submit another payment.
+              </p>
+              {booking.bookingId ? (
+                <p className="break-all text-xs">Booking ID: {booking.bookingId}</p>
+              ) : null}
+              {payment?.method === "CARD" && payment.checkoutUrl && !deadlinePassed ? (
+                <Button asChild size="sm">
+                  <a href={payment.checkoutUrl}>Continue card payment</a>
+                </Button>
+              ) : null}
+            </div>
           ) : null}
         </form>
       </Form>

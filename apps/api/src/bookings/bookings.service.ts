@@ -16,8 +16,11 @@ import { ServiceFeesService } from "src/service-fees/service-fees.service";
 import { calcServiceFee } from "src/service-fees/service-fee.util";
 
 import type { User } from "src/lib/auth";
-
-const PAYMENT_WINDOW_MS = 30 * 60 * 1000;
+import {
+  PROVIDER_RESPONSE_MS,
+  providerResponseDeadline,
+  unansweredRequestsWhere,
+} from "./booking-deadlines";
 
 function startOfDay(date: Date): Date {
   const value = new Date(date);
@@ -128,6 +131,7 @@ export class BookingsService {
         roomTypeId,
         roomCount,
         status: BookingStatus.REQUESTED,
+        responseDeadline: new Date(Date.now() + PROVIDER_RESPONSE_MS),
         checkIn,
         checkOut,
         nights,
@@ -141,7 +145,7 @@ export class BookingsService {
     await this.notifications.create({
       type: "BOOKING_CREATED",
       title: "New booking request",
-      message: `${booking.client.name} sent a booking request for ${booking.house.name}.`,
+      message: `Booking ${booking.bookingId ?? booking.id}: ${booking.client.name} requested ${booking.house.name}. Accept or decline by ${providerResponseDeadline(booking).toLocaleString("en-RW", { timeZone: "Africa/Kigali" })} in your dashboard.`,
       userId: booking.house.ownerId,
       bookingId: booking.id,
     });
@@ -151,20 +155,25 @@ export class BookingsService {
 
   async getActiveBooking(clientId: string, houseId: string) {
     if (!houseId) throw new BadRequestException("Property is required");
-    return this.db.booking.findFirst({
+    const booking = await this.db.booking.findFirst({
       where: {
         clientId,
         houseId,
-        OR: [{ status: BookingStatus.REQUESTED }, reservingBookingsWhere()],
+        OR: [
+          { status: BookingStatus.REQUESTED, NOT: unansweredRequestsWhere() },
+          reservingBookingsWhere(),
+        ],
       },
       orderBy: { createdAt: "desc" },
       include: { house: true, roomType: true },
     });
+    return booking ? { ...booking, responseDeadline: providerResponseDeadline(booking) } : null;
   }
 
   async getBookingsByUser(user: UserSession["user"], data: FilterBookingDto) {
     const { page = 1, limit = 20 } = data;
     const where: Prisma.BookingWhereInput = {};
+    if (data.status) where.status = data.status;
     if (user.role === "tenant") {
       where.clientId = user.id;
     }
@@ -184,13 +193,21 @@ export class BookingsService {
           house: { include: { rooms: true } },
           roomType: true,
           client: true,
+          payments: {
+            where: { status: "COMPLETED" },
+            select: { id: true },
+            orderBy: { createdAt: "desc" },
+          },
         },
       }),
       this.db.booking.count({ where }),
     ]);
 
     return {
-      data: bookings,
+      data: bookings.map((booking) => ({
+        ...booking,
+        responseDeadline: providerResponseDeadline(booking),
+      })),
       meta: {
         total,
         page,
@@ -317,158 +334,12 @@ export class BookingsService {
       throw new ForbiddenException("You do not have access to this booking");
     }
 
-    return booking;
-  }
-
-  async updateBookingStatus(id: string, status: BookingStatus, user: UserSession["user"]) {
-    const booking = await this.db.booking.findUnique({
-      where: { id },
-      include: { house: { include: { rooms: true } }, roomType: true, client: true },
-    });
-
-    if (!booking) {
-      throw new NotFoundException("Booking not found");
-    }
-
-    if (booking.house.ownerId !== user.id && user.role !== "admin") {
-      throw new ForbiddenException("Only the property owner can update booking status");
-    }
-
-    if (
-      booking.status === BookingStatus.REQUESTED &&
-      (status === BookingStatus.AWAITING_PAYMENT || status === BookingStatus.DECLINED)
-    ) {
-      if (status === BookingStatus.DECLINED) {
-        const declined = await this.db.booking.update({
-          where: { id },
-          data: { status: BookingStatus.DECLINED },
-          include: { house: true, client: true },
-        });
-        await this.notifications.create({
-          type: "SYSTEM",
-          title: "Booking request declined",
-          message: `${declined.house.name} could not accept your booking request.`,
-          userId: declined.clientId,
-          bookingId: declined.id,
-        });
-        return declined;
-      }
-
-      const paymentDeadline = new Date(Date.now() + PAYMENT_WINDOW_MS);
-      const accepted = await this.db.$transaction(
-        async (tx) => {
-          const current = await tx.booking.findUnique({
-            where: { id },
-            include: { house: true, roomType: true },
-          });
-          if (!current || current.status !== BookingStatus.REQUESTED) {
-            throw new BadRequestException("This booking request has already been handled");
-          }
-          const kind = getBookingKind(current.house.propertyType);
-          if (kind === "hotel") {
-            if (!current.roomTypeId || !current.checkIn || !current.checkOut) {
-              throw new BadRequestException("This booking request has incomplete stay details");
-            }
-            const booked = await countOverlappingRooms(
-              tx,
-              current.roomTypeId,
-              current.checkIn,
-              current.checkOut,
-            );
-            const roomCount = current.roomCount ?? 1;
-            if (!current.roomType || roomCount > current.roomType.totalRooms - booked) {
-              throw new ConflictException("Not enough rooms available for those dates");
-            }
-          } else if (kind === "car") {
-            if (!current.checkIn || !current.checkOut) {
-              throw new BadRequestException("This booking request has incomplete rental dates");
-            }
-            const overlapping = await tx.booking.count({
-              where: {
-                id: { not: current.id },
-                houseId: current.houseId,
-                ...reservingBookingsWhere(),
-                checkIn: { lt: current.checkOut },
-                checkOut: { gt: current.checkIn },
-              },
-            });
-            if (overlapping > 0) {
-              throw new ConflictException("Property is already booked for those dates");
-            }
-          } else {
-            const reserved = await tx.booking.count({
-              where: {
-                id: { not: current.id },
-                houseId: current.houseId,
-                ...reservingBookingsWhere(),
-              },
-            });
-            if (current.house.status !== HouseStatus.AVAILABLE || reserved > 0) {
-              throw new ConflictException("Property is already booked");
-            }
-          }
-          return tx.booking.update({
-            where: { id },
-            data: { status: BookingStatus.AWAITING_PAYMENT, paymentDeadline },
-            include: { house: true, client: true },
-          });
-        },
-        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-      );
-      await this.notifications.create({
-        type: "SYSTEM",
-        title: "Availability confirmed",
-        message: `The provider accepted your request. Complete payment by ${paymentDeadline.toLocaleString("en-RW", { timeZone: "Africa/Kigali" })} to secure the booking.`,
-        userId: accepted.clientId,
-        bookingId: accepted.id,
-      });
-      return accepted;
-    }
-
-    if (status !== BookingStatus.CANCELLED) {
-      throw new BadRequestException("This booking status change is not allowed");
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const otherCurrentStays = await this.db.booking.count({
-      where: {
-        houseId: booking.houseId,
-        id: { not: booking.id },
-        status: { in: [BookingStatus.APPROVED, BookingStatus.CONFIRMED] },
-        AND: [
-          { OR: [{ checkIn: null }, { checkIn: { lte: today } }] },
-          { OR: [{ checkOut: null }, { checkOut: { gte: today } }] },
-        ],
-      },
-    });
-
-    const updated = await this.db.$transaction(async (tx) => {
-      const updated = await tx.booking.update({
-        where: { id },
-        data: { status },
-        include: { house: true, client: true },
-      });
-
-      // Room-based hotels free capacity via dates; only flip whole-property listings.
-      if (otherCurrentStays === 0 && booking.house.rooms.length === 0) {
-        await tx.house.update({
-          where: { id: booking.houseId },
-          data: { status: HouseStatus.AVAILABLE },
-        });
-      }
-
-      return updated;
-    });
-
-    await this.notifications.create({
-      type: "BOOKING_CANCELLED",
-      title: "Booking cancelled",
-      message: `Your booking for ${updated.house.name} was cancelled.`,
-      userId: updated.clientId,
-      bookingId: updated.id,
-    });
-
-    return updated;
+    return {
+      ...booking,
+      payments: booking.payments.map((payment) => ({
+        ...payment,
+        checkoutUrl: booking.clientId === user.id ? payment.checkoutUrl : null,
+      })),
+    };
   }
 }

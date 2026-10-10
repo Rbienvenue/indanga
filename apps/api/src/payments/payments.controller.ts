@@ -1,4 +1,17 @@
-import { BadRequestException, Body, Controller, Get, Post, Query, UseGuards } from "@nestjs/common";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  UseGuards,
+  Param,
+  Res,
+} from "@nestjs/common";
+import type { Response } from "express";
+import { ReceiptsService } from "./receipts.service";
+import { generateReceiptPdf } from "./receipt-pdf";
 import { AllowAnonymous, Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
@@ -17,7 +30,30 @@ import { PaymentsService } from "./payments.service";
 
 @Controller("payments")
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(
+    private readonly paymentsService: PaymentsService,
+    private readonly receiptsService: ReceiptsService,
+  ) {}
+
+  @Get(":id/receipt")
+  @Roles(["tenant", "landlord", "admin"])
+  async receipt(@Param("id") id: string, @Session() session: UserSession) {
+    return new ApiResponse(await this.receiptsService.getReceipt(id, session.user));
+  }
+
+  @Get(":id/receipt.pdf")
+  @Roles(["tenant", "landlord", "admin"])
+  async receiptPdf(
+    @Param("id") id: string,
+    @Session() session: UserSession,
+    @Res() response: Response,
+  ) {
+    const receipt = await this.receiptsService.getReceipt(id, session.user);
+    response.setHeader("Content-Type", "application/pdf");
+    response.setHeader("Content-Disposition", `attachment; filename="receipt-${receipt.id}.pdf"`);
+    response.setHeader("Cache-Control", "private, no-store");
+    response.send(generateReceiptPdf(receipt));
+  }
 
   @Get()
   @Roles(["tenant", "landlord", "admin"])

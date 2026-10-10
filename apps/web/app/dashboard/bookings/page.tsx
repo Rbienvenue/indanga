@@ -1,6 +1,6 @@
 "use client";
 
-import type { House } from "@indanga/db";
+import type { BookingStatus, House } from "@indanga/db";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -9,13 +9,23 @@ import { useState } from "react";
 import type { PaginationResponse } from "@/@types";
 import { useSession } from "@/components/providers/session-provider";
 import { BookingCard, BookingDetails, type Booking } from "@/components/bookings/booking-card";
-import { BookingPropertyCard } from "@/components/bookings/booking-property-card";
-import { ProductCardSkeleton } from "@/components/product-card";
+import {
+  BookingPropertyCard,
+  BookingPropertyDetails,
+} from "@/components/bookings/booking-property-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { fetcher } from "@/lib/fetcher";
 
 const PAGE_SIZE = 6;
+const bookingFilters = [
+  { value: "all", label: "All" },
+  { value: "REQUESTED", label: "New" },
+  { value: "AWAITING_PAYMENT", label: "Awaiting payment" },
+  { value: "CONFIRMED", label: "Confirmed" },
+] as const satisfies readonly { value: BookingStatus | "all"; label: string }[];
+type BookingFilter = (typeof bookingFilters)[number]["value"];
 
 type BookingWithHouse = Booking & {
   paymentDeadline?: string | null;
@@ -32,19 +42,25 @@ type BookingWithHouse = Booking & {
   };
 };
 
-function EmptyBookings({ isAgent }: { isAgent: boolean }) {
+function EmptyBookings({ isAgent, filtered }: { isAgent: boolean; filtered: boolean }) {
   return (
     <div className="mt-6 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/30 px-6 py-16 text-center">
       <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
         <Calendar className="size-8" />
       </div>
       <h2 className="mt-6 text-xl font-semibold">
-        {isAgent ? "No booking requests yet" : "No bookings yet"}
+        {filtered
+          ? "No bookings with this status"
+          : isAgent
+            ? "No booking requests yet"
+            : "No bookings yet"}
       </h2>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        {isAgent
-          ? "Booking requests from tenants will appear here."
-          : "Houses you book will appear here."}
+        {filtered
+          ? "Choose another status or All to see your other bookings."
+          : isAgent
+            ? "Booking requests from tenants will appear here."
+            : "Houses you book will appear here."}
       </p>
       {!isAgent && (
         <Button asChild className="mt-6">
@@ -102,13 +118,18 @@ function Pagination({
 
 export default function BookingsPage() {
   const [page, setPage] = useState(1);
+  const [status, setStatus] = useState<BookingFilter>("all");
   const [selectedId, setSelectedId] = useState<string>();
   const session = useSession();
   const isAgent = session?.user?.role === "landlord";
 
   const bookingsQuery = useQuery<PaginationResponse<BookingWithHouse>>({
-    queryKey: ["bookings", page, PAGE_SIZE],
-    queryFn: () => fetcher(`/bookings?page=${page}&limit=${PAGE_SIZE}`),
+    queryKey: ["bookings", page, PAGE_SIZE, status],
+    queryFn: () => {
+      const params = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE) });
+      if (status !== "all") params.set("status", status);
+      return fetcher(`/bookings?${params}`);
+    },
   });
 
   const bookings = bookingsQuery.data?.data ?? [];
@@ -139,76 +160,103 @@ export default function BookingsPage() {
         )}
       </section>
 
-      {bookingsQuery.isLoading ? (
-        isAgent ? (
-          <section className="mt-6 space-y-3">
-            {Array.from({ length: PAGE_SIZE }).map((_, index) => (
-              <Skeleton key={index} className="h-24 w-full rounded-lg" />
-            ))}
-          </section>
-        ) : (
-          <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {Array.from({ length: PAGE_SIZE }).map((_, index) => (
-              <ProductCardSkeleton key={index} />
-            ))}
-          </section>
-        )
-      ) : bookingsQuery.isError ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-border/70 bg-muted/30 px-6 py-16 text-center">
-          <p className="text-sm text-muted-foreground">
-            Could not load your bookings. Please try again.
-          </p>
-          <Button variant="outline" className="mt-5" onClick={() => void bookingsQuery.refetch()}>
-            Try again
-          </Button>
-        </div>
-      ) : bookings.length === 0 ? (
-        <EmptyBookings isAgent={isAgent} />
-      ) : isAgent ? (
-        <>
-          <section className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-            <div className="space-y-3">
-              {bookings.map((booking) => (
-                <BookingCard
-                  key={booking.id}
-                  booking={booking}
-                  selected={selectedBooking?.id === booking.id}
-                  onSelect={() => setSelectedId(booking.id)}
-                />
+      <Tabs
+        className="mt-6"
+        value={status}
+        onValueChange={(value) => {
+          const filter = bookingFilters.find((item) => item.value === value);
+          if (!filter) return;
+          setStatus(filter.value);
+          setPage(1);
+          setSelectedId(undefined);
+        }}
+      >
+        <TabsList aria-label="Filter bookings by status" className="h-auto max-w-full flex-wrap">
+          {bookingFilters.map((filter) => (
+            <TabsTrigger key={filter.value} value={filter.value}>
+              {filter.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <TabsContent value={status}>
+          {bookingsQuery.isLoading ? (
+            <section className="mt-6 space-y-3">
+              {Array.from({ length: PAGE_SIZE }).map((_, index) => (
+                <Skeleton key={index} className="h-24 w-full rounded-lg" />
               ))}
-              {meta && (
-                <Pagination
-                  page={meta.page}
-                  totalPages={meta.totalPages}
-                  isFetching={bookingsQuery.isFetching}
-                  onPageChange={setPage}
-                />
-              )}
+            </section>
+          ) : bookingsQuery.isError ? (
+            <div className="mt-6 rounded-2xl border border-dashed border-border/70 bg-muted/30 px-6 py-16 text-center">
+              <p className="text-sm text-muted-foreground">
+                Could not load your bookings. Please try again.
+              </p>
+              <Button
+                variant="outline"
+                className="mt-5"
+                onClick={() => void bookingsQuery.refetch()}
+              >
+                Try again
+              </Button>
             </div>
-            <BookingDetails
-              key={selectedBooking?.id}
-              booking={selectedBooking}
-              isCar={session?.user?.providerType === "CAR"}
-            />
-          </section>
-        </>
-      ) : (
-        <>
-          <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {bookings.map((booking) => (
-              <BookingPropertyCard key={booking.id} booking={booking} />
-            ))}
-          </section>
-          {meta && (
-            <Pagination
-              page={meta.page}
-              totalPages={meta.totalPages}
-              isFetching={bookingsQuery.isFetching}
-              onPageChange={setPage}
-            />
+          ) : bookings.length === 0 ? (
+            <EmptyBookings isAgent={isAgent} filtered={status !== "all"} />
+          ) : isAgent ? (
+            <>
+              <section className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+                <div className="space-y-3">
+                  {bookings.map((booking) => (
+                    <BookingCard
+                      key={booking.id}
+                      booking={booking}
+                      selected={selectedBooking?.id === booking.id}
+                      onSelect={() => setSelectedId(booking.id)}
+                    />
+                  ))}
+                  {meta && (
+                    <Pagination
+                      page={meta.page}
+                      totalPages={meta.totalPages}
+                      isFetching={bookingsQuery.isFetching}
+                      onPageChange={setPage}
+                    />
+                  )}
+                </div>
+                <BookingDetails
+                  key={selectedBooking?.id}
+                  booking={selectedBooking}
+                  isCar={session?.user?.providerType === "CAR"}
+                />
+              </section>
+            </>
+          ) : (
+            <>
+              <section className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+                <div className="space-y-3">
+                  {bookings.map((booking) => (
+                    <BookingPropertyCard
+                      key={booking.id}
+                      booking={booking}
+                      selected={selectedBooking?.id === booking.id}
+                      onSelect={() => setSelectedId(booking.id)}
+                    />
+                  ))}
+                  {meta && (
+                    <Pagination
+                      page={meta.page}
+                      totalPages={meta.totalPages}
+                      isFetching={bookingsQuery.isFetching}
+                      onPageChange={setPage}
+                    />
+                  )}
+                </div>
+                {selectedBooking ? (
+                  <BookingPropertyDetails key={selectedBooking.id} booking={selectedBooking} />
+                ) : null}
+              </section>
+            </>
           )}
-        </>
-      )}
+        </TabsContent>
+      </Tabs>
     </main>
   );
 }

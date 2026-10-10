@@ -3,6 +3,7 @@ import { BookingStatus, HouseStatus, Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
 import { NotificationsService } from "src/notifications/notifications.service";
 import { env } from "src/lib/env";
+import { unansweredRequestsWhere } from "src/bookings/booking-deadlines";
 
 function startOfTodayUTC(): Date {
   const now = new Date();
@@ -27,11 +28,43 @@ export class CronService {
   ) {}
 
   async expireBookings() {
+    const requestExpired = await this.expireUnansweredRequests();
     const completed = await this.completeExpiredBookings();
     const paymentExpired = await this.expirePaymentDeadlines();
     const staleCancelled = await this.cancelStalePendingBookings();
     const { markedBooked, markedAvailable } = await this.reconcileHouseAvailability();
-    return { completed, paymentExpired, staleCancelled, markedBooked, markedAvailable };
+    return {
+      requestExpired,
+      completed,
+      paymentExpired,
+      staleCancelled,
+      markedBooked,
+      markedAvailable,
+    };
+  }
+
+  private async expireUnansweredRequests() {
+    const where = unansweredRequestsWhere();
+    const requests = await this.db.booking.findMany({ where, include: { house: true } });
+    let count = 0;
+    for (const booking of requests) {
+      const changed = await this.db.booking.updateMany({
+        where: { id: booking.id, ...where },
+        data: { status: "EXPIRED" },
+      });
+      if (!changed.count) continue;
+      count++;
+      for (const userId of [booking.clientId, booking.house.ownerId]) {
+        await this.notifications.create({
+          userId,
+          bookingId: booking.id,
+          type: "SYSTEM",
+          title: "Provider response deadline passed",
+          message: `Booking ${booking.bookingId ?? booking.id} for ${booking.house.name} expired because the provider did not respond. No payment was required. Explore another listing or contact support.`,
+        });
+      }
+    }
+    return count;
   }
 
   private async completeExpiredBookings(): Promise<number> {
@@ -84,14 +117,14 @@ export class CronService {
       await this.notifications.create({
         type: "BOOKING_COMPLETED",
         title: "Booking completed",
-        message: `Your booking for ${updated.house.name} has ended.`,
+        message: `Booking ${updated.bookingId ?? updated.id} for ${updated.house.name} has ended. Review your payment history and contact support if you have an unresolved issue.`,
         userId: updated.clientId,
         bookingId: updated.id,
       });
       await this.notifications.create({
         type: "BOOKING_COMPLETED",
         title: "Booking completed",
-        message: `${updated.client.name} booking for ${updated.house.name} has ended.`,
+        message: `Booking ${updated.bookingId ?? updated.id}: ${updated.client.name} booking for ${updated.house.name} has ended. Contact support if there is an unresolved issue.`,
         userId: updated.house.ownerId,
         bookingId: updated.id,
       });
@@ -122,7 +155,7 @@ export class CronService {
       await this.notifications.create({
         type: "BOOKING_CANCELLED",
         title: "Booking request expired",
-        message: `The payment deadline for ${booking.house.name} has passed.`,
+        message: `Booking ${booking.bookingId ?? booking.id}: the payment deadline for ${booking.house.name} has passed. Explore another listing. If you made a payment, contact support.`,
         userId: booking.clientId,
         bookingId: booking.id,
       });
@@ -193,7 +226,7 @@ export class CronService {
       await this.notifications.create({
         type: "BOOKING_CANCELLED",
         title: "Booking cancelled",
-        message: `Your booking for ${updated.house.name} expired before payment was completed.`,
+        message: `Booking ${updated.bookingId ?? updated.id} for ${updated.house.name} expired before payment was completed. Explore another listing or contact support if you made a payment.`,
         userId: updated.clientId,
         bookingId: updated.id,
       });

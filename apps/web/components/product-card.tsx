@@ -44,7 +44,7 @@ export type ProductCardProps = {
   className?: string;
   isFavorite?: boolean;
   showManageActions?: boolean;
-  status?: PropertyStatus;
+  status: PropertyStatus;
   verificationStatus?: House["verificationStatus"] | null;
 };
 
@@ -224,6 +224,7 @@ export function ProductCard({
         {verificationStatus && (
           <PropertyVerificationBadge
             status={verificationStatus}
+            listingStatus={status}
             className="absolute bottom-3 left-3 z-10 shadow-md"
           />
         )}
@@ -260,8 +261,8 @@ export function ProductCard({
           <span className="truncate">{location}</span>
         </div>
 
-        <div className="mt-3 flex items-center justify-between gap-3">
-          <div className="flex items-baseline gap-1">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <div className="flex items-baseline gap-1 whitespace-nowrap">
             {displayPrice != null ? (
               <>
                 {fromRooms ? <span className="text-sm text-muted-foreground">From</span> : null}

@@ -3,6 +3,7 @@ import { Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { ApiResponse, PaginationResponse } from "src/@types";
 import type { Session as AuthSession } from "src/lib/auth";
 import { BookingsService } from "./bookings.service";
+import { BookingStatusService } from "./booking-status.service";
 import {
   CalendarBookingDto,
   CreateBookingDto,
@@ -12,7 +13,10 @@ import {
 
 @Controller("bookings")
 export class BookingsController {
-  constructor(private readonly bookingsService: BookingsService) {}
+  constructor(
+    private readonly bookingsService: BookingsService,
+    private readonly bookingStatusService: BookingStatusService,
+  ) {}
 
   @Post()
   //All users can create a booking request
@@ -55,7 +59,7 @@ export class BookingsController {
     @Session() session: UserSession,
     @Body() data: UpdateBookingStatusDto,
   ) {
-    const booking = await this.bookingsService.updateBookingStatus(id, data.status, session.user);
+    const booking = await this.bookingStatusService.updateBookingStatus(id, data, session.user);
     return new ApiResponse(booking, "booking status updated");
   }
 }

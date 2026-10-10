@@ -104,7 +104,7 @@ export class PaymentsService {
           data.method === "CARD" && "PCODE" in result
             ? await tx.payment.update({
                 where: { transactionReference: payment.transactionReference },
-                data: { transactionReference: result.PCODE },
+                data: { transactionReference: result.PCODE, checkoutUrl: result.link },
               })
             : payment;
 
@@ -238,7 +238,7 @@ export class PaymentsService {
         userId: booking.house.ownerId,
         type: "SYSTEM",
         title: "Payment needs review",
-        message: `${booking.client.name} paid for a booking that is no longer reserved. Review payment ${payment.id}; the booking was not confirmed.`,
+        message: `Booking ${booking.bookingId ?? booking.id}: ${booking.client.name} paid after the reservation closed. Contact support to review payment ${payment.id}; the booking was not confirmed.`,
         bookingId: booking.id,
         paymentId: payment.id,
       });
@@ -246,7 +246,7 @@ export class PaymentsService {
         userId: booking.client.id,
         type: "SYSTEM",
         title: "Payment received; booking not confirmed",
-        message: `Your payment for ${booking.house.name} arrived after the reservation closed. Contact support to arrange a refund or a new booking.`,
+        message: `Booking ${booking.bookingId ?? booking.id}: your payment for ${booking.house.name} arrived after the reservation closed. Contact support to arrange a refund or a new booking.`,
         bookingId: booking.id,
         paymentId: payment.id,
       });
@@ -255,14 +255,14 @@ export class PaymentsService {
         userId: booking.house.ownerId,
         type: "BOOKING_CONFIRMED",
         title: "New booking confirmed",
-        message: `${booking.client.name} booked ${booking.house.name}.`,
+        message: `Booking ${booking.bookingId ?? booking.id}: ${booking.client.name} booked ${booking.house.name}. Message the customer to arrange check-in or pickup.`,
         bookingId: booking.id,
       });
       await this.notifications.create({
         userId: booking.client.id,
         type: "BOOKING_CONFIRMED",
         title: "Booking confirmed",
-        message: `You booked ${booking.house.name}.`,
+        message: `Booking ${booking.bookingId ?? booking.id} for ${booking.house.name} is confirmed. Keep this reference and message the provider to arrange check-in or pickup.`,
         bookingId: booking.id,
       });
     }
@@ -298,17 +298,20 @@ export class PaymentsService {
   }
 
   async getPayments(user: UserSession["user"], data: FilterPaymentsDto) {
-    const { page = 1, limit = 20, status } = data;
+    const { page = 1, limit = 20, status, bookingId } = data;
     const where: Prisma.PaymentWhereInput = {};
 
     if (status) where.status = status;
+    if (bookingId) where.bookingId = bookingId;
 
     if (user.role === "tenant") {
       where.booking = { clientId: user.id };
     }
 
     if (user.role === "landlord") {
-      where.booking = { house: { ownerId: user.id } };
+      where.booking = bookingId
+        ? { OR: [{ clientId: user.id }, { house: { ownerId: user.id } }] }
+        : { house: { ownerId: user.id } };
     }
 
     const [payments, total] = await Promise.all([
@@ -321,7 +324,9 @@ export class PaymentsService {
           booking: {
             select: {
               id: true,
+              clientId: true,
               bookingId: true,
+              status: true,
               checkIn: true,
               checkOut: true,
               nights: true,
@@ -338,6 +343,7 @@ export class PaymentsService {
     return {
       data: payments.map((payment) => ({
         ...payment,
+        checkoutUrl: payment.booking.clientId === user.id ? payment.checkoutUrl : null,
         bookingAmount: payment.amount.toNumber() - (payment.booking.serviceFee ?? 0),
       })),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },

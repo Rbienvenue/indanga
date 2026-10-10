@@ -4,6 +4,10 @@ import { PaymentStatus } from "@indanga/db";
 
 export class FilterPaymentsDto {
   @IsOptional()
+  @IsString()
+  bookingId?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   page?: number;
