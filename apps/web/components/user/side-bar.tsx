@@ -81,7 +81,7 @@ const carItems = agentItems
     if (item.href === "/dashboard/guest") return { ...item, title: "Clients" };
     return item;
   });
-carItems.splice(7, 0, { title: "Compliance", href: "/dashboard/compliance", icon: ShieldCheck });
+// carItems.splice(7, 0, { title: "Compliance", href: "/dashboard/compliance", icon: ShieldCheck });
 
 const houseItems = agentItems
   .filter((item) => item.href !== "/dashboard/calendar")

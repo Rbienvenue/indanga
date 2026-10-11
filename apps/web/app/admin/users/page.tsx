@@ -60,6 +60,12 @@ const roleBadgeVariant: Record<string, string> = {
   tenant: "bg-green-100 text-green-700",
 };
 
+const roleLabel: Record<string, string> = {
+  admin: "Admin",
+  landlord: "Agent",
+  tenant: "Tenant",
+};
+
 function SetPasswordDialog({ userId, userName }: { userId: string; userName: string }) {
   const [open, setOpen] = useState(false);
 
@@ -201,7 +207,7 @@ function UserActions({ user }: { user: UserWithRole }) {
             className="px-0 py-1"
           >
             <Shield className="size-4" />
-            {user.role === "landlord" ? "Set as Tenant" : "Set as Landlord"}
+            {user.role === "landlord" ? "Set as Tenant" : "Set as Agent"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <SetPasswordDialog userId={user.id} userName={user.name} />
@@ -273,7 +279,7 @@ const columns: ColumnDef<UserWithRole>[] = [
     header: "Role",
     cell: ({ row }) => (
       <Badge variant="secondary" className={roleBadgeVariant[row.original.role] ?? ""}>
-        {row.original.role}
+        {roleLabel[row.original.role] ?? row.original.role}
       </Badge>
     ),
   },
@@ -357,7 +363,7 @@ export default function AdminUsersPage() {
             },
             options: [
               { label: "Tenant", value: "tenant" },
-              { label: "Landlord", value: "landlord" },
+              { label: "Agent", value: "landlord" },
               { label: "Admin", value: "admin" },
             ],
           },

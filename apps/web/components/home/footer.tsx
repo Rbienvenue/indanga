@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
-import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter, FaYoutube } from "react-icons/fa6";
+import { FaEnvelope, FaFacebookF, FaInstagram, FaLinkedinIn, FaRegEnvelope, FaTiktok, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { Separator } from "@/components/ui/separator";
 
 const exploreLinks = [
@@ -26,11 +26,10 @@ const trustLinks = [
 ];
 
 const socialLinks = [
-  { label: "Facebook", icon: FaFacebookF },
-  { label: "Instagram", icon: FaInstagram },
-  { label: "X", icon: FaXTwitter },
-  { label: "LinkedIn", icon: FaLinkedinIn },
-  { label: "YouTube", icon: FaYoutube },
+  { label: "Instagram", icon: FaInstagram, link: "https://www.instagram.com/indangacom?obrf=MTI0YTFxNWd0NWd5OA%3D%3D&utm_source=qr" },
+  {label: "Tiktok", icon: FaTiktok, link: "https://www.tiktok.com/@indanga8?_r=1&_t=ZS-9ASg3eNexTa"},
+  {label: "Mail", icon: FaRegEnvelope}
+  
 ];
 
 export function Footer() {
@@ -51,10 +50,10 @@ export function Footer() {
             </Link>
             <p className="mt-2 text-xs text-muted-foreground">Homes. Hotels. Cars. Rwanda.</p>
             <nav aria-label="Social media" className="mt-3 flex items-center gap-3">
-              {socialLinks.map(({ label, icon: Icon }) => (
+              {socialLinks.map(({ label, link, icon: Icon }) => (
                 <a
                   key={label}
-                  href="#"
+                  href={link}
                   aria-label={label}
                   className="text-muted-foreground transition-colors hover:text-primary"
                 >

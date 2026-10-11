@@ -414,6 +414,10 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                       >
                         <div>
                           <p className="font-bold">{room.name}</p>
+                          <p className="mt-0.5 text-sm text-muted-foreground">
+                            {room.totalRooms} {room.totalRooms === 1 ? "room" : "rooms"} available in
+                            this category
+                          </p>
                         </div>
                         <p className="text-lg font-black text-primary">
                           {room.price.toLocaleString("en-US")} RWF

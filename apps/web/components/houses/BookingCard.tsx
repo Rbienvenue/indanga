@@ -463,7 +463,10 @@ export function BookingCard({
                             <SelectItem key={room.id} value={room.id} disabled={left <= 0}>
                               <span className="flex items-center gap-2">
                                 <BedDouble className="size-4 text-muted-foreground" />
-                                {room.name} · {formatPrice(room.price)} / night
+                                {room.name} · {formatPrice(room.price)} / night ·{" "}
+                                {left <= 0
+                                  ? "sold out"
+                                  : `${left} room${left > 1 ? "s" : ""} left`}
                               </span>
                             </SelectItem>
                           );
