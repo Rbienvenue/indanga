@@ -4,6 +4,7 @@ import type { BookingStatus, House } from "@indanga/db";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import type { PaginationResponse } from "@/@types";
@@ -11,7 +12,6 @@ import { useSession } from "@/components/providers/session-provider";
 import { BookingCard, BookingDetails, type Booking } from "@/components/bookings/booking-card";
 import {
   BookingPropertyCard,
-  BookingPropertyDetails,
 } from "@/components/bookings/booking-property-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -120,6 +120,7 @@ export default function BookingsPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<BookingFilter>("all");
   const [selectedId, setSelectedId] = useState<string>();
+  const router = useRouter();
   const session = useSession();
   const isAgent = session?.user?.role === "landlord";
 
@@ -230,28 +231,23 @@ export default function BookingsPage() {
             </>
           ) : (
             <>
-              <section className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-                <div className="space-y-3">
-                  {bookings.map((booking) => (
-                    <BookingPropertyCard
-                      key={booking.id}
-                      booking={booking}
-                      selected={selectedBooking?.id === booking.id}
-                      onSelect={() => setSelectedId(booking.id)}
-                    />
-                  ))}
-                  {meta && (
-                    <Pagination
-                      page={meta.page}
-                      totalPages={meta.totalPages}
-                      isFetching={bookingsQuery.isFetching}
-                      onPageChange={setPage}
-                    />
-                  )}
-                </div>
-                {selectedBooking ? (
-                  <BookingPropertyDetails key={selectedBooking.id} booking={selectedBooking} />
-                ) : null}
+              <section className="mt-6 space-y-3">
+                {bookings.map((booking) => (
+                  <BookingPropertyCard
+                    key={booking.id}
+                    booking={booking}
+                    selected={false}
+                    onSelect={() => router.push(`/properties/${booking.house.id}`)}
+                  />
+                ))}
+                {meta && (
+                  <Pagination
+                    page={meta.page}
+                    totalPages={meta.totalPages}
+                    isFetching={bookingsQuery.isFetching}
+                    onPageChange={setPage}
+                  />
+                )}
               </section>
             </>
           )}

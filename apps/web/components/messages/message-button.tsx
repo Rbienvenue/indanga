@@ -32,7 +32,10 @@ export function MessageButton({
       size={size}
       className="relative z-10"
       disabled={mutation.isPending}
-      onClick={() => mutation.mutate()}
+      onClick={(event) => {
+        event.stopPropagation();
+        mutation.mutate();
+      }}
     >
       <MessageSquare className="size-4" />
       {mutation.isPending ? "Opening…" : (label ?? "Message support")}

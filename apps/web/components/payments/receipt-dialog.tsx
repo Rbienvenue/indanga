@@ -75,7 +75,7 @@ export function ReceiptDialog({ paymentId }: { paymentId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={(event) => event.stopPropagation()}>
           View receipt
         </Button>
       </DialogTrigger>

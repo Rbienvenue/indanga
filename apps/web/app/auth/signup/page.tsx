@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 
 import { RolePicker } from "@/components/auth/role-picker";
 import { PasswordInput } from "@/components/auth/password-input";
+import { TermsDialog } from "@/components/legal/terms-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -306,16 +307,7 @@ export default function SignupPage() {
                     />
                   </FormControl>
                   <FormLabel htmlFor="terms-accepted" className="font-normal leading-6">
-                    I have read and agree to the{" "}
-                    <Link
-                      href="/terms-and-conditions"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-semibold text-primary underline underline-offset-2"
-                    >
-                      Terms &amp; Conditions
-                    </Link>
-                    .
+                    I have read and agree to the <TermsDialog />.
                   </FormLabel>
                 </div>
                 <FormMessage />
