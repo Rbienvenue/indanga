@@ -210,7 +210,6 @@ export function BookingDetails({ booking, isCar }: { booking?: Booking; isCar: b
             </dl>
             <p className="break-all rounded-lg bg-muted p-3 text-sm">{booking.client.email}</p>
             <div className="flex flex-wrap gap-2">
-              <MessageButton bookingId={booking.id} label="Message guest" />
               <MessageButton label="Contact support" />
             </div>
             <p className="text-xs text-muted-foreground">

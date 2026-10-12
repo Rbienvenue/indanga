@@ -10,24 +10,18 @@ import { fetcher } from "@/lib/fetcher";
 import type { Conversation } from "./types";
 
 export function MessageButton({
-  bookingId,
   label,
   size,
 }: {
-  bookingId?: string;
   label?: string;
   size?: "default" | "sm";
 }) {
   const router = useRouter();
   const mutation = useMutation({
     mutationFn: () =>
-      fetcher<ApiResponse<Conversation>>(
-        `/messages/conversations/${bookingId ? "property" : "support"}`,
-        {
-          method: "POST",
-          ...(bookingId ? { body: JSON.stringify({ bookingId }) } : {}),
-        },
-      ),
+      fetcher<ApiResponse<Conversation>>("/messages/conversations/support", {
+        method: "POST",
+      }),
     onSuccess: ({ data }) => router.push(`/dashboard/messages?conversation=${data.id}`),
     onError: (error: Error) => toast.error(error.message),
   });
@@ -41,9 +35,7 @@ export function MessageButton({
       onClick={() => mutation.mutate()}
     >
       <MessageSquare className="size-4" />
-      {mutation.isPending
-        ? "Opening…"
-        : (label ?? (bookingId ? "Message property" : "Message support"))}
+      {mutation.isPending ? "Opening…" : (label ?? "Message support")}
     </Button>
   );
 }

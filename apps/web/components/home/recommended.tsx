@@ -72,6 +72,7 @@ export function Recommended({ className }: Props) {
                   name={house.name}
                   location={house.location}
                   price={house.price}
+                  currency={house.currency}
                   rooms={house.rooms}
                   media={house.media}
                   bedrooms={house.bedrooms}

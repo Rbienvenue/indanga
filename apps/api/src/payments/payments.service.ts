@@ -331,7 +331,7 @@ export class PaymentsService {
               checkOut: true,
               nights: true,
               serviceFee: true,
-              house: { select: { id: true, name: true, propertyType: true } },
+              house: { select: { id: true, name: true, propertyType: true, currency: true } },
               client: { select: { name: true, email: true } },
             },
           },

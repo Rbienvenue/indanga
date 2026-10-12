@@ -49,7 +49,7 @@ export function ListingCard({
         </p>
         <p className="mt-2 text-sm">
           {displayPrice != null
-            ? `${fromRooms ? "From " : ""}${formatPrice(displayPrice)} ${getPriceUnit(listing.propertyType)}`
+            ? `${fromRooms ? "From " : ""}${formatPrice(displayPrice, listing.currency ?? "RWF")} ${getPriceUnit(listing.propertyType)}`
             : "Contact for price"}
         </p>
       </div>
@@ -89,7 +89,7 @@ export function ListingDetails({ listing }: { listing: HouseWithRooms }) {
             <dt className="text-muted-foreground">Price</dt>
             <dd className="mt-1 font-medium">
               {displayPrice != null
-                ? `${fromRooms ? "From " : ""}${formatPrice(displayPrice)} ${getPriceUnit(listing.propertyType)}`
+                ? `${fromRooms ? "From " : ""}${formatPrice(displayPrice, listing.currency ?? "RWF")} ${getPriceUnit(listing.propertyType)}`
                 : "Contact for price"}
             </dd>
           </div>
@@ -118,7 +118,9 @@ export function ListingDetails({ listing }: { listing: HouseWithRooms }) {
                 <span>
                   {room.name} · {room.totalRooms} room(s)
                 </span>
-                <span className="text-muted-foreground">{formatPrice(room.price)} / night</span>
+                <span className="text-muted-foreground">
+                  {formatPrice(room.price, listing.currency ?? "RWF")} / night
+                </span>
               </div>
             ))}
           </div>

@@ -404,7 +404,9 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                 <section className="py-9">
                   <h2 className="mt-2 text-2xl font-bold tracking-tight">
                     Rooms
-                    {fromPrice != null ? ` · from ${fromPrice.toLocaleString("en-US")} RWF` : ""}
+                    {fromPrice != null
+                      ? ` · from ${fromPrice.toLocaleString("en-US")} ${house.currency ?? "RWF"}`
+                      : ""}
                   </h2>
                   <ul className="mt-6 grid gap-4 sm:grid-cols-2">
                     {rooms.map((room) => (
@@ -415,12 +417,12 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                         <div>
                           <p className="font-bold">{room.name}</p>
                           <p className="mt-0.5 text-sm text-muted-foreground">
-                            {room.totalRooms} {room.totalRooms === 1 ? "room" : "rooms"} available in
-                            this category
+                            {room.totalRooms} {room.totalRooms === 1 ? "room" : "rooms"} available
+                            in this category · Sleeps {room.capacity}
                           </p>
                         </div>
                         <p className="text-lg font-black text-primary">
-                          {room.price.toLocaleString("en-US")} RWF
+                          {room.price.toLocaleString("en-US")} {house.currency ?? "RWF"}
                         </p>
                       </li>
                     ))}
@@ -515,8 +517,10 @@ function ListingInformation({
       </AccordionRow>
       <AccordionRow icon={WalletCards} title="Price details">
         <p>
-          {house.price ? `${formatPrice(house.price)} per ${priceUnit}.` : ""} The displayed price
-          is the listing rate; confirm the total at booking.
+          {house.price
+            ? `${formatPrice(house.price, house.currency ?? "RWF")} per ${priceUnit}.`
+            : ""}{" "}
+          The displayed price is the listing rate; confirm the total at booking.
         </p>
         <p className="mt-3">
           INDANGA keeps payment inside the platform so your booking record stays connected to your

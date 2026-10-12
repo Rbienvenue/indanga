@@ -82,7 +82,14 @@ export default function RoomsPage() {
             Keep your room details, nightly rates, and availability up to date.
           </p>
         </div>
-        {hotel ? <RoomDialog key={hotel.id} houseId={hotel.id} rooms={hotel.rooms} /> : null}
+        {hotel ? (
+          <RoomDialog
+            key={hotel.id}
+            houseId={hotel.id}
+            rooms={hotel.rooms}
+            currency={hotel.currency}
+          />
+        ) : null}
       </header>
       {hotelsQuery.isLoading ? (
         <Skeleton className="h-10 w-64" />
@@ -164,7 +171,12 @@ export default function RoomsPage() {
                             <h2 className="text-lg font-semibold">{room.name}</h2>
                             <p className="text-xs text-muted-foreground">Room category</p>
                           </div>
-                          <RoomDialog houseId={hotel.id} rooms={hotel.rooms} room={room} />
+                          <RoomDialog
+                            houseId={hotel.id}
+                            rooms={hotel.rooms}
+                            room={room}
+                            currency={hotel.currency}
+                          />
                         </div>
                       </CardHeader>
                       <CardContent>
@@ -182,7 +194,9 @@ export default function RoomsPage() {
                             </dt>
                           </div>
                           <div>
-                            <dd className="font-semibold">{formatPrice(room.price)}</dd>
+                            <dd className="font-semibold">
+                              {formatPrice(room.price, hotel.currency ?? "RWF")}
+                            </dd>
                             <dt className="mt-1 text-xs text-muted-foreground">Per night</dt>
                           </div>
                         </dl>

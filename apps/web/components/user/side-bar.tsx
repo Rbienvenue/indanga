@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Collapsible } from "radix-ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ApiResponse } from "@/@types";
+import type { ApiResponse, PaginationResponse } from "@/@types";
 import { useSocketIo } from "@/components/providers/socket-io-provider";
 import { fetcher } from "@/lib/fetcher";
 import {
@@ -75,7 +75,7 @@ const agentItems = [
 ];
 
 const carItems = agentItems
-  .filter((item) => item.href !== "/dashboard/reviews" && item.href !== "/dashboard/calendar")
+  .filter((item) => item.href !== "/dashboard/reviews")
   .map((item) => {
     if (item.href === "/dashboard/listings") return { ...item, title: "Vehicles", icon: CarFront };
     if (item.href === "/dashboard/guest") return { ...item, title: "Clients" };
@@ -160,6 +160,23 @@ export function AppSidebar() {
     enabled: Boolean(session && hasMessages),
   });
   const unreadCount = unreadQuery.data?.data.count ?? 0;
+  const isAdmin = session?.user?.role === "admin";
+  const pendingQuery = useQuery({
+    queryKey: ["admin-stats"],
+    queryFn: () => fetcher<ApiResponse<{ pendingBookings: number }>>("/admin/stats"),
+    enabled: Boolean(session && isAdmin),
+    staleTime: 30 * 1000,
+  });
+  const pendingBookings = pendingQuery.data?.data.pendingBookings ?? 0;
+  const isProvider = session?.user?.role === "landlord";
+  const activeGuestsQuery = useQuery({
+    queryKey: ["provider-guests", "active-count", session?.user?.id],
+    queryFn: () =>
+      fetcher<PaginationResponse<{ id: string }>>("/guests?activeOnly=true&page=1&limit=1"),
+    enabled: Boolean(session && isProvider),
+    staleTime: 30 * 1000,
+  });
+  const activeGuests = activeGuestsQuery.data?.meta.total ?? 0;
 
   React.useEffect(() => {
     if (!socket || !isConnected || !session || !hasMessages) return;
@@ -185,8 +202,23 @@ export function AppSidebar() {
         pathname.startsWith(`${item.href}/`));
 
     const messageItem = item.href === "/dashboard/messages" || item.href === "/admin/support";
+    const queueItem = item.href === "/admin/bookings";
+    const guestItem = item.href === "/dashboard/guest";
+    const badgeCount = messageItem
+      ? unreadCount
+      : queueItem
+        ? pendingBookings
+        : guestItem
+          ? activeGuests
+          : 0;
     const label =
-      messageItem && unreadCount > 0 ? `${item.title}, ${unreadCount} unread messages` : item.title;
+      badgeCount > 0
+        ? messageItem
+          ? `${item.title}, ${badgeCount} unread messages`
+          : queueItem
+            ? `${item.title}, ${badgeCount} bookings awaiting review`
+            : `${item.title}, ${badgeCount} active guests`
+        : item.title;
 
     return (
       <SidebarMenuItem key={item.href}>
@@ -196,12 +228,12 @@ export function AppSidebar() {
             <span>{item.title}</span>
           </Link>
         </SidebarMenuButton>
-        {messageItem && unreadCount > 0 ? (
+        {badgeCount > 0 ? (
           <SidebarMenuBadge
             aria-hidden="true"
             className="rounded-full bg-destructive text-white peer-hover/menu-button:text-white peer-data-active/menu-button:text-white group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:-right-1 group-data-[collapsible=icon]:min-w-4 group-data-[collapsible=icon]:h-4 group-data-[collapsible=icon]:text-[9px]"
           >
-            {unreadCount > 99 ? "99+" : unreadCount}
+            {badgeCount > 99 ? "99+" : badgeCount}
           </SidebarMenuBadge>
         ) : null}
       </SidebarMenuItem>

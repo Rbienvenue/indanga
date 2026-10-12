@@ -1,4 +1,4 @@
-import { HouseStatus } from "@indanga/db";
+import { Currency, HouseStatus } from "@indanga/db";
 import { PartialType } from "@nestjs/mapped-types";
 import { Transform, Type } from "class-transformer";
 import {
@@ -59,6 +59,11 @@ export class RoomTypeInputDto {
   @IsInt()
   @Min(1)
   totalRooms: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  capacity: number;
 }
 
 export class CreateHouseDto {
@@ -113,6 +118,10 @@ export class CreateHouseDto {
   @IsOptional()
   @IsString()
   subType?: string;
+
+  @IsOptional()
+  @IsEnum(Currency)
+  currency?: Currency;
 
   @Type(() => Number)
   @IsInt()

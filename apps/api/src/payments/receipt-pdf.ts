@@ -9,9 +9,9 @@ const bold = readFileSync(new URL("./assets/SpaceGrotesk-Bold.ttf", import.meta.
   "base64",
 );
 const logo = readFileSync(new URL("./assets/indanga.png", import.meta.url)).toString("base64");
-const money = (value: number) => `RWF ${value.toLocaleString("en-US")}`;
-
 export function generateReceiptPdf(receipt: Receipt): Buffer {
+  const currency = receipt.currency ?? "RWF";
+  const money = (value: number) => `${currency} ${value.toLocaleString("en-US")}`;
   const doc = new jsPDF({ unit: "mm", format: "a4", compress: true });
   doc.addFileToVFS("SpaceGrotesk-Regular.ttf", regular);
   doc.addFont("SpaceGrotesk-Regular.ttf", "SpaceGrotesk", "normal");

@@ -62,6 +62,7 @@ model House {
   bathrooms          Int
   metadata           Json               @default("[]")
   status             HouseStatus        @default(PENDING)
+  currency           Currency           @default(RWF)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   verificationStatus VerificationStatus @default(ReviewedByIndanga)
@@ -84,6 +85,7 @@ model RoomType {
   name       String
   price      Int
   totalRooms Int
+  capacity   Int       @default(2)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   house      House     @relation(fields: [houseId], references: [id], onDelete: Cascade)
@@ -313,6 +315,11 @@ enum HouseStatus {
   BOOKED
   AVAILABLE
   PENDING
+}
+
+enum Currency {
+  RWF
+  USD
 }
 
 enum PaymentStatus {

@@ -61,6 +61,7 @@ export const roomTypeSchema = z.object({
   name: z.string().trim().min(2, "Room name must be at least 2 characters"),
   price: z.coerce.number<number>().positive("Enter a valid price"),
   totalRooms: z.coerce.number<number>().int().min(1, "At least 1 room"),
+  capacity: z.coerce.number<number>().int().min(1, "At least 1 guest"),
 });
 
 export type RoomTypeValues = z.infer<typeof roomTypeSchema>;
@@ -76,6 +77,7 @@ export const createHouseSchema = z
     propertyType: z.enum(propertyTypes, { message: "Select a property type" }),
     subType: z.string().trim().optional(),
     price: optionalPrice,
+    currency: z.enum(["RWF", "USD"]).default("RWF"),
     rooms: z.array(roomTypeSchema).optional(),
     bedrooms: z.coerce.number<number>().min(0, "Bedrooms cannot be negative").optional(),
     bathrooms: z.coerce.number<number>().min(0, "Bathrooms cannot be negative").optional(),

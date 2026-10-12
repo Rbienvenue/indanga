@@ -62,7 +62,7 @@ type CalendarBooking = {
   totalAmount: number | null;
   client: { name: string; email: string };
   roomType: { name: string } | null;
-  house: { name: string };
+  house: { name: string; currency: string | null };
 };
 
 type CalendarData = {
@@ -445,7 +445,10 @@ export function HotelCalendar() {
                   <dt className="text-muted-foreground">Total</dt>
                   <dd className="mt-1 font-medium">
                     {selectedBooking.totalAmount != null
-                      ? formatPrice(selectedBooking.totalAmount)
+                      ? formatPrice(
+                          selectedBooking.totalAmount,
+                          selectedBooking.house.currency ?? "RWF",
+                        )
                       : "—"}
                   </dd>
                 </div>

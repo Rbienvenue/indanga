@@ -27,6 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createHouseSchema, type CreateHouseValues } from "@/lib/validations/house";
+import { CurrencyField } from "./currency-select";
 import { fetcher } from "@/lib/fetcher";
 
 type HouseData = {
@@ -35,6 +36,7 @@ type HouseData = {
   location: string;
   address: string | null;
   price: number;
+  currency?: string | null;
   description: string;
   propertyType: string;
   bedrooms: number;
@@ -46,6 +48,7 @@ function buildPropertyPayload(values: CreateHouseValues) {
     name: values.name,
     propertyType: values.propertyType,
     price: values.price,
+    currency: values.currency,
     province: values.province,
     district: values.district,
     sector: values.sector,
@@ -80,6 +83,7 @@ export function EditPropertyDialog({ house }: { house: HouseData }) {
       name: house.name,
       propertyType: house.propertyType as CreateHouseValues["propertyType"],
       price: house.price,
+      currency: (house.currency ?? "RWF") as CreateHouseValues["currency"],
       bedrooms: house.bedrooms,
       bathrooms: house.bathrooms,
       province: locationParts.province,
@@ -140,19 +144,22 @@ export function EditPropertyDialog({ house }: { house: HouseData }) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Price (RWF)</FormLabel>
-                  <FormControl>
-                    <Input type="number" min={0} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-[1fr_auto] items-end gap-4">
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price ({form.watch("currency") ?? "RWF"})</FormLabel>
+                    <FormControl>
+                      <Input type="number" min={0} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <CurrencyField />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <FormField

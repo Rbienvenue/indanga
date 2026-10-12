@@ -66,6 +66,7 @@ export class HousesService {
                   name: room.name,
                   price: room.price,
                   totalRooms: room.totalRooms,
+                  capacity: room.capacity,
                 })),
               },
             }
@@ -320,7 +321,13 @@ export class HousesService {
     for (const room of rooms) {
       if (!room.id) {
         await tx.roomType.create({
-          data: { houseId, name: room.name, price: room.price, totalRooms: room.totalRooms },
+          data: {
+            houseId,
+            name: room.name,
+            price: room.price,
+            totalRooms: room.totalRooms,
+            capacity: room.capacity,
+          },
         });
         continue;
       }
@@ -336,7 +343,12 @@ export class HousesService {
       }
       await tx.roomType.update({
         where: { id: room.id },
-        data: { name: room.name, price: room.price, totalRooms: room.totalRooms },
+        data: {
+          name: room.name,
+          price: room.price,
+          totalRooms: room.totalRooms,
+          capacity: room.capacity,
+        },
       });
     }
 

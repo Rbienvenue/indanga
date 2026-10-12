@@ -24,7 +24,7 @@ type PaymentWithBooking = {
   status: "PENDING" | "COMPLETED" | "FAILED";
   createdAt: string;
   booking: {
-    house: { name: string };
+    house: { name: string; currency: string | null };
     client: { name: string };
   };
 };
@@ -73,7 +73,10 @@ export function RecentPayments() {
               {payments.map((payment) => (
                 <TableRow key={payment.id}>
                   <TableCell className="font-medium">
-                    {formatPrice(Number(payment.amount))}
+                    {formatPrice(
+                      Number(payment.amount),
+                      payment.booking.house.currency ?? "RWF",
+                    )}
                   </TableCell>
                   <TableCell>{payment.booking.client.name}</TableCell>
                   <TableCell className="text-muted-foreground">

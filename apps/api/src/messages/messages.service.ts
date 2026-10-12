@@ -45,25 +45,10 @@ export class MessagesService {
   }
 
   async createProperty(user: MessageUser, bookingId: string) {
-    const booking = await this.db.booking.findFirst({
-      where: { id: bookingId, OR: [{ clientId: user.id }, { house: { ownerId: user.id } }] },
-      include: { house: { select: { id: true, name: true } } },
-    });
-    if (!booking || user.role === "admin") throw new NotFoundException("Booking not found");
-    const conversation = await this.db.conversation.upsert({
-      where: { key: `booking:${bookingId}` },
-      create: {
-        key: `booking:${bookingId}`,
-        type: "PROPERTY",
-        clientId: booking.clientId,
-        bookingId,
-        houseId: booking.house.id,
-        propertyName: booking.house.name,
-      },
-      update: {},
-      include: conversationInclude,
-    });
-    return this.summary(user, conversation);
+    void bookingId;
+    void user;
+    // Direct client↔provider messaging is disabled: all conversations go through support.
+    throw new ForbiddenException("Direct messaging is disabled. Please contact support.");
   }
 
   async list(user: MessageUser, { page, limit }: MessagePaginationDto) {
@@ -147,6 +132,10 @@ export class MessagesService {
 
   async send(user: MessageUser, id: string, text: string) {
     const conversation = await this.getConversation(user, id);
+    if (conversation.type === "PROPERTY") {
+      // Direct client↔provider messaging is disabled: all conversations go through support.
+      throw new ForbiddenException("Direct messaging is disabled. Please contact support.");
+    }
     const senderType =
       user.id === conversation.clientId
         ? "CLIENT"

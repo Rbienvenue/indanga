@@ -31,7 +31,6 @@ export default function Page() {
         <h1 className="text-2xl font-semibold tracking-tight">
           {getGreeting()}, {firstName}!
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Ready to find your next home?</p>
       </div>
 
       <StatisticsCards />

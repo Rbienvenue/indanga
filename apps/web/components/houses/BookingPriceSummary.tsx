@@ -4,6 +4,7 @@ import { formatPrice } from "@/lib/utils";
 
 interface BookingPriceSummaryProps {
   bookingKind: BookingKind;
+  currency?: string | null;
   unitPrice: number;
   nights: number;
   quantity: number;
@@ -16,6 +17,7 @@ interface BookingPriceSummaryProps {
 
 export function BookingPriceSummary({
   bookingKind,
+  currency,
   unitPrice,
   nights,
   quantity,
@@ -27,6 +29,7 @@ export function BookingPriceSummary({
 }: BookingPriceSummaryProps) {
   const isHotel = bookingKind === "hotel";
   const isCar = bookingKind === "car";
+  const displayCurrency = currency ?? "RWF";
   const priceLabel = isHotel ? "Room price" : isCar ? "Car price" : "Property price";
   const unit = isHotel ? "night" : isCar ? "day" : "month";
 
@@ -37,7 +40,7 @@ export function BookingPriceSummary({
         <div className="flex justify-between gap-3">
           <dt className="text-muted-foreground">{priceLabel}</dt>
           <dd className="text-right font-medium">
-            {formatPrice(unitPrice)} / {unit}
+            {formatPrice(unitPrice, displayCurrency)} / {unit}
           </dd>
         </div>
         <div className="flex justify-between gap-3">
@@ -54,15 +57,15 @@ export function BookingPriceSummary({
         ) : null}
         <div className="flex justify-between gap-3">
           <dt className="text-muted-foreground">Subtotal</dt>
-          <dd className="font-medium">{ready ? formatPrice(subtotal) : "—"}</dd>
+          <dd className="font-medium">{ready ? formatPrice(subtotal, displayCurrency) : "—"}</dd>
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-muted-foreground">{getServiceFeeLabel(serviceFeeConfig)}</dt>
-          <dd className="font-medium">{ready ? formatPrice(serviceFee) : "—"}</dd>
+          <dd className="font-medium">{ready ? formatPrice(serviceFee, displayCurrency) : "—"}</dd>
         </div>
         <div className="flex justify-between gap-3 border-t pt-3 text-base font-bold">
           <dt>Total</dt>
-          <dd>{ready ? formatPrice(total) : "—"}</dd>
+          <dd>{ready ? formatPrice(total, displayCurrency) : "—"}</dd>
         </div>
       </dl>
     </div>

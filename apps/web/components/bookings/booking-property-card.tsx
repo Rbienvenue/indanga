@@ -71,6 +71,7 @@ export interface BookingPropertyCardBooking {
     name: string;
     location: string;
     price: number | null;
+    currency?: string | null;
     media?: string[];
     bedrooms: number;
     bathrooms: number;
@@ -123,7 +124,9 @@ export function BookingPropertyCard({
           </p>
         ) : null}
         {booking.totalAmount != null ? (
-          <p className="mt-2 text-sm font-medium">{formatPrice(booking.totalAmount)} total</p>
+          <p className="mt-2 text-sm font-medium">
+            {formatPrice(booking.totalAmount, booking.house.currency ?? "RWF")} total
+          </p>
         ) : null}
       </div>
     </button>
@@ -155,7 +158,7 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
         {booking.totalAmount != null && (
           <div className="mt-3 flex items-baseline gap-1">
             <span className="text-lg font-bold text-primary">
-              {formatPrice(booking.totalAmount)}
+              {formatPrice(booking.totalAmount, booking.house.currency ?? "RWF")}
             </span>
             <span className="text-sm text-muted-foreground">total</span>
           </div>
@@ -165,7 +168,9 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
           <p className="mt-2 text-sm text-muted-foreground">
             {booking.roomType.name}
             {booking.roomCount && booking.roomCount > 1 ? ` × ${booking.roomCount} rooms` : ""}
-            {booking.unitPrice != null ? ` · ${formatPrice(booking.unitPrice)} / night` : ""}
+            {booking.unitPrice != null
+              ? ` · ${formatPrice(booking.unitPrice, booking.house.currency ?? "RWF")} / night`
+              : ""}
           </p>
         ) : null}
 
@@ -189,7 +194,7 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
         <BookingRequestStatus booking={booking} inlinePayment={false} />
 
         <div className="relative z-10 mt-3 flex flex-wrap gap-2">
-          <MessageButton bookingId={booking.id} />
+          <MessageButton label="Contact support" />
           {booking.payments?.map((payment) => (
             <ReceiptDialog key={payment.id} paymentId={payment.id} />
           ))}

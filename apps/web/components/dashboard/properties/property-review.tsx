@@ -83,14 +83,15 @@ export function PropertyReview({
                   {room.name} · {room.totalRooms} rooms
                 </span>
                 <span className="font-medium">
-                  {Number(room.price).toLocaleString()} RWF / night
+                  {Number(room.price).toLocaleString()} {values.currency} / night
                 </span>
               </li>
             ))}
           </ul>
         ) : (
           <p className="font-medium">
-            {Number(values.price).toLocaleString()} RWF {getPriceUnit(values.propertyType)}
+            {Number(values.price).toLocaleString()} {values.currency}{" "}
+            {getPriceUnit(values.propertyType)}
           </p>
         )}
         {values.propertyType === "House" && (

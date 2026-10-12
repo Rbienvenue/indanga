@@ -60,7 +60,7 @@ export class ReceiptsService {
       serviceFee,
       total,
       amountPaid: total,
-      currency: "RWF",
+      currency: booking.house.currency ?? "RWF",
     };
   }
 }

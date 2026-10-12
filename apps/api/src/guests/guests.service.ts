@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Prisma } from "@indanga/db";
+import { BookingStatus, Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
 import { FilterGuestsDto } from "./dtos";
 
@@ -21,9 +21,25 @@ export class GuestsService {
   constructor(private readonly db: PrismaService) {}
 
   async getGuests(ownerId: string, query: FilterGuestsDto) {
-    const { page = 1, limit = 20, houseId } = query;
+    const { page = 1, limit = 20, houseId, activeOnly = false } = query;
     const search = query.search?.trim();
-    const bookingWhere: Prisma.BookingWhereInput = { house: { ownerId }, houseId };
+    const bookingWhere: Prisma.BookingWhereInput = {
+      house: { ownerId },
+      houseId,
+      ...(activeOnly
+        ? {
+            status: {
+              in: [
+                BookingStatus.PENDING,
+                BookingStatus.REQUESTED,
+                BookingStatus.AWAITING_PAYMENT,
+                BookingStatus.APPROVED,
+                BookingStatus.CONFIRMED,
+              ],
+            },
+          }
+        : {}),
+    };
     const where: Prisma.UserWhereInput = {
       bookings: { some: bookingWhere },
       ...(search

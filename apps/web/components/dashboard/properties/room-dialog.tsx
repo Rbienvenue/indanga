@@ -32,7 +32,7 @@ import { fetcher } from "@/lib/fetcher";
 import { roomTypeSchema, type RoomTypeValues } from "@/lib/validations/house";
 
 const roomSchema = roomTypeSchema.omit({ id: true }).extend({
-  price: z.coerce.number<number>().int("Enter a whole RWF amount").positive("Enter a valid price"),
+  price: z.coerce.number<number>().int("Enter a whole amount").positive("Enter a valid price"),
 });
 type RoomValues = z.infer<typeof roomSchema>;
 
@@ -40,22 +40,24 @@ export function RoomDialog({
   houseId,
   rooms,
   room,
+  currency,
 }: {
   houseId: string;
   rooms: RoomType[];
   room?: RoomType;
+  currency?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const form = useForm<RoomValues>({
     resolver: zodResolver(roomSchema),
-    defaultValues: { name: "", price: 0, totalRooms: 1 },
+    defaultValues: { name: "", price: 0, totalRooms: 1, capacity: 2 },
   });
   const mutation = useMutation({
     mutationFn: (values: RoomValues) => {
       // The property API replaces the room list, so preserve every other room and its ID.
-      const updatedRooms: RoomTypeValues[] = rooms.map(({ id, name, price, totalRooms }) =>
-        id === room?.id ? { id, ...values } : { id, name, price, totalRooms },
+      const updatedRooms: RoomTypeValues[] = rooms.map(({ id, name, price, totalRooms, capacity }) =>
+        id === room?.id ? { id, ...values } : { id, name, price, totalRooms, capacity },
       );
       if (!room) updatedRooms.push(values);
       return fetcher(`/properties/${houseId}`, {
@@ -85,6 +87,7 @@ export function RoomDialog({
             name: room?.name ?? "",
             price: room?.price ?? 0,
             totalRooms: room?.totalRooms ?? 1,
+            capacity: room?.capacity ?? 2,
           });
         }
         setOpen(nextOpen);
@@ -101,7 +104,7 @@ export function RoomDialog({
         <DialogHeader>
           <DialogTitle>{room ? "Edit room" : "Add room"}</DialogTitle>
           <DialogDescription>
-            Set the room category, nightly price, and total inventory.
+            Set the room category, nightly price, total inventory, and max guests.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -125,7 +128,7 @@ export function RoomDialog({
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price per night (RWF)</FormLabel>
+                    <FormLabel>Price per night ({currency ?? "RWF"})</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} step={1} {...field} />
                     </FormControl>
@@ -145,6 +148,19 @@ export function RoomDialog({
                     <p className="text-sm text-muted-foreground">
                       Available rooms are calculated from bookings.
                     </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="capacity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Max guests per room</FormLabel>
+                    <FormControl>
+                      <Input type="number" min={1} step={1} {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

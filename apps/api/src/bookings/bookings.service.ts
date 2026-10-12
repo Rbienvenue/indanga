@@ -170,6 +170,30 @@ export class BookingsService {
     return booking ? { ...booking, responseDeadline: providerResponseDeadline(booking) } : null;
   }
 
+  async getTenantStats(clientId: string) {
+    const [favorites, activeBookings, payments, reviews] = await Promise.all([
+      this.db.favorite.count({ where: { userId: clientId } }),
+      this.db.booking.count({
+        where: {
+          clientId,
+          status: {
+            in: [
+              BookingStatus.PENDING,
+              BookingStatus.REQUESTED,
+              BookingStatus.AWAITING_PAYMENT,
+              BookingStatus.APPROVED,
+              BookingStatus.CONFIRMED,
+            ],
+          },
+        },
+      }),
+      this.db.payment.count({ where: { booking: { clientId } } }),
+      this.db.review.count({ where: { tenantId: clientId } }),
+    ]);
+
+    return { favorites, activeBookings, payments, reviews };
+  }
+
   async getBookingsByUser(user: UserSession["user"], data: FilterBookingDto) {
     const { page = 1, limit = 20 } = data;
     const where: Prisma.BookingWhereInput = {};
@@ -218,8 +242,8 @@ export class BookingsService {
   }
 
   async getCalendar(user: User, query: CalendarBookingDto) {
-    if (user.role !== "landlord" || user.providerType !== "HOTEL") {
-      throw new ForbiddenException("The calendar is available to hotel providers only");
+    if (user.role !== "landlord" || (user.providerType !== "HOTEL" && user.providerType !== "CAR")) {
+      throw new ForbiddenException("The calendar is available to hotel and car providers only");
     }
     const start = new Date(query.start);
     const end = new Date(query.end);
@@ -234,6 +258,7 @@ export class BookingsService {
     ) {
       throw new BadRequestException("Select a valid calendar range and a date within it");
     }
+    const kind = user.providerType === "CAR" ? "car" : "hotel";
     const properties = (
       await this.db.house.findMany({
         where: { ownerId: user.id },
@@ -245,7 +270,7 @@ export class BookingsService {
         },
         orderBy: { name: "asc" },
       })
-    ).filter((property) => getBookingKind(property.propertyType) === "hotel");
+    ).filter((property) => getBookingKind(property.propertyType) === kind);
     const now = new Date();
     const bookings = await this.db.booking.findMany({
       where: {
@@ -271,14 +296,13 @@ export class BookingsService {
         totalAmount: true,
         client: { select: { name: true, email: true } },
         roomType: { select: { name: true } },
-        house: { select: { name: true } },
+        house: { select: { name: true, currency: true } },
       },
     });
     const nextDay = new Date(date.getTime() + dayMs);
-    const inventory = properties.map((property) => ({
-      id: property.id,
-      name: property.name,
-      rooms: property.rooms.map((room) => {
+    const isCarCalendar = kind === "car";
+    const inventory = properties.map((property) => {
+      const rooms = property.rooms.map((room) => {
         let bookedRooms = 0;
         let heldRooms = 0;
         for (const booking of bookings) {
@@ -305,8 +329,51 @@ export class BookingsService {
           heldRooms,
           availableRooms: Math.max(0, room.totalRooms - bookedRooms - heldRooms),
         };
-      }),
-    }));
+      });
+      const dayBookings = isCarCalendar
+        ? bookings.filter(
+            (booking) =>
+              booking.houseId === property.id &&
+              booking.checkIn &&
+              booking.checkOut &&
+              booking.checkIn < nextDay &&
+              booking.checkOut > date,
+          )
+        : [];
+      // Each car listing is a single vehicle, so the day status is binary.
+      const carBooked = dayBookings.some(
+        (booking) =>
+          booking.status === BookingStatus.CONFIRMED ||
+          booking.status === BookingStatus.APPROVED,
+      );
+      const carHeld =
+        !carBooked &&
+        dayBookings.some((booking) => booking.status === BookingStatus.AWAITING_PAYMENT);
+      const totalUnits = isCarCalendar
+        ? 1
+        : rooms.reduce((sum, room) => sum + room.totalRooms, 0);
+      const bookedUnits = isCarCalendar
+        ? carBooked
+          ? 1
+          : 0
+        : rooms.reduce((sum, room) => sum + room.bookedRooms, 0);
+      const heldUnits = isCarCalendar
+        ? carHeld
+          ? 1
+          : 0
+        : rooms.reduce((sum, room) => sum + room.heldRooms, 0);
+      return {
+        id: property.id,
+        name: property.name,
+        rooms,
+        dayAvailability: {
+          total: totalUnits,
+          booked: bookedUnits,
+          held: heldUnits,
+          available: Math.max(0, totalUnits - bookedUnits - heldUnits),
+        },
+      };
+    });
     return { properties: inventory, bookings };
   }
 

@@ -4,6 +4,7 @@ import type { House, RoomType } from "@indanga/db";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+  ArrowLeft,
   ArrowRight,
   BedDouble,
   CalendarIcon,
@@ -156,7 +157,11 @@ export function BookingCard({
       bookingQuery.saveBooking(data);
       setDismissedBookingId(null);
       setStep("booking");
-      toast.success("Booking request sent", { position: "top-center" });
+      toast.success("Booking request sent — we've got you!", {
+        description:
+          "Providers usually respond within 30 minutes. We'll notify you here as soon as they do.",
+        position: "top-center",
+      });
     },
     onError: (error) => {
       toast.error("Could not send booking request", {
@@ -172,6 +177,7 @@ export function BookingCard({
 
   const submitting = requestMutation.isPending;
   const { displayPrice: cardPrice, fromRooms } = getDisplayPrice(house.price, rooms);
+  const currency = house.currency ?? "RWF";
   const cardPriceLabel =
     cardPrice != null ? (
       <>
@@ -180,7 +186,7 @@ export function BookingCard({
             From
           </span>
         ) : null}
-        {formatPrice(cardPrice)}
+        {formatPrice(cardPrice, currency)}
       </>
     ) : (
       "Contact for price"
@@ -253,7 +259,7 @@ export function BookingCard({
                   From
                 </span>
               ) : null}
-              <span>{formatPrice(cardPrice)}</span>
+              <span>{formatPrice(cardPrice, currency)}</span>
               <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
                 / {priceUnitLabel.replace("per ", "")}
               </span>
@@ -313,8 +319,18 @@ export function BookingCard({
           : "rounded-2xl border p-6 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.35)] dark:shadow-black/40",
       )}
     >
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => setStep("booking")}
+        className="mb-3 -ml-2 gap-1.5 text-muted-foreground"
+      >
+        <ArrowLeft className="size-4" /> Back
+      </Button>
       <BookingPriceSummary
         bookingKind={bookingKind}
+        currency={currency}
         unitPrice={unitPrice}
         nights={nights}
         quantity={quantity}
@@ -463,7 +479,8 @@ export function BookingCard({
                             <SelectItem key={room.id} value={room.id} disabled={left <= 0}>
                               <span className="flex items-center gap-2">
                                 <BedDouble className="size-4 text-muted-foreground" />
-                                {room.name} · {formatPrice(room.price)} / night ·{" "}
+                                {room.name} · {formatPrice(room.price, currency)} / night · Sleeps{" "}
+                                {room.capacity} ·{" "}
                                 {left <= 0
                                   ? "sold out"
                                   : `${left} room${left > 1 ? "s" : ""} left`}

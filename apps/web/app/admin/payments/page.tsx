@@ -29,7 +29,7 @@ type PaymentWithBooking = {
     checkOut?: string | null;
     nights?: number | null;
     serviceFee: number | null;
-    house: { name: string; propertyType: string };
+    house: { name: string; propertyType: string; currency: string | null };
     client: { name: string; email: string };
   };
 };
@@ -83,13 +83,21 @@ const columns: ColumnDef<PaymentWithBooking>[] = [
   {
     accessorKey: "amount",
     header: "Customer paid / due",
-    cell: ({ row }) => <span className="font-medium">{formatPrice(row.original.amount)}</span>,
+    cell: ({ row }) => (
+      <span className="font-medium">
+        {formatPrice(row.original.amount, row.original.booking.house.currency ?? "RWF")}
+      </span>
+    ),
   },
   {
     id: "commission",
     header: "Commission earned",
     accessorFn: (row) => (row.status === "COMPLETED" ? (row.booking.serviceFee ?? 0) : 0),
-    cell: ({ getValue }) => <span className="font-medium">{formatPrice(getValue<number>())}</span>,
+    cell: ({ row, getValue }) => (
+      <span className="font-medium">
+        {formatPrice(getValue<number>(), row.original.booking.house.currency ?? "RWF")}
+      </span>
+    ),
   },
   {
     id: "tenant",

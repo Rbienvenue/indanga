@@ -310,7 +310,8 @@ function BookingPaymentForm({
               </>
             ) : (
               <>
-                Pay {formatPrice(booking.totalAmount ?? 0)} <ArrowRight className="size-4" />
+                Pay {formatPrice(booking.totalAmount ?? 0, booking.house.currency ?? "RWF")}{" "}
+                <ArrowRight className="size-4" />
               </>
             )}
           </Button>

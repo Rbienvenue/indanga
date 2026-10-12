@@ -22,8 +22,8 @@ const actions: QuickAction[] = [
     textClass: "text-accent-foreground",
   },
   {
-    title: "Book a Hotel",
-    subtitle: "Find the best hotels",
+    title: "Book a Hotel/ Apartment",
+    subtitle: "Find the best hotels & apartments",
     href: "/properties?type=hotels",
     image: "/hero.jpg",
     position: "42% 78%",

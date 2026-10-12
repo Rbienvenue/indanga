@@ -42,6 +42,7 @@ type HouseWithOwner = {
   name: string;
   location: string;
   price: number;
+  currency: string | null;
   propertyType: string;
   status: PropertyStatus;
   verificationStatus: VerificationStatus;
@@ -236,7 +237,9 @@ const columns: ColumnDef<HouseWithOwner>[] = [
     accessorKey: "price",
     header: "Price",
     cell: ({ row }) =>
-      row.original.price != null ? formatPrice(row.original.price) : "—",
+      row.original.price != null
+        ? formatPrice(row.original.price, row.original.currency ?? "RWF")
+        : "—",
   },
   {
     id: "verificationStatus",

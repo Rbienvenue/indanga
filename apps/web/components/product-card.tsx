@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
-import { Bath, BedDouble, ChevronLeft, ChevronRight, Heart, MapPin, Pencil } from "lucide-react";
+import { Bath, BedDouble, ChevronLeft, ChevronRight, Heart, MapPin, Pencil, Users } from "lucide-react";
 
 import type { ApiResponse } from "@/@types";
 import type { House } from "@indanga/db";
@@ -30,7 +30,8 @@ export type ProductCardProps = {
   name: string;
   location: string;
   price: number | null;
-  rooms?: { price: number }[];
+  currency?: string | null;
+  rooms?: { price: number; capacity?: number | null }[];
   media?: string[];
   bedrooms: number;
   bathrooms: number;
@@ -53,6 +54,7 @@ export function ProductCard({
   name,
   location,
   price,
+  currency,
   rooms,
   media,
   bedrooms,
@@ -69,6 +71,7 @@ export function ProductCard({
   verificationStatus,
 }: ProductCardProps) {
   const resolvedPriceUnit = priceUnit ?? getPriceUnit(propertyType);
+  const displayCurrency = currency ?? "RWF";
   const { displayPrice, fromRooms } = getDisplayPrice(price, rooms);
   const queryClient = useQueryClient();
   const session = useSession();
@@ -116,6 +119,16 @@ export function ProductCard({
     },
   });
   const favoriteState = favoriteMutation.data?.data.isFavorite ?? isFavorite;
+
+  const capacities = (rooms ?? [])
+    .map((room) => room.capacity ?? 0)
+    .filter((capacity) => capacity > 0);
+  const guestLabel =
+    capacities.length === 0
+      ? null
+      : Math.min(...capacities) === Math.max(...capacities)
+        ? `Sleeps ${capacities[0]}`
+        : `Sleeps ${Math.min(...capacities)}–${Math.max(...capacities)}`;
 
   const card = (
     <Card
@@ -266,7 +279,7 @@ export function ProductCard({
             {displayPrice != null ? (
               <>
                 {fromRooms ? <span className="text-sm text-muted-foreground">From</span> : null}
-                <span className="text-lg font-bold text-primary">{formatPrice(displayPrice)}</span>
+                <span className="text-lg font-bold text-primary">{formatPrice(displayPrice, displayCurrency)}</span>
                 <span className="text-sm text-muted-foreground">{resolvedPriceUnit}</span>
               </>
             ) : (
@@ -277,6 +290,12 @@ export function ProductCard({
         </div>
 
         <div className="mt-3 flex items-center gap-3 border-t border-border/50 pt-3">
+          {guestLabel && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Users className="size-3.5" />
+              {guestLabel}
+            </div>
+          )}
           {bedrooms > 0 && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <BedDouble className="size-3.5" />

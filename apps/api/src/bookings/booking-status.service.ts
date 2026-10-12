@@ -32,8 +32,25 @@ export class BookingStatusService {
       throw new NotFoundException("Booking not found");
     }
 
-    if (booking.house.ownerId !== user.id && user.role !== "admin") {
+    const isOwnerOrAdmin = booking.house.ownerId === user.id || user.role === "admin";
+    const isClient = booking.clientId === user.id;
+    if (!isOwnerOrAdmin && !isClient) {
       throw new ForbiddenException("Only the property owner can update booking status");
+    }
+    if (!isOwnerOrAdmin) {
+      // Clients may only cancel their own unpaid bookings.
+      if (status !== BookingStatus.CANCELLED) {
+        throw new BadRequestException("This booking status change is not allowed");
+      }
+      if (
+        ![
+          BookingStatus.REQUESTED,
+          BookingStatus.PENDING,
+          BookingStatus.AWAITING_PAYMENT,
+        ].includes(booking.status)
+      ) {
+        throw new BadRequestException("This booking can no longer be cancelled");
+      }
     }
 
     if (
@@ -181,6 +198,16 @@ export class BookingStatusService {
       userId: updated.clientId,
       bookingId: updated.id,
     });
+
+    if (!isOwnerOrAdmin) {
+      await this.notifications.create({
+        type: "BOOKING_CANCELLED",
+        title: "Booking cancelled by client",
+        message: `Booking ${updated.bookingId ?? updated.id} for ${updated.house.name} was cancelled by ${updated.client.name}.`,
+        userId: updated.house.ownerId,
+        bookingId: updated.id,
+      });
+    }
 
     return updated;
   }

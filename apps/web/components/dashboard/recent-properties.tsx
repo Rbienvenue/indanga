@@ -23,6 +23,7 @@ type House = {
   name: string;
   location: string;
   price: number;
+  currency: string | null;
   propertyType: string;
   status: "AVAILABLE" | "BOOKED";
 };
@@ -73,7 +74,9 @@ export function RecentProperties() {
                   <TableCell>{property.propertyType}</TableCell>
                   <TableCell className="text-muted-foreground">{property.location}</TableCell>
                   <TableCell>
-                    {property.price != null ? formatPrice(property.price) : "—"}
+                    {property.price != null
+                      ? formatPrice(property.price, property.currency ?? "RWF")
+                      : "—"}
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className={statusColors[property.status]}>

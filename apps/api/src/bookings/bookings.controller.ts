@@ -45,6 +45,13 @@ export class BookingsController {
     return new ApiResponse(calendar, "calendar fetched");
   }
 
+  @Get("stats")
+  @Roles(["tenant", "landlord", "admin"])
+  async getTenantStats(@Session() session: UserSession) {
+    const result = await this.bookingsService.getTenantStats(session.user.id);
+    return new ApiResponse(result, "tenant stats fetched");
+  }
+
   @Get(":id")
   @Roles(["tenant", "landlord", "admin"])
   async getBookingById(@Param("id") id: string, @Session() session: UserSession) {
@@ -53,7 +60,7 @@ export class BookingsController {
   }
 
   @Patch(":id/status")
-  @Roles(["landlord", "admin"])
+  @Roles(["tenant", "landlord", "admin"])
   async updateBookingStatus(
     @Param("id") id: string,
     @Session() session: UserSession,

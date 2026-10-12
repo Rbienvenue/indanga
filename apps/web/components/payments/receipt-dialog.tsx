@@ -44,6 +44,7 @@ type Receipt = {
   serviceFee: number;
   total: number;
   amountPaid: number;
+  currency: string;
 };
 
 export function ReceiptDialog({ paymentId }: { paymentId: string }) {
@@ -163,13 +164,13 @@ export function ReceiptDialog({ paymentId }: { paymentId: string }) {
                       <p className="mt-1 text-xs text-slate-500">Provider: {receipt.provider}</p>
                       {receipt.rate != null ? (
                         <p className="mt-1 text-xs text-slate-500">
-                          {formatPrice(receipt.rate)} / {receipt.unit} × {receipt.duration ?? 1} ×{" "}
-                          {receipt.quantity}
+                          {formatPrice(receipt.rate, receipt.currency)} / {receipt.unit} ×{" "}
+                          {receipt.duration ?? 1} × {receipt.quantity}
                         </p>
                       ) : null}
                     </td>
                     <td className="py-4 text-right align-top tabular-nums">
-                      {formatPrice(receipt.subtotal)}
+                      {formatPrice(receipt.subtotal, receipt.currency)}
                     </td>
                   </tr>
                 </tbody>
@@ -186,7 +187,7 @@ export function ReceiptDialog({ paymentId }: { paymentId: string }) {
                     className={`flex justify-between gap-3 ${label === "Amount paid" ? "border-t border-slate-200 pt-3 font-bold" : ""}`}
                   >
                     <dt className="text-slate-500">{label}</dt>
-                    <dd className="tabular-nums">{formatPrice(Number(value))}</dd>
+                    <dd className="tabular-nums">{formatPrice(Number(value), receipt.currency)}</dd>
                   </div>
                 ))}
               </dl>

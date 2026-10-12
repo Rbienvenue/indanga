@@ -43,6 +43,7 @@ type BookingWithDetails = {
     name: string;
     location: string;
     price: number;
+    currency: string | null;
     propertyType: string;
     owner: { id: string; name: string; email: string };
   };
@@ -133,7 +134,9 @@ function AdminBookingActions({ booking }: { booking: BookingWithDetails }) {
               <div>
                 <dt className="text-muted-foreground">Total</dt>
                 <dd className="mt-1 font-medium">
-                  {booking.totalAmount != null ? formatPrice(booking.totalAmount) : "—"}
+                  {booking.totalAmount != null
+                    ? formatPrice(booking.totalAmount, booking.house.currency ?? "RWF")
+                    : "—"}
                 </dd>
               </div>
               <div>
@@ -219,7 +222,9 @@ const columns: ColumnDef<BookingWithDetails>[] = [
     accessorFn: (row) => row.totalAmount,
     cell: ({ row }) =>
       row.original.totalAmount != null ? (
-        <span className="font-medium">{formatPrice(row.original.totalAmount)}</span>
+        <span className="font-medium">
+          {formatPrice(row.original.totalAmount, row.original.house.currency ?? "RWF")}
+        </span>
       ) : (
         <span className="text-muted-foreground">—</span>
       ),

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { amenityIcons } from "@/lib/amenities";
+import { CurrencyField } from "./currency-select";
 import {
   propertyAmenities,
   propertyAmenityLabels,
@@ -25,6 +26,7 @@ export function PropertyDetails() {
 
 function PriceField({ unit }: { unit: "month" | "day" }) {
   const form = useFormContext<CreateHouseValues>();
+  const currency = form.watch("currency") ?? "RWF";
   return (
     <FormField
       control={form.control}
@@ -32,7 +34,7 @@ function PriceField({ unit }: { unit: "month" | "day" }) {
       render={({ field }) => (
         <FormItem>
           <FormLabel>
-            {unit === "month" ? "Monthly rent (RWF)" : "Daily rental price (RWF)"}
+            {unit === "month" ? `Monthly rent (${currency})` : `Daily rental price (${currency})`}
           </FormLabel>
           <FormControl>
             <Input
@@ -54,9 +56,8 @@ function HouseDetails() {
   const form = useFormContext<CreateHouseValues>();
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <div className="sm:col-span-2">
-        <PriceField unit="month" />
-      </div>
+      <PriceField unit="month" />
+      <CurrencyField />
       <FormField
         control={form.control}
         name="bedrooms"
@@ -91,7 +92,10 @@ function CarDetails() {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">Clients rent this vehicle by the day.</p>
-      <PriceField unit="day" />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <PriceField unit="day" />
+        <CurrencyField />
+      </div>
     </div>
   );
 }
@@ -102,6 +106,7 @@ function HotelDetails() {
     append: appendRoom,
     remove: removeRoom,
   } = useFieldArray({ control: form.control, name: "rooms" });
+  const currency = form.watch("currency") ?? "RWF";
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -115,10 +120,13 @@ function HotelDetails() {
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => appendRoom({ name: "", price: 0, totalRooms: 1 })}
+          onClick={() => appendRoom({ name: "", price: 0, totalRooms: 1, capacity: 2 })}
         >
           <Plus className="size-4" /> Add room
         </Button>
+      </div>
+      <div className="max-w-52">
+        <CurrencyField label="Room prices currency" />
       </div>
       {roomFields.length === 0 ? (
         <p className="text-muted-foreground rounded-md bg-muted/50 px-3 py-4 text-center text-sm">
@@ -128,7 +136,7 @@ function HotelDetails() {
       {roomFields.map((roomField, index) => (
         <div
           key={roomField.id}
-          className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr_auto] items-end gap-2 rounded-md bg-muted/40 p-2"
+          className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] items-end gap-2 rounded-md bg-muted/40 p-2"
         >
           <FormField
             control={form.control}
@@ -148,7 +156,7 @@ function HotelDetails() {
             name={`rooms.${index}.price`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs">Price/night (RWF)</FormLabel>
+                <FormLabel className="text-xs">Price/night ({currency})</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -168,6 +176,19 @@ function HotelDetails() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs">No. of rooms</FormLabel>
+                <FormControl>
+                  <Input type="number" min={1} {...field} value={field.value ?? ""} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name={`rooms.${index}.capacity`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs">Max guests</FormLabel>
                 <FormControl>
                   <Input type="number" min={1} {...field} value={field.value ?? ""} />
                 </FormControl>

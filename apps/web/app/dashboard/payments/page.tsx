@@ -33,7 +33,7 @@ type Payment = {
     checkIn: string | null;
     checkOut: string | null;
     nights: number | null;
-    house: { id: string; name: string; propertyType: string };
+    house: { id: string; name: string; propertyType: string; currency: string | null };
     client: { name: string; email: string };
   };
 };
@@ -100,8 +100,10 @@ export default function PaymentsPage() {
       id: "amount",
       header: isProvider ? "Booking amount" : "Amount",
       accessorFn: (payment) => (isProvider ? payment.bookingAmount : Number(payment.amount)),
-      cell: ({ getValue }) => (
-        <span className="font-semibold tabular-nums">{formatPrice(getValue<number>())}</span>
+      cell: ({ row, getValue }) => (
+        <span className="font-semibold tabular-nums">
+          {formatPrice(getValue<number>(), row.original.booking.house.currency ?? "RWF")}
+        </span>
       ),
     },
     {
@@ -274,7 +276,10 @@ export default function PaymentsPage() {
                   {isProvider ? "Booking amount" : "Amount"}
                 </dt>
                 <dd className="text-xl font-semibold tabular-nums">
-                  {formatPrice(isProvider ? selected.bookingAmount : selected.amount)}
+                  {formatPrice(
+                    isProvider ? selected.bookingAmount : selected.amount,
+                    selected.booking.house.currency ?? "RWF",
+                  )}
                 </dd>
               </div>
               <div>

@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -167,14 +168,16 @@ export function GuestDirectory() {
   const peopleLabel = usesClients ? "Clients" : "Guests";
   const [search, setSearch] = useState("");
   const [houseId, setHouseId] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"active" | "all">("active");
   const [page, setPage] = useState(1);
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
   const guestsQuery = useQuery<PaginationResponse<Guest>>({
-    queryKey: ["provider-guests", ownerId, search, houseId, page],
+    queryKey: ["provider-guests", ownerId, search, houseId, statusFilter, page],
     queryFn: () => {
       const params = new URLSearchParams({ page: String(page), limit: "20" });
       if (search) params.set("search", search);
       if (houseId !== "all") params.set("houseId", houseId);
+      if (statusFilter === "active") params.set("activeOnly", "true");
       return fetcher(`/guests?${params}`);
     },
     enabled: session?.user.role === "landlord",
@@ -215,9 +218,7 @@ export function GuestDirectory() {
       header: "",
       cell: ({ row }) => (
         <div className="flex w-max flex-nowrap items-center gap-2">
-          {row.original.latestBooking ? (
-            <MessageButton bookingId={row.original.latestBooking.id} label="Message" size="sm" />
-          ) : null}
+          <MessageButton label="Contact support" size="sm" />
           <Button
             variant="outline"
             size="sm"
@@ -234,10 +235,24 @@ export function GuestDirectory() {
   return (
     <main>
       <PageHeader title={peopleLabel} description="People who have booked your properties" />
-      <p className="mb-4 text-sm text-muted-foreground">
-        {guestsQuery.data?.meta.total ?? 0} {peopleLabel.toLowerCase()}
-        {houseId !== "all" ? " at this property" : " across your properties"}
-      </p>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          {guestsQuery.data?.meta.total ?? 0} {peopleLabel.toLowerCase()}
+          {houseId !== "all" ? " at this property" : " across your properties"}
+        </p>
+        <Tabs
+          value={statusFilter}
+          onValueChange={(value) => {
+            setStatusFilter(value as "active" | "all");
+            setPage(1);
+          }}
+        >
+          <TabsList>
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="all">All</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
       {propertiesQuery.isError ? (
         <p role="alert" className="mb-4 text-sm text-destructive">
           Could not load property filters.{" "}
@@ -287,12 +302,16 @@ export function GuestDirectory() {
               <p className="font-medium">
                 {search || houseId !== "all"
                   ? `No matching ${peopleLabel.toLowerCase()}`
-                  : `No ${peopleLabel.toLowerCase()} yet`}
+                  : statusFilter === "active"
+                    ? `No active ${peopleLabel.toLowerCase()} right now`
+                    : `No ${peopleLabel.toLowerCase()} yet`}
               </p>
               <p className="text-sm text-muted-foreground">
                 {search || houseId !== "all"
                   ? "Try another search or property."
-                  : `${peopleLabel} will appear here when they book your properties.`}
+                  : statusFilter === "active"
+                    ? `${peopleLabel} with ongoing or upcoming stays will appear here.`
+                    : `${peopleLabel} will appear here when they book your properties.`}
               </p>
             </div>
           }

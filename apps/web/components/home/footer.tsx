@@ -48,7 +48,7 @@ export function Footer() {
               />
               <span className="text-xl font-bold text-primary">INDANGA</span>
             </Link>
-            <p className="mt-2 text-xs text-muted-foreground">Homes. Hotels. Cars. Rwanda.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Live, book, Move</p>
             <nav aria-label="Social media" className="mt-3 flex items-center gap-3">
               {socialLinks.map(({ label, link, icon: Icon }) => (
                 <a
