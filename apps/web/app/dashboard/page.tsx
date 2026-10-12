@@ -37,7 +37,7 @@ export default function Page() {
 
       <QuickActions />
       <RecommendedHouses className="lg:grid-cols-3" />
-      <SearchBar />
+      <SearchBar redirectTo="/dashboard/search" />
       <ContinueBrowsing />
     </div>
   );

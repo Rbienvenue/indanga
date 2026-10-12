@@ -1,13 +1,13 @@
 "use client";
 
-import { Building2, Car, Home, MapPin, Search, X } from "lucide-react";
+import { Building2, Car, Home, MapPin, Search } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { parseAsString, useQueryState } from "nuqs";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/home/search-input";
 import {
   Select,
   SelectContent,
@@ -255,31 +255,12 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
   }
 
   const searchInput = (
-    <div className="relative w-full">
-      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        value={inputText}
-        onChange={(e) =>
-          redirectTo ? setDraftSearch(e.target.value) : setInputValue(e.target.value)
-        }
-        onKeyDown={(e) => {
-          if (e.key === "Enter") handleSearch();
-        }}
-        aria-label="Search properties"
-        placeholder="Search by name, location, or keyword..."
-        className="h-10 pr-9 pl-9"
-      />
-      {inputText ? (
-        <button
-          type="button"
-          onClick={handleClearSearch}
-          aria-label="Clear search"
-          className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <X className="size-4" />
-        </button>
-      ) : null}
-    </div>
+    <SearchInput
+      value={inputText}
+      onChange={redirectTo ? setDraftSearch : setInputValue}
+      onSearch={handleSearch}
+      onClear={handleClearSearch}
+    />
   );
 
   return (
