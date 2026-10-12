@@ -97,6 +97,13 @@ export class CreateHouseDto {
   price?: number;
 
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  @Max(2147483647)
+  cautionFee?: number | null;
+
+  @IsOptional()
   @Transform(({ value }) => toObjectArray(value))
   @IsArray()
   @ValidateNested({ each: true })

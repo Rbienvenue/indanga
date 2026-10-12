@@ -41,7 +41,13 @@ const locationFields: (keyof CreateHouseValues)[] = [
   "village",
   "address",
 ];
-const detailsFields: (keyof CreateHouseValues)[] = ["price", "rooms", "bedrooms", "bathrooms"];
+const detailsFields: (keyof CreateHouseValues)[] = [
+  "price",
+  "cautionFee",
+  "rooms",
+  "bedrooms",
+  "bathrooms",
+];
 
 interface AddPropertyFormProps {
   houseId?: string;
@@ -81,6 +87,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
       propertyType: initialType,
       subType: undefined,
       price: undefined,
+      cautionFee: undefined,
       currency: "RWF",
       rooms: [],
       bedrooms: 0,
@@ -104,6 +111,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
         propertyType: house.propertyType as CreateHouseValues["propertyType"],
         subType: house.subType ?? undefined,
         price: house.price ?? undefined,
+        cautionFee: house.cautionFee ?? undefined,
         currency: house.currency ?? "RWF",
         rooms: (house.rooms ?? []).map((room) => ({
           id: room.id,
@@ -356,6 +364,7 @@ function buildPropertyPayload(
     propertyType: values.propertyType,
     subType: values.subType,
     price: values.price,
+    cautionFee: values.propertyType === "Hotel" ? null : (values.cautionFee ?? null),
     currency: values.currency,
     rooms: values.rooms,
     province: values.province,

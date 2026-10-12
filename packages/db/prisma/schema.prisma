@@ -53,6 +53,7 @@ model House {
   location           String
   address            String?
   price              Int?
+  cautionFee         Int?
   media              String[]
   ownerId            String
   description        String
@@ -120,6 +121,7 @@ model Booking {
   nights           Int?
   unitPrice        Int?
   serviceFee       Int?           @default(0)
+  cautionFee       Int?
   totalAmount      Int?
   declineReason    String?
   responseDeadline DateTime?

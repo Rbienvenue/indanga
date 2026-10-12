@@ -55,6 +55,7 @@ export class HousesService {
     const house = await this.db.house.create({
       data: {
         ...rest,
+        cautionFee: isHotelProperty(data.propertyType) ? null : data.cautionFee,
         ownerId,
         bedrooms: data.bedrooms ?? 0,
         bathrooms: data.bathrooms ?? 0,
@@ -283,7 +284,10 @@ export class HousesService {
       this.assertRoomsAndPrice(effectiveType, effectivePrice, rooms ?? house.rooms);
     }
 
-    const updateData: Prisma.HouseUpdateInput = { ...rest };
+    const updateData: Prisma.HouseUpdateInput = {
+      ...rest,
+      cautionFee: isHotelProperty(effectiveType) ? null : data.cautionFee,
+    };
 
     if (existingMedia !== undefined || rest.media !== undefined) {
       updateData.media = [...(existingMedia ?? house.media), ...(rest.media ?? [])];

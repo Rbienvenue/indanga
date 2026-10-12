@@ -117,7 +117,8 @@ export function BookingCard({
   });
   const serviceFeeConfig = serviceFeeQuery.data?.data;
   const serviceFee = calcServiceFee(subtotal, serviceFeeConfig);
-  const total = subtotal + serviceFee;
+  const cautionFee = isHotel ? 0 : (house.cautionFee ?? 0);
+  const total = subtotal + serviceFee + cautionFee;
   const priceReady = (!isDated || nights > 0) && (!isHotel || Boolean(selectedRoom));
 
   const availabilityQuery = useQuery({
@@ -335,6 +336,7 @@ export function BookingCard({
         nights={nights}
         quantity={quantity}
         subtotal={subtotal}
+        cautionFee={cautionFee}
         serviceFee={serviceFee}
         serviceFeeConfig={serviceFeeConfig}
         total={total}

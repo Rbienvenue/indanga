@@ -10,6 +10,7 @@ interface BookingPriceSummaryProps {
   quantity: number;
   subtotal: number;
   serviceFee: number;
+  cautionFee?: number | null;
   serviceFeeConfig?: ServiceFee | null;
   total: number;
   ready: boolean;
@@ -23,6 +24,7 @@ export function BookingPriceSummary({
   quantity,
   subtotal,
   serviceFee,
+  cautionFee,
   serviceFeeConfig,
   total,
   ready,
@@ -63,6 +65,12 @@ export function BookingPriceSummary({
           <dt className="text-muted-foreground">{getServiceFeeLabel(serviceFeeConfig)}</dt>
           <dd className="font-medium">{ready ? formatPrice(serviceFee, displayCurrency) : "—"}</dd>
         </div>
+        {!isHotel && cautionFee != null && cautionFee > 0 ? (
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">Caution fee (fixed)</dt>
+            <dd className="font-medium">{formatPrice(cautionFee, displayCurrency)}</dd>
+          </div>
+        ) : null}
         <div className="flex justify-between gap-3 border-t pt-3 text-base font-bold">
           <dt>Total</dt>
           <dd>{ready ? formatPrice(total, displayCurrency) : "—"}</dd>

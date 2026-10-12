@@ -53,7 +53,10 @@ export function PropertyReview({
     .join(", ");
   return (
     <div className="space-y-4">
-      <p role="note" className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm">
+      <p
+        role="note"
+        className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-800 dark:text-amber-300"
+      >
         Your listing will be reviewed by indanga before publishion.
       </p>
       <ReviewSection title="Basics" onEdit={() => onEdit(0)}>
@@ -92,6 +95,11 @@ export function PropertyReview({
           <p className="font-medium">
             {Number(values.price).toLocaleString()} {values.currency}{" "}
             {getPriceUnit(values.propertyType)}
+          </p>
+        )}
+        {values.propertyType !== "Hotel" && values.cautionFee !== undefined && (
+          <p className="text-sm">
+            Caution fee: {Number(values.cautionFee).toLocaleString()} {values.currency} (fixed)
           </p>
         )}
         {values.propertyType === "House" && (

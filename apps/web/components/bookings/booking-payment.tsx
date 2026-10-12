@@ -175,7 +175,8 @@ function BookingPaymentForm({
   const unitPrice = booking.unitPrice ?? booking.house.price ?? 0;
   const subtotal = unitPrice * quantity * duration;
   const serviceFee =
-    booking.serviceFee ?? Math.max(0, (booking.totalAmount ?? subtotal) - subtotal);
+    booking.serviceFee ??
+    Math.max(0, (booking.totalAmount ?? subtotal) - subtotal - (booking.cautionFee ?? 0));
 
   return (
     <div className="space-y-4">
@@ -185,6 +186,7 @@ function BookingPaymentForm({
         nights={booking.nights ?? 0}
         quantity={quantity}
         subtotal={subtotal}
+        cautionFee={booking.cautionFee}
         serviceFee={serviceFee}
         serviceFeeConfig={{
           bookingKind: kind,

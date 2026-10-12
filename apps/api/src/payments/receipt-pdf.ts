@@ -102,6 +102,7 @@ export function generateReceiptPdf(receipt: Receipt): Buffer {
   for (const [label, value] of [
     ["Subtotal", receipt.subtotal],
     ["Service fee", receipt.serviceFee],
+    ...(receipt.cautionFee > 0 ? [["Caution fee", receipt.cautionFee] as const] : []),
     ["Total", receipt.total],
     ["Amount paid", receipt.amountPaid],
   ] as const) {

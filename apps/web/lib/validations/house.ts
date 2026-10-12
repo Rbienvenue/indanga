@@ -77,6 +77,15 @@ export const createHouseSchema = z
     propertyType: z.enum(propertyTypes, { message: "Select a property type" }),
     subType: z.string().trim().optional(),
     price: optionalPrice,
+    cautionFee: z.preprocess(
+      (value) => (value === "" || value == null ? undefined : value),
+      z.coerce
+        .number<number>()
+        .int()
+        .positive("Enter a valid caution fee")
+        .max(2147483647)
+        .optional(),
+    ),
     currency: z.enum(["RWF", "USD"]).default("RWF"),
     rooms: z.array(roomTypeSchema).optional(),
     bedrooms: z.coerce.number<number>().min(0, "Bedrooms cannot be negative").optional(),

@@ -123,6 +123,7 @@ export class BookingsService {
 
     const feeConfig = await this.serviceFees.getByKind(bookingKind);
     const serviceFee = calcServiceFee(subtotal, feeConfig);
+    const cautionFee = bookingKind === "hotel" ? 0 : (house.cautionFee ?? 0);
     const booking = await this.db.booking.create({
       data: {
         bookingId: createBookingId(bookingKind),
@@ -137,7 +138,8 @@ export class BookingsService {
         nights,
         unitPrice,
         serviceFee,
-        totalAmount: subtotal + serviceFee,
+        cautionFee,
+        totalAmount: subtotal + serviceFee + cautionFee,
       },
       include: { house: true, roomType: true, client: true },
     });

@@ -63,6 +63,7 @@ export interface BookingPropertyCardBooking {
   nights?: number | null;
   totalAmount?: number | null;
   serviceFee?: number | null;
+  cautionFee?: number | null;
   unitPrice?: number | null;
   roomCount?: number | null;
   roomType?: { id: string; name: string; price: number } | null;

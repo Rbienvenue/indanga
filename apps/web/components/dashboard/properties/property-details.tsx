@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { amenityIcons } from "@/lib/amenities";
 import { CurrencyField } from "./currency-select";
 import {
@@ -20,6 +27,31 @@ export function PropertyDetails() {
   return (
     <div className="space-y-6">
       {type === "Hotel" ? <HotelDetails /> : type === "House" ? <HouseDetails /> : <CarDetails />}
+      {type !== "Hotel" && (
+        <FormField
+          control={form.control}
+          name="cautionFee"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Caution fee ({form.watch("currency")}) — optional</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min={1}
+                  step={1}
+                  placeholder="Enter a fixed amount"
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+              <FormDescription>
+                Optional Security money.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
     </div>
   );
 }

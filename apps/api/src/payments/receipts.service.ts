@@ -32,6 +32,7 @@ export class ReceiptsService {
     const booking = payment.booking;
     const total = Number(payment.amount);
     const serviceFee = booking.serviceFee ?? 0;
+    const cautionFee = booking.cautionFee ?? 0;
     const kind = getBookingKind(booking.house.propertyType);
     const period =
       booking.checkIn && booking.checkOut
@@ -56,7 +57,8 @@ export class ReceiptsService {
       duration: kind === "home" ? 1 : booking.nights,
       quantity: kind === "hotel" ? (booking.roomCount ?? 1) : 1,
       unit: kind === "car" ? "day" : kind === "hotel" ? "night" : "month",
-      subtotal: total - serviceFee,
+      subtotal: total - serviceFee - cautionFee,
+      cautionFee,
       serviceFee,
       total,
       amountPaid: total,

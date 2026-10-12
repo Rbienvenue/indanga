@@ -41,6 +41,7 @@ type Receipt = {
   quantity: number;
   unit: string;
   subtotal: number;
+  cautionFee?: number;
   serviceFee: number;
   total: number;
   amountPaid: number;
@@ -179,6 +180,7 @@ export function ReceiptDialog({ paymentId }: { paymentId: string }) {
                 {[
                   ["Subtotal", receipt.subtotal],
                   ["Service fee", receipt.serviceFee],
+                  ...((receipt.cautionFee ?? 0) > 0 ? [["Caution fee", receipt.cautionFee]] : []),
                   ["Total", receipt.total],
                   ["Amount paid", receipt.amountPaid],
                 ].map(([label, value]) => (
