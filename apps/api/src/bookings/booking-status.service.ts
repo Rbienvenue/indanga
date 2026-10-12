@@ -42,13 +42,12 @@ export class BookingStatusService {
       if (status !== BookingStatus.CANCELLED) {
         throw new BadRequestException("This booking status change is not allowed");
       }
-      if (
-        ![
-          BookingStatus.REQUESTED,
-          BookingStatus.PENDING,
-          BookingStatus.AWAITING_PAYMENT,
-        ].includes(booking.status)
-      ) {
+      const clientCancellable: BookingStatus[] = [
+        BookingStatus.REQUESTED,
+        BookingStatus.PENDING,
+        BookingStatus.AWAITING_PAYMENT,
+      ];
+      if (!clientCancellable.includes(booking.status)) {
         throw new BadRequestException("This booking can no longer be cancelled");
       }
     }
