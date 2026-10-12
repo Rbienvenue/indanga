@@ -33,7 +33,11 @@ export default function NewPropertyPage() {
     <div className="w-full space-y-8 rounded-lg border border-border px-3 py-2 sm:px-6 sm:py-4">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          {isEditMode ? "Edit listing" : `Add ${listingLabel}`}
+          {isEditMode
+            ? "Edit listing"
+            : listingLabel === "hotel"
+              ? "Add hotel details"
+              : `Add ${listingLabel}`}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {isEditMode

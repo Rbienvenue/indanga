@@ -330,7 +330,7 @@ export function HotelCalendar() {
                     Add a hotel and room types to see availability.
                   </p>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href="/dashboard/properties/new">Add hotel</Link>
+                    <Link href="/dashboard/properties/new">Add hotel details</Link>
                   </Button>
                 </div>
               ) : (

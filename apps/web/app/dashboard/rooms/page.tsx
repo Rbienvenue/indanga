@@ -105,7 +105,7 @@ export default function RoomsPage() {
           <CardContent className="space-y-3 py-10 text-center">
             <p className="text-muted-foreground">Add a hotel before managing its rooms.</p>
             <Button asChild>
-              <Link href="/dashboard/properties/new?type=Hotel">Add hotel</Link>
+              <Link href="/dashboard/properties/new?type=Hotel">Add hotel details</Link>
             </Button>
           </CardContent>
         </Card>

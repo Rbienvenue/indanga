@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Building2, ChevronRight, HeartHandshake, MapPin, ShieldCheck } from "lucide-react";
-import { FaFacebook, FaInstagram, FaLinkedin, FaXTwitter } from "react-icons/fa6";
+import { FaEnvelope } from "react-icons/fa6";
 import type { IconType } from "react-icons";
 import {
   Dialog,
@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-type SocialLink = {
+type ContactLink = {
   label: string;
   href: string;
   icon: IconType;
@@ -25,14 +25,11 @@ type Person = {
   department?: string;
   image: string;
   bio?: string;
-  socialLinks: SocialLink[];
+  contactLinks: ContactLink[];
 };
 
-const defaultSocialLinks: SocialLink[] = [
-  { label: "LinkedIn", href: "#", icon: FaLinkedin },
-  { label: "X", href: "#", icon: FaXTwitter },
-  { label: "Facebook", href: "#", icon: FaFacebook },
-  { label: "Instagram", href: "#", icon: FaInstagram },
+const defaultContactLinks: ContactLink[] = [
+  { label: "Email", href: "mailto:info@indanga.com", icon: FaEnvelope },
 ];
 
 const leadershipMembers: Person[] = [
@@ -49,7 +46,7 @@ He holds a Bachelor of science with Honors in Finance and is currently pursuing 
 Throughout his career, he has gained extensive experience in operations leadership, people management, business strategy, and performance improvement. His approach is built on the belief that successful organizations are created by bringing together the right people, strong systems, innovative ideas, and disciplined execution.
 
 As Co-Founder & CEO, he provides the vision, strategic direction, and leadership needed to turn ideas into impactful solutions. His goal is not simply to build a company, but to build an organization that creates value, empowers people, solves real-world challenges, and contributes to sustainable growth.`,
-    socialLinks: defaultSocialLinks,
+    contactLinks: defaultContactLinks,
   },
   {
     name: "Ntakirutimana Gisa Emmanuel",
@@ -66,7 +63,7 @@ He previously served as General Manager at MANRON GROUP LTD and later after serv
 His professional work includes research and development of practical innovations in areas such as biochar technology, fire-safety solutions, renewable energy, and other research-driven projects. He is particularly focused on translating scientific knowledge and research into practical, scalable solutions that respond to real challenges in Rwanda and across Africa.
 
 His long-term vision is to contribute to Africa's development through scientific research, innovation, entrepreneurship, and practical solutions while empowering the next generation through knowledge, skills, and applied research.`,
-    socialLinks: defaultSocialLinks,
+    contactLinks: defaultContactLinks,
   },
   {
     name: "Gasaro Ruth",
@@ -80,7 +77,7 @@ Gasaro brings a creative, strategic, and customer-focused perspective to the org
 Her approach combines creativity with strategic thinking, focusing on understanding people, identifying opportunities, and turning ideas into compelling brand experiences. She is passionate about building a brand that is trusted, relevant, innovative, and capable of creating lasting impact.
 
 As part of the leadership team, she plays a key role in driving brand visibility, market positioning, customer engagement, and sustainable growth.`,
-    socialLinks: defaultSocialLinks,
+    contactLinks: defaultContactLinks,
   },
   {
     name: "Ikuzwe Shema Elie",
@@ -89,7 +86,7 @@ As part of the leadership team, she plays a key role in driving brand visibility
     image: "/Elie.png",
     bio: `
 Ikuzwe Shema Elie is a skilled backend developer with expertise in building robust, scalable, and efficient server-side applications. He has a strong foundation in programming languages, database management, and API development.`,
-    socialLinks: defaultSocialLinks,
+    contactLinks: defaultContactLinks,
   },
   {
     name: "RUDASINGWA Bienvenue",
@@ -98,7 +95,7 @@ Ikuzwe Shema Elie is a skilled backend developer with expertise in building robu
     image: "/Rudasingwa.jpeg",
     bio: `
 RUDASINGWA Bienvenue is a talented frontend developer with a passion for creating engaging and user-friendly web experiences. He has a strong foundation in modern web technologies and a keen eye for design.`,
-    socialLinks: defaultSocialLinks,
+    contactLinks: defaultContactLinks,
   },
 ];
 
@@ -118,7 +115,7 @@ He previously served as General Manager at MANRON GROUP LTD and later after serv
 His professional work includes research and development of practical innovations in areas such as biochar technology, fire-safety solutions, renewable energy, and other research-driven projects. He is particularly focused on translating scientific knowledge and research into practical, scalable solutions that respond to real challenges in Rwanda and across Africa.
 
 His long-term vision is to contribute to Africa's development through scientific research, innovation, entrepreneurship, and practical solutions while empowering the next generation through knowledge, skills, and applied research.`,
-    socialLinks: defaultSocialLinks,
+    contactLinks: defaultContactLinks,
   },
   {
     name: "NTAKIYIRUTA Didier",
@@ -133,7 +130,7 @@ He holds a Bachelor of science with Honors in Finance and is currently pursuing 
 Throughout his career, he has gained extensive experience in operations leadership, people management, business strategy, and performance improvement. His approach is built on the belief that successful organizations are created by bringing together the right people, strong systems, innovative ideas, and disciplined execution.
 
 As Co-Founder & CEO, he provides the vision, strategic direction, and leadership needed to turn ideas into impactful solutions. His goal is not simply to build a company, but to build an organization that creates value, empowers people, solves real-world challenges, and contributes to sustainable growth.`,
-    socialLinks: defaultSocialLinks,
+    contactLinks: defaultContactLinks,
   },
 ];
 
@@ -223,11 +220,11 @@ function PersonCard({ person }: { person: Person }) {
             </div>
 
             <div className="mt-4 flex items-center gap-1.5 border-t border-border/60 pt-3">
-              {person.socialLinks.map(({ label, href, icon: Icon }) => (
+              {person.contactLinks.map(({ label, href, icon: Icon }) => (
                 <a
                   key={label}
                   href={href}
-                  aria-label={`${person.name} on ${label}`}
+                  aria-label={`${label} ${person.name}`}
                   onClick={(event) => event.stopPropagation()}
                   className="inline-flex size-7 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
                 >

@@ -509,11 +509,13 @@ function ListingInformation({
     <section className="divide-y divide-slate-900/10 border-b border-slate-900/10 dark:divide-white/10 dark:border-white/10">
       <AccordionRow icon={Home} title="About this listing">
         <p>{house.description}</p>
-        <p className="mt-3">
-          Located in {house.location}, this {house.propertyType.toLowerCase()} has {house.bedrooms}{" "}
-          {house.bedrooms === 1 ? "bedroom" : "bedrooms"} and {house.bathrooms}{" "}
-          {house.bathrooms === 1 ? "bathroom" : "bathrooms"}.
-        </p>
+        {bookingKind !== "car" && (
+          <p className="mt-3">
+            Located in {house.location}, this {house.propertyType.toLowerCase()} has{" "}
+            {house.bedrooms} {house.bedrooms === 1 ? "bedroom" : "bedrooms"} and {house.bathrooms}{" "}
+            {house.bathrooms === 1 ? "bathroom" : "bathrooms"}.
+          </p>
+        )}
       </AccordionRow>
       <AccordionRow icon={WalletCards} title="Price details">
         <p>

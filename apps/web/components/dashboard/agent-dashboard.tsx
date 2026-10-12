@@ -74,7 +74,7 @@ export function AgentDashboard({
         <Button asChild>
           <Link href="/dashboard/properties/new">
             <Plus />
-            {isHouse ? "Add house" : isCar ? "Add vehicle" : "Add listing"}
+            {isHouse ? "Add house" : isCar ? "Add vehicle" : "Add hotel details"}
           </Link>
         </Button>
       </div>
