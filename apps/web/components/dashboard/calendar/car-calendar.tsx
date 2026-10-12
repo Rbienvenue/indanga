@@ -406,7 +406,7 @@ export function CarCalendar() {
             </CardContent>
           </Card>
           <p className="px-1 text-xs leading-relaxed text-muted-foreground">
-            Requests do not reserve vehicles. Accepted requests hold a car for 30 minutes while the
+            Requests do not reserve vehicles. Accepted requests hold a car for 10 minutes while the
             client pays. Unpaid holds release at the deadline.
           </p>
         </aside>

@@ -10,13 +10,12 @@ export const subTypesByPropertyType: Record<PropertyType, readonly string[]> = {
     "1 Bedroom",
     "2 Bedroom",
     "3 Bedroom",
-    "Apartment",
     "Family House",
     "Villa",
     "Economic House",
     "House",
   ],
-  Hotel: ["Hotel", "Lodge", "Guesthouse", "Resort", "Motel"],
+  Hotel: ["Apartment", "Hotel", "Lodge", "Guesthouse", "Resort", "Motel"],
   Car: ["Sedan", "SUV", "Pickup", "Bus", "Van"],
 };
 

@@ -13,7 +13,7 @@ import { getBookingKind } from "src/houses/booking-kind.util";
 import { countOverlappingRooms, reservingBookingsWhere } from "./booking-inventory";
 import type { UpdateBookingStatusDto } from "./dtos";
 import { providerResponseDeadline, unansweredRequestsWhere } from "./booking-deadlines";
-const PAYMENT_WINDOW_MS = 30 * 60 * 1000;
+const PAYMENT_WINDOW_MS = 10 * 60 * 1000;
 
 @Injectable()
 export class BookingStatusService {

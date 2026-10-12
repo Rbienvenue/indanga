@@ -6,7 +6,7 @@ export function getBookingKind(propertyType?: string | null): BookingKind {
     return "car";
   }
   if (
-    ["hotel", "lodge", "guesthouse", "guest house", "resort", "motel"].some((value) =>
+    ["hotel", "apartment", "lodge", "guesthouse", "guest house", "resort", "motel"].some((value) =>
       normalized.includes(value),
     )
   ) {

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Mail, User, Phone, ShieldCheck, Settings2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useSession } from "@/components/providers/session-provider";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
+import { MessageButton } from "@/components/messages/message-button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,7 +65,11 @@ export default function ProfilePage() {
   }
 
   const role =
-    user.role === "tenant" ? "Client" : user.role === "landlord" ? "Agent" : (user.role ?? "Client");
+    user.role === "tenant"
+      ? "Client"
+      : user.role === "landlord"
+        ? "Agent"
+        : (user.role ?? "Client");
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -79,9 +83,7 @@ export default function ProfilePage() {
               Indanga.
             </p>
           </div>
-          <Button asChild>
-            <Link href="mailto:support@indanga.com">Contact support</Link>
-          </Button>
+          <MessageButton />
         </div>
       </div>
 
@@ -173,10 +175,8 @@ export default function ProfilePage() {
                 regularly. For email or password changes, please reach out to support.
               </p>
             </div>
-            <div className="space-y-3">
-              <Button asChild variant="outline" className="w-full">
-                <Link href="mailto:support@indanga.com">Request update</Link>
-              </Button>
+            <div className="space-y-3 [&>button]:w-full">
+              <MessageButton />
             </div>
           </CardContent>
         </Card>

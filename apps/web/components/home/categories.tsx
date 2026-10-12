@@ -13,14 +13,14 @@ const categories = [
   {
     title: "Homes",
     subtitle: "Find your next home",
-    propertyTypeFilter: "House,Apartment,Studio",
+    propertyTypeFilter: "House,Studio",
     image: "/image2.jpeg",
     link: "/homes",
   },
   {
     title: "Hotel Rooms",
     subtitle: "Book the best hotels",
-    propertyTypeFilter: "Hotel",
+    propertyTypeFilter: "Hotel,Apartment",
     image: "/room3.jpg",
     link: "/hotels",
   },

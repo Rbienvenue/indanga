@@ -1,9 +1,10 @@
 "use client";
 
 import { Building2, Car, Home, MapPin, Search, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { parseAsString, useQueryState } from "nuqs";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +31,6 @@ const subTypeOptions: Record<string, readonly { value: string; label: string }[]
     { value: "1 Bedroom", label: "1 Bedroom" },
     { value: "2 Bedroom", label: "2 Bedroom" },
     { value: "3 Bedroom", label: "3 Bedroom" },
-    { value: "Apartment", label: "Apartment" },
     { value: "Family House", label: "Family House" },
     { value: "Villa", label: "Villa" },
     { value: "Economic House", label: "Economic House" },
@@ -38,6 +38,7 @@ const subTypeOptions: Record<string, readonly { value: string; label: string }[]
   ],
   hotels: [
     { value: "all", label: "All hotel types" },
+    { value: "Apartment", label: "Apartment" },
     { value: "hotel", label: "Hotel" },
     { value: "motel", label: "Motel" },
     { value: "lodge", label: "Lodge" },
@@ -101,6 +102,12 @@ function buildSearchHref(
 
 export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const [searchContainer, setSearchContainer] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setSearchContainer(document.getElementById("header-property-search"));
+  }, [pathname]);
   const { locations, isLoading: isLoadingLocations } = useLocations();
   const [provinceQuery, setProvinceQuery] = useQueryState(
     "province",
@@ -247,34 +254,40 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
     void setSearchQuery(null);
   }
 
+  const searchInput = (
+    <div className="relative w-full">
+      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        value={inputText}
+        onChange={(e) =>
+          redirectTo ? setDraftSearch(e.target.value) : setInputValue(e.target.value)
+        }
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleSearch();
+        }}
+        aria-label="Search properties"
+        placeholder="Search by name, location, or keyword..."
+        className="h-10 pr-9 pl-9"
+      />
+      {inputText ? (
+        <button
+          type="button"
+          onClick={handleClearSearch}
+          aria-label="Clear search"
+          className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <X className="size-4" />
+        </button>
+      ) : null}
+    </div>
+  );
+
   return (
     <section className={cn("relative z-20 -mt-10 px-4 sm:px-6 lg:px-8", className)}>
+      {searchContainer ? createPortal(searchInput, searchContainer) : null}
       <div className="mx-auto max-w-5xl rounded-xl border border-border/60 bg-card/95 px-5 py-4 shadow-xl shadow-black/10 backdrop-blur-sm sm:px-6">
         <div className="flex flex-col gap-3">
-          <div className="relative">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={inputText}
-              onChange={(e) =>
-                redirectTo ? setDraftSearch(e.target.value) : setInputValue(e.target.value)
-              }
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSearch();
-              }}
-              placeholder="Search by name, location, or keyword..."
-              className="h-10 pr-9 pl-9"
-            />
-            {inputText ? (
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                aria-label="Clear search"
-                className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <X className="size-4" />
-              </button>
-            ) : null}
-          </div>
+          {!searchContainer ? searchInput : null}
 
           {!lockedType ? (
             <Tabs value={propertyType} onValueChange={handleTypeChange}>

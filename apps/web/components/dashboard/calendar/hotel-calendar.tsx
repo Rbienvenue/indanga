@@ -401,7 +401,7 @@ export function HotelCalendar() {
             </CardContent>
           </Card>
           <p className="px-1 text-xs leading-relaxed text-muted-foreground">
-            Requests do not reserve rooms. Accepted requests hold rooms for 30 minutes while the
+            Requests do not reserve rooms. Accepted requests hold rooms for 10 minutes while the
             guest pays. Unpaid holds release at the deadline.
           </p>
         </aside>

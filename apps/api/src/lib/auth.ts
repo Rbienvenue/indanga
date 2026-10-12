@@ -103,7 +103,10 @@ export const auth = betterAuth({
           }
 
           const accountType = (ctx?.body as { accountType?: unknown } | undefined)?.accountType;
-          const providerType = (ctx?.body as { providerType?: unknown } | undefined)?.providerType;
+          const isAdminCreation = ctx?.path === "/admin/create-user";
+          const providerType = isAdminCreation
+            ? (user as typeof user & { providerType?: string }).providerType
+            : (ctx?.body as { providerType?: unknown } | undefined)?.providerType;
 
           if (accountType !== undefined && accountType !== "tenant" && accountType !== "landlord") {
             throw APIError.from("BAD_REQUEST", {
@@ -148,6 +151,9 @@ export const auth = betterAuth({
               });
             }
           }
+
+          // Admin creation already supplies the authorized role and additional fields.
+          if (isAdminCreation) return { data: user };
 
           return {
             data: {

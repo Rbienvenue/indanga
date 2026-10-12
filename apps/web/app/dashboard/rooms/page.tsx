@@ -43,7 +43,7 @@ export default function RoomsPage() {
     queryKey: ["properties", "rooms", ownerId, page],
     queryFn: () =>
       fetcher<PaginationResponse<Hotel>>(
-        `/properties?propertyType=Hotel&page=${page}&limit=20${ownerId ? `&ownerId=${ownerId}` : ""}`,
+        `/properties?propertyType=Hotel,Apartment&page=${page}&limit=20${ownerId ? `&ownerId=${ownerId}` : ""}`,
       ),
     enabled: canManage,
   });

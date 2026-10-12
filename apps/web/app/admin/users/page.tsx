@@ -40,6 +40,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { CreateUserDialog } from "@/components/admin/create-user";
+import { EditUserDialog } from "@/components/admin/edit-user";
+import type { EditUserValues } from "@/lib/validations/auth";
 
 type UserWithRole = {
   id: string;
@@ -48,7 +50,7 @@ type UserWithRole = {
   phoneNumber: string | null;
   nationalId: string | null;
   image?: string | null;
-  role: string;
+  role: EditUserValues["role"];
   banned: boolean | null;
   banReason: string | null;
   createdAt: string | Date;
@@ -63,7 +65,7 @@ const roleBadgeVariant: Record<string, string> = {
 const roleLabel: Record<string, string> = {
   admin: "Admin",
   landlord: "Agent",
-  tenant: "Tenant",
+  tenant: "Client",
 };
 
 function SetPasswordDialog({ userId, userName }: { userId: string; userName: string }) {
@@ -191,6 +193,8 @@ function UserActions({ user }: { user: UserWithRole }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
+          <EditUserDialog user={user} />
+          <DropdownMenuSeparator />
           <DropdownMenuItem
             disabled={setRoleMutation.isPending}
             onSelect={() => setRoleMutation.mutate(user.role === "admin" ? "tenant" : "admin")}
@@ -207,7 +211,7 @@ function UserActions({ user }: { user: UserWithRole }) {
             className="px-0 py-1"
           >
             <Shield className="size-4" />
-            {user.role === "landlord" ? "Set as Tenant" : "Set as Agent"}
+            {user.role === "landlord" ? "Set as Client" : "Set as Agent"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <SetPasswordDialog userId={user.id} userName={user.name} />
@@ -362,7 +366,7 @@ export default function AdminUsersPage() {
               setPage(1);
             },
             options: [
-              { label: "Tenant", value: "tenant" },
+              { label: "Client", value: "tenant" },
               { label: "Agent", value: "landlord" },
               { label: "Admin", value: "admin" },
             ],

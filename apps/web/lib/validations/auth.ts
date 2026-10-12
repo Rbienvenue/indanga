@@ -61,8 +61,19 @@ export const createUserSchema = z
       .regex(/^\+?[0-9]{9,15}$/, "Enter a valid phone number"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     role: z.enum(["tenant", "landlord", "admin"], { message: "Select a role" }),
+    providerType: z.enum(["HOUSE", "HOTEL", "CAR"]),
     // Required for landlords (matches signup), optional otherwise.
     nationalId: z.string().trim().optional(),
+  })
+  .superRefine(refineNationalId);
+
+export const editUserSchema = z
+  .object({
+    name: createUserSchema.shape.name,
+    email: createUserSchema.shape.email,
+    phoneNumber: createUserSchema.shape.phoneNumber,
+    role: createUserSchema.shape.role,
+    nationalId: createUserSchema.shape.nationalId,
   })
   .superRefine(refineNationalId);
 
@@ -98,5 +109,6 @@ export function combineFullName(firstName: string, lastName: string): string {
   return `${clean(firstName)} ${clean(lastName)}`.trim();
 }
 export type CreateUserValues = z.infer<typeof createUserSchema>;
+export type EditUserValues = z.infer<typeof editUserSchema>;
 export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;

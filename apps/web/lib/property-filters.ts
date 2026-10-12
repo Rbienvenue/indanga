@@ -74,10 +74,10 @@ function getPropertyTypeFilter(propertyType: string) {
     case "house":
     case "homes":
     case "home":
-      return "House,Apartment,Studio";
+      return "House,Studio";
     case "hotels":
     case "hotel":
-      return "Hotel";
+      return "Hotel,Apartment";
     case "cars":
     case "car":
       return "Car";

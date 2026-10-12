@@ -46,6 +46,7 @@ export function CreateUserDialog() {
       phoneNumber: "",
       password: "",
       role: "tenant",
+      providerType: "HOTEL",
       nationalId: "",
     },
   });
@@ -62,6 +63,7 @@ export function CreateUserDialog() {
         role: values.role as "admin" | "user",
         data: {
           phoneNumber: values.phoneNumber.trim(),
+          ...(values.role === "landlord" ? { providerType: values.providerType } : {}),
           ...(nationalId ? { nationalId } : {}),
         },
       });
@@ -179,7 +181,7 @@ export function CreateUserDialog() {
                         <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="tenant">Tenant</SelectItem>
+                        <SelectItem value="tenant">Client</SelectItem>
                         <SelectItem value="landlord">Agent</SelectItem>
                         <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>
@@ -189,6 +191,30 @@ export function CreateUserDialog() {
                 </FormItem>
               )}
             />
+            {selectedRole === "landlord" ? (
+              <FormField
+                control={form.control}
+                name="providerType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>What do you provide?</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select provider type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="HOUSE">House</SelectItem>
+                        <SelectItem value="HOTEL">Hotel</SelectItem>
+                        <SelectItem value="CAR">Car</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : null}
             {selectedRole === "landlord" ? (
               <FormField
                 control={form.control}
