@@ -315,7 +315,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
 
         <Gallery house={house} />
 
-        <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_28rem] lg:gap-12">
+        <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_32rem] lg:gap-12">
           <div>
             <div className="flex flex-col gap-5 border-b border-slate-900/10 pb-8 dark:border-white/10 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -464,7 +464,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
             <ListingInformation house={house} bookingKind={bookingKind} isAvailable={isAvailable} />
           </div>
 
-          <aside className="sticky top-24 hidden lg:block">
+          <aside className="sticky top-24 hidden has-[[data-slot=booking-form]]:static lg:block">
             <BookingCard
               house={house}
               isAvailable={isAvailable}
@@ -650,7 +650,7 @@ function HouseDetailsSkeleton() {
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Skeleton className="mb-5 h-5 w-40" />
         <Skeleton className="h-72 w-full rounded-2xl sm:h-88 lg:h-96" />
-        <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_28rem]">
+        <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_32rem]">
           <div>
             <Skeleton className="h-5 w-32" />
             <Skeleton className="mt-4 h-12 w-3/4" />

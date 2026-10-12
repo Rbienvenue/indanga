@@ -62,6 +62,7 @@ export class BookingsService {
     let nights: number | undefined;
     let roomTypeId: string | undefined;
     let roomCount: number | undefined;
+    let guestCount: number | undefined;
     let unitPrice: number | undefined;
 
     if (isDated) {
@@ -90,6 +91,10 @@ export class BookingsService {
       roomCount = data.roomCount ?? 1;
       const room = house.rooms.find((item) => item.id === data.roomTypeId);
       if (!room) throw new BadRequestException("Selected room type is not part of this hotel");
+      guestCount = data.guestCount ?? 1;
+      if (guestCount > room.capacity * roomCount) {
+        throw new BadRequestException("Guest count exceeds the selected rooms’ capacity");
+      }
       const booked = await countOverlappingRooms(this.db, room.id, checkIn!, checkOut!);
       if (roomCount > room.totalRooms - booked) {
         throw new ConflictException("Not enough rooms available for those dates");
@@ -131,6 +136,7 @@ export class BookingsService {
         houseId: house.id,
         roomTypeId,
         roomCount,
+        guestCount,
         status: BookingStatus.REQUESTED,
         responseDeadline: new Date(Date.now() + PROVIDER_RESPONSE_MS),
         checkIn,

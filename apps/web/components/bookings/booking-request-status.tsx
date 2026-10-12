@@ -218,6 +218,14 @@ export function BookingRequestStatus({
           ) : null}
         </>
       )}
+      {booking.guestCount != null ? (
+        <p className="mt-2 text-sm text-muted-foreground">
+          {booking.roomType
+            ? `${booking.roomType.name} · ${booking.roomCount ?? 1} room${booking.roomCount === 1 || booking.roomCount == null ? "" : "s"} · `
+            : ""}
+          {booking.guestCount} guest{booking.guestCount === 1 ? "" : "s"}
+        </p>
+      ) : null}
       <div className="mt-4 flex flex-wrap gap-2 border-t border-border/60 pt-4">
         {explore ? (
           <Button asChild variant="outline" size="sm">

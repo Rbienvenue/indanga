@@ -34,6 +34,12 @@ export class CreateBookingDto {
   @Min(1)
   @IsOptional()
   roomCount?: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  guestCount?: number;
 }
 
 export class FilterBookingDto {

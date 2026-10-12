@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Collapsible } from "radix-ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ApiResponse, PaginationResponse } from "@/@types";
+import type { ApiResponse } from "@/@types";
 import { useSocketIo } from "@/components/providers/socket-io-provider";
 import { fetcher } from "@/lib/fetcher";
 import {
@@ -168,15 +168,6 @@ export function AppSidebar() {
     staleTime: 30 * 1000,
   });
   const pendingBookings = pendingQuery.data?.data.pendingBookings ?? 0;
-  const isProvider = session?.user?.role === "landlord";
-  const activeGuestsQuery = useQuery({
-    queryKey: ["provider-guests", "active-count", session?.user?.id],
-    queryFn: () =>
-      fetcher<PaginationResponse<{ id: string }>>("/guests?activeOnly=true&page=1&limit=1"),
-    enabled: Boolean(session && isProvider),
-    staleTime: 30 * 1000,
-  });
-  const activeGuests = activeGuestsQuery.data?.meta.total ?? 0;
 
   React.useEffect(() => {
     if (!socket || !isConnected || !session || !hasMessages) return;
@@ -203,21 +194,12 @@ export function AppSidebar() {
 
     const messageItem = item.href === "/dashboard/messages" || item.href === "/admin/support";
     const queueItem = item.href === "/admin/bookings";
-    const guestItem = item.href === "/dashboard/guest";
-    const badgeCount = messageItem
-      ? unreadCount
-      : queueItem
-        ? pendingBookings
-        : guestItem
-          ? activeGuests
-          : 0;
+    const badgeCount = messageItem ? unreadCount : queueItem ? pendingBookings : 0;
     const label =
       badgeCount > 0
         ? messageItem
           ? `${item.title}, ${badgeCount} unread messages`
-          : queueItem
-            ? `${item.title}, ${badgeCount} bookings awaiting review`
-            : `${item.title}, ${badgeCount} active guests`
+          : `${item.title}, ${badgeCount} bookings awaiting review`
         : item.title;
 
     return (

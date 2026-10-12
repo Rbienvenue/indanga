@@ -7,6 +7,7 @@ export const bookingSchema = z.object({
   checkOut: z.string().optional(),
   roomTypeId: z.string().optional(),
   roomCount: z.coerce.number<number>().int().min(1).optional(),
+  guestCount: z.coerce.number<number>().int().min(1).optional(),
 });
 
 export type BookingValues = z.infer<typeof bookingSchema>;
@@ -51,6 +52,7 @@ export type DatedBookingValues = z.infer<typeof datedBookingSchema>;
 
 export const hotelBookingSchema = datedBookingSchema.safeExtend({
   roomTypeId: z.string().min(1, "Select a room type"),
+  guestCount: z.coerce.number<number>().int().min(1, "Select at least 1 guest"),
   roomCount: z.coerce.number<number>().int().min(1, "Select at least 1 room"),
 });
 

@@ -115,6 +115,7 @@ model Booking {
   houseId          String
   roomTypeId       String?
   roomCount        Int?           @default(1)
+  guestCount       Int?
   status           BookingStatus  @default(PENDING)
   checkIn          DateTime?
   checkOut         DateTime?

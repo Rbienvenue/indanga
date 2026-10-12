@@ -13,7 +13,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +31,7 @@ type GuestBooking = {
   checkOut: string | null;
   nights: number | null;
   roomCount: number | null;
+  guestCount: number | null;
   house: { id: string; name: string };
   roomType: { name: string } | null;
 };
@@ -45,6 +45,8 @@ type Guest = {
   bookingCount: number;
   latestBooking: GuestBooking | null;
 };
+
+type GuestStatusFilter = "all" | "active" | "cancelled" | "completed" | "pending";
 
 function StayDetails({ booking }: { booking: GuestBooking }) {
   return (
@@ -63,6 +65,11 @@ function StayDetails({ booking }: { booking: GuestBooking }) {
         <p className="text-xs text-muted-foreground">
           {booking.roomType.name} · {booking.roomCount ?? 1} room
           {booking.roomCount === 1 || booking.roomCount === null ? "" : "s"}
+        </p>
+      ) : null}
+      {booking.guestCount != null ? (
+        <p className="text-xs text-muted-foreground">
+          {booking.guestCount} guest{booking.guestCount === 1 ? "" : "s"}
         </p>
       ) : null}
     </div>
@@ -168,7 +175,7 @@ export function GuestDirectory() {
   const peopleLabel = usesClients ? "Clients" : "Guests";
   const [search, setSearch] = useState("");
   const [houseId, setHouseId] = useState("all");
-  const [statusFilter, setStatusFilter] = useState<"active" | "all">("active");
+  const [statusFilter, setStatusFilter] = useState<GuestStatusFilter>("active");
   const [page, setPage] = useState(1);
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
   const guestsQuery = useQuery<PaginationResponse<Guest>>({
@@ -177,7 +184,7 @@ export function GuestDirectory() {
       const params = new URLSearchParams({ page: String(page), limit: "20" });
       if (search) params.set("search", search);
       if (houseId !== "all") params.set("houseId", houseId);
-      if (statusFilter === "active") params.set("activeOnly", "true");
+      if (statusFilter !== "all") params.set("status", statusFilter);
       return fetcher(`/guests?${params}`);
     },
     enabled: session?.user.role === "landlord",
@@ -240,18 +247,6 @@ export function GuestDirectory() {
           {guestsQuery.data?.meta.total ?? 0} {peopleLabel.toLowerCase()}
           {houseId !== "all" ? " at this property" : " across your properties"}
         </p>
-        <Tabs
-          value={statusFilter}
-          onValueChange={(value) => {
-            setStatusFilter(value as "active" | "all");
-            setPage(1);
-          }}
-        >
-          <TabsList>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="all">All</TabsTrigger>
-          </TabsList>
-        </Tabs>
       </div>
       {propertiesQuery.isError ? (
         <p role="alert" className="mb-4 text-sm text-destructive">
@@ -283,6 +278,21 @@ export function GuestDirectory() {
           }}
           filterBy={[
             {
+              id: "status",
+              placeholder: "All statuses",
+              value: statusFilter,
+              options: [
+                { label: "Active", value: "active" },
+                { label: "Cancelled", value: "cancelled" },
+                { label: "Completed", value: "completed" },
+                { label: "Pending", value: "pending" },
+              ],
+              onChange: (value) => {
+                setStatusFilter(value as GuestStatusFilter);
+                setPage(1);
+              },
+            },
+            {
               id: "property",
               placeholder: "All properties",
               value: houseId,
@@ -300,18 +310,14 @@ export function GuestDirectory() {
             <div className="flex flex-col items-center gap-2">
               <Users className="size-8 text-muted-foreground" />
               <p className="font-medium">
-                {search || houseId !== "all"
+                {search || houseId !== "all" || statusFilter !== "all"
                   ? `No matching ${peopleLabel.toLowerCase()}`
-                  : statusFilter === "active"
-                    ? `No active ${peopleLabel.toLowerCase()} right now`
-                    : `No ${peopleLabel.toLowerCase()} yet`}
+                  : `No ${peopleLabel.toLowerCase()} yet`}
               </p>
               <p className="text-sm text-muted-foreground">
-                {search || houseId !== "all"
-                  ? "Try another search or property."
-                  : statusFilter === "active"
-                    ? `${peopleLabel} with ongoing or upcoming stays will appear here.`
-                    : `${peopleLabel} will appear here when they book your properties.`}
+                {search || houseId !== "all" || statusFilter !== "all"
+                  ? "Try another search, property, or booking status."
+                  : `${peopleLabel} will appear here when they book your properties.`}
               </p>
             </div>
           }

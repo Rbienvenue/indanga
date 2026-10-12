@@ -17,9 +17,7 @@ export function Topbar() {
   const session = useSession();
   const [search, setSearch] = useState("");
   const isDashboard = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
-  const hasPageSearch =
-    pathname === "/dashboard/search" ||
-    (pathname === "/dashboard" && session?.user.role !== "landlord");
+  const hasPageSearch = pathname === "/dashboard/search" || pathname === "/dashboard";
 
   function handleSearch() {
     const params = new URLSearchParams();
@@ -30,7 +28,7 @@ export function Topbar() {
   return (
     <header className="sticky top-0 z-30 flex min-h-16.5 flex-wrap items-center justify-between gap-x-4 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
       <SidebarTrigger className="text-muted-foreground" />
-      {isDashboard ? (
+      {isDashboard && session?.user.role === "tenant" ? (
         <div
           id={hasPageSearch ? "header-property-search" : undefined}
           className="order-last w-full pb-3 empty:hidden md:order-none md:max-w-xl md:min-w-0 md:flex-1 md:pb-0"

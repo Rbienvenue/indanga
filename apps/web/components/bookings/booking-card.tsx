@@ -33,10 +33,36 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const declineSchema = z.object({
-  declineReason: z.string().trim().min(3, "Explain why you cannot accept this request").max(500),
-});
+const declineReasons = [
+  "Unavailable for the requested dates",
+  "Unavailable due to maintenance",
+  "Booking requirements not met",
+  "Unable to accommodate this request",
+  "Other",
+] as const;
+
+const declineSchema = z
+  .object({
+    reason: z.enum(declineReasons, { error: "Select a reason for declining" }),
+    declineReason: z.string().trim().max(500),
+  })
+  .superRefine((values, context) => {
+    if (values.reason === "Other" && values.declineReason.length < 3) {
+      context.addIssue({
+        code: "custom",
+        path: ["declineReason"],
+        message: "Explain why you cannot accept this request",
+      });
+    }
+  });
 
 export type Booking = {
   id: string;
@@ -49,6 +75,7 @@ export type Booking = {
   checkOut: string | null;
   totalAmount: number | null;
   roomCount: number | null;
+  guestCount?: number | null;
   roomType: { name: string } | null;
   house: { id: string; name: string; location: string; media: string[] };
   client: { name: string; email: string };
@@ -92,6 +119,7 @@ export function BookingRequestActions({
     resolver: zodResolver(declineSchema),
     defaultValues: { declineReason: "" },
   });
+  const selectedReason = form.watch("reason");
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (data: { status: "AWAITING_PAYMENT" | "DECLINED"; declineReason?: string }) =>
@@ -133,22 +161,60 @@ export function BookingRequestActions({
             <form
               className="space-y-4"
               onSubmit={form.handleSubmit((values) =>
-                mutation.mutate({ status: "DECLINED", ...values }),
+                mutation.mutate({
+                  status: "DECLINED",
+                  declineReason: values.reason === "Other" ? values.declineReason : values.reason,
+                }),
               )}
             >
               <FormField
                 control={form.control}
-                name="declineReason"
+                name="reason"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Reason shown to the customer</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} maxLength={500} disabled={mutation.isPending} />
-                    </FormControl>
+                    <Select
+                      value={field.value ?? ""}
+                      onValueChange={field.onChange}
+                      disabled={mutation.isPending}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a reason" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {declineReasons.map((reason) => (
+                          <SelectItem key={reason} value={reason}>
+                            {reason}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              {selectedReason === "Other" ? (
+                <FormField
+                  control={form.control}
+                  name="declineReason"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Custom reason shown to the customer</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="Explain why you cannot accept this request"
+                          maxLength={500}
+                          disabled={mutation.isPending}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : null}
               <Button type="submit" variant="destructive" disabled={mutation.isPending}>
                 {mutation.isPending ? "Declining…" : "Decline request"}
               </Button>
@@ -185,6 +251,12 @@ export function BookingDetails({ booking, isCar }: { booking?: Booking; isCar: b
               ) : null}
             </div>
             <dl className="grid grid-cols-2 gap-4 text-sm">
+              {booking.guestCount != null ? (
+                <div>
+                  <dt className="text-muted-foreground">Number of guests</dt>
+                  <dd className="mt-1 font-medium">{booking.guestCount}</dd>
+                </div>
+              ) : null}
               {booking.checkIn ? (
                 <div>
                   <dt className="text-muted-foreground">{isCar ? "Pickup" : "Check-in"}</dt>

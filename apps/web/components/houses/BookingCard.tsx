@@ -3,16 +3,7 @@
 import type { House, RoomType } from "@indanga/db";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  ArrowRight,
-  BedDouble,
-  CalendarIcon,
-  Headphones,
-  Loader2,
-  Minus,
-  Plus,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarIcon, Headphones, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -23,20 +14,14 @@ import type { BookingPropertyCardBooking } from "@/components/bookings/booking-p
 import { ReportListingDialog } from "@/components/properties/report-listing-dialog";
 import { BookingRequestStatus } from "@/components/bookings/booking-request-status";
 import { usePropertyBooking } from "@/components/bookings/use-property-booking";
+import { PolicyAcceptance } from "@/components/houses/booking-policy-acceptance";
+import { HotelBookingFields } from "@/components/houses/hotel-booking-fields";
 import { BookingPriceSummary } from "@/components/houses/BookingPriceSummary";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
 import { calcServiceFee, type ServiceFee } from "@/lib/service-fee";
@@ -95,6 +80,7 @@ export function BookingCard({
       checkOut: "",
       roomTypeId: "",
       roomCount: 1,
+      guestCount: 1,
     },
   });
   const checkIn = useWatch({ control: form.control, name: "checkIn" });
@@ -132,10 +118,6 @@ export function BookingCard({
   const availabilityByRoom = new Map(
     (availabilityQuery.data?.data ?? []).map((entry) => [entry.roomType.id, entry]),
   );
-  const selectedAvailability = roomTypeId ? availabilityByRoom.get(roomTypeId) : undefined;
-  const maxRooms = selectedAvailability
-    ? selectedAvailability.availableRooms
-    : (selectedRoom?.totalRooms ?? 1);
   const today = startOfDay(new Date());
   const checkInDate = checkIn ? new Date(`${checkIn}T00:00:00`) : undefined;
   const checkOutDate = checkOut ? new Date(`${checkOut}T00:00:00`) : undefined;
@@ -145,13 +127,20 @@ export function BookingCard({
     bookingKind === "hotel" ? "per night" : bookingKind === "car" ? "per day" : "per month";
 
   const requestMutation = useMutation({
-    mutationFn: ({ houseId, checkIn, checkOut, roomTypeId, roomCount }: BookingValues) =>
+    mutationFn: ({
+      houseId,
+      checkIn,
+      checkOut,
+      roomTypeId,
+      roomCount,
+      guestCount,
+    }: BookingValues) =>
       fetcher<ApiResponse<BookingPropertyCardBooking>>("/bookings", {
         method: "POST",
         body: JSON.stringify({
           houseId,
           ...(isDated ? { checkIn, checkOut } : {}),
-          ...(isHotel ? { roomTypeId, roomCount: Number(roomCount) || 1 } : {}),
+          ...(isHotel ? { roomTypeId, roomCount: Number(roomCount) || 1, guestCount } : {}),
         }),
       }),
     onSuccess: ({ data }) => {
@@ -345,7 +334,20 @@ export function BookingCard({
 
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((values) => requestMutation.mutate(values))}
+          data-slot="booking-form"
+          onSubmit={form.handleSubmit((values) => {
+            if (
+              isHotel &&
+              selectedRoom &&
+              (values.guestCount ?? 1) > selectedRoom.capacity * quantity
+            ) {
+              form.setError("guestCount", {
+                message: "Guest count exceeds the selected rooms’ capacity",
+              });
+              return;
+            }
+            requestMutation.mutate(values);
+          })}
           className="mt-5 space-y-4"
         >
           {isDated ? (
@@ -450,115 +452,18 @@ export function BookingCard({
           ) : null}
 
           {isHotel ? (
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="roomTypeId"
-                render={({ field }) => (
-                  <FormItem className="flex min-w-0 flex-col">
-                    <Label className="text-sm font-semibold">Room type</Label>
-                    <Select
-                      value={field.value ?? ""}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        form.setValue("roomCount", 1, { shouldValidate: true });
-                      }}
-                      disabled={submitting || rooms.length === 0}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="mt-2 h-11 w-full">
-                          <SelectValue placeholder="Select a room type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {rooms.map((room) => {
-                          const availability = availabilityByRoom.get(room.id);
-                          const left =
-                            checkIn && checkOut && nights > 0
-                              ? (availability?.availableRooms ?? room.totalRooms)
-                              : room.totalRooms;
-                          return (
-                            <SelectItem key={room.id} value={room.id} disabled={left <= 0}>
-                              <span className="flex items-center gap-2">
-                                <BedDouble className="size-4 text-muted-foreground" />
-                                {room.name} · {formatPrice(room.price, currency)} / night · Sleeps{" "}
-                                {room.capacity} ·{" "}
-                                {left <= 0
-                                  ? "sold out"
-                                  : `${left} room${left > 1 ? "s" : ""} left`}
-                              </span>
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="roomCount"
-                render={({ field }) => (
-                  <FormItem className="min-w-0">
-                    <Label className="text-sm font-semibold">Number of rooms</Label>
-                    <div className="mt-2 flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="size-11 shrink-0"
-                        disabled={submitting || quantity <= 1}
-                        onClick={() => field.onChange(Math.max(quantity - 1, 1))}
-                        aria-label="Fewer rooms"
-                      >
-                        <Minus className="size-4" />
-                      </Button>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={Math.max(maxRooms, 1)}
-                          className="h-11 min-w-0 flex-1 px-1 text-center"
-                          disabled={submitting || !selectedRoom}
-                          {...field}
-                          value={field.value ?? 1}
-                          onChange={(event) => {
-                            const next = Math.floor(Number(event.target.value));
-                            field.onChange(
-                              Number.isNaN(next)
-                                ? 1
-                                : Math.min(Math.max(next, 1), Math.max(maxRooms, 1)),
-                            );
-                          }}
-                        />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="size-11 shrink-0"
-                        disabled={submitting || !selectedRoom || quantity >= maxRooms}
-                        onClick={() =>
-                          field.onChange(Math.min(quantity + 1, Math.max(maxRooms, 1)))
-                        }
-                        aria-label="More rooms"
-                      >
-                        <Plus className="size-4" />
-                      </Button>
-                    </div>
-                    {selectedRoom && checkIn && checkOut && nights > 0 ? (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {maxRooms > 0
-                          ? `${maxRooms} ${selectedRoom.name} room${maxRooms > 1 ? "s" : ""} available for these dates`
-                          : `No ${selectedRoom.name} rooms left for these dates`}
-                      </p>
-                    ) : null}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <HotelBookingFields
+              form={form}
+              rooms={rooms}
+              submitting={submitting}
+              currency={currency}
+              checkIn={checkIn}
+              checkOut={checkOut}
+              nights={nights}
+              roomTypeId={roomTypeId}
+              quantity={quantity}
+              availabilityByRoom={availabilityByRoom}
+            />
           ) : null}
 
           <Button type="submit" className="h-11 w-full font-bold" disabled={submitting}>
@@ -575,39 +480,5 @@ export function BookingCard({
         </form>
       </Form>
     </div>
-  );
-}
-
-function PolicyAcceptance({
-  id,
-  checked,
-  onCheckedChange,
-}: {
-  id: string;
-  checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
-}) {
-  return (
-    <label htmlFor={id} className="mt-4 flex cursor-pointer items-start gap-2 text-sm leading-5">
-      <input
-        id={id}
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => onCheckedChange(event.target.checked)}
-        className="mt-1 size-4 shrink-0 accent-primary"
-      />
-      <span>
-        I have read and accept the{" "}
-        <Link
-          href="/refund-cancellation-policy"
-          target="_blank"
-          rel="noreferrer"
-          className="font-semibold text-primary underline underline-offset-2"
-        >
-          Refund &amp; Cancellation Policy
-        </Link>{" "}
-        before booking this property.
-      </span>
-    </label>
   );
 }

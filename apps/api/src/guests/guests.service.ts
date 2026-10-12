@@ -12,33 +12,43 @@ const bookingSelect = {
   checkOut: true,
   nights: true,
   roomCount: true,
+  guestCount: true,
   house: { select: { id: true, name: true } },
   roomType: { select: { name: true } },
 } satisfies Prisma.BookingSelect;
+
+const bookingStatuses = {
+  active: [BookingStatus.APPROVED, BookingStatus.CONFIRMED],
+  cancelled: [BookingStatus.CANCELLED],
+  completed: [BookingStatus.COMPLETED],
+  pending: [BookingStatus.PENDING, BookingStatus.REQUESTED, BookingStatus.AWAITING_PAYMENT],
+} satisfies Record<NonNullable<FilterGuestsDto["status"]>, BookingStatus[]>;
 
 @Injectable()
 export class GuestsService {
   constructor(private readonly db: PrismaService) {}
 
   async getGuests(ownerId: string, query: FilterGuestsDto) {
-    const { page = 1, limit = 20, houseId, activeOnly = false } = query;
+    const { page = 1, limit = 20, houseId, status, activeOnly = false } = query;
     const search = query.search?.trim();
     const bookingWhere: Prisma.BookingWhereInput = {
       house: { ownerId },
       houseId,
-      ...(activeOnly
-        ? {
-            status: {
-              in: [
-                BookingStatus.PENDING,
-                BookingStatus.REQUESTED,
-                BookingStatus.AWAITING_PAYMENT,
-                BookingStatus.APPROVED,
-                BookingStatus.CONFIRMED,
-              ],
-            },
-          }
-        : {}),
+      ...(status
+        ? { status: { in: bookingStatuses[status] } }
+        : activeOnly
+          ? {
+              status: {
+                in: [
+                  BookingStatus.PENDING,
+                  BookingStatus.REQUESTED,
+                  BookingStatus.AWAITING_PAYMENT,
+                  BookingStatus.APPROVED,
+                  BookingStatus.CONFIRMED,
+                ],
+              },
+            }
+          : {}),
     };
     const where: Prisma.UserWhereInput = {
       bookings: { some: bookingWhere },

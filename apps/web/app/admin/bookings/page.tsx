@@ -37,6 +37,7 @@ type BookingWithDetails = {
   paymentDeadline: string | null;
   declineReason: string | null;
   roomCount: number | null;
+  guestCount: number | null;
   roomType: { id: string; name: string } | null;
   house: {
     id: string;
@@ -93,6 +94,9 @@ function AdminBookingActions({ booking }: { booking: BookingWithDetails }) {
                 <p className="mt-2 text-sm">
                   {booking.roomType.name} · {booking.roomCount ?? 1} room(s)
                 </p>
+              ) : null}
+              {booking.guestCount != null ? (
+                <p className="mt-2 text-sm">Number of guests: {booking.guestCount}</p>
               ) : null}
             </div>
             <dl className="grid grid-cols-2 gap-4 text-sm">

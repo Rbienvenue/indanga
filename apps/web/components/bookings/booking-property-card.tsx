@@ -66,6 +66,7 @@ export interface BookingPropertyCardBooking {
   cautionFee?: number | null;
   unitPrice?: number | null;
   roomCount?: number | null;
+  guestCount?: number | null;
   roomType?: { id: string; name: string; price: number } | null;
   house: {
     id: string;
@@ -124,6 +125,14 @@ export function BookingPropertyCard({
             {new Date(booking.checkOut).toLocaleDateString()}
           </p>
         ) : null}
+        {booking.guestCount != null ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            {booking.roomType
+              ? `${booking.roomType.name} · ${booking.roomCount ?? 1} room${booking.roomCount === 1 || booking.roomCount == null ? "" : "s"} · `
+              : ""}
+            {booking.guestCount} guest{booking.guestCount === 1 ? "" : "s"}
+          </p>
+        ) : null}
         {booking.totalAmount != null ? (
           <p className="mt-2 text-sm font-medium">
             {formatPrice(booking.totalAmount, booking.house.currency ?? "RWF")} total
@@ -172,6 +181,12 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
             {booking.unitPrice != null
               ? ` · ${formatPrice(booking.unitPrice, booking.house.currency ?? "RWF")} / night`
               : ""}
+          </p>
+        ) : null}
+
+        {booking.guestCount != null ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Number of guests: {booking.guestCount}
           </p>
         ) : null}
 
