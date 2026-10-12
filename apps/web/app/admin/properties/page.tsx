@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { fetcher } from "@/lib/fetcher";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 type HouseWithOwner = {
   id: string;
@@ -238,7 +238,7 @@ const columns: ColumnDef<HouseWithOwner>[] = [
     header: "Price",
     cell: ({ row }) =>
       row.original.price != null
-        ? formatPrice(row.original.price, row.original.currency ?? "RWF")
+        ? formatCurrency(row.original.price, row.original.currency ?? "RWF")
         : "—",
   },
   {

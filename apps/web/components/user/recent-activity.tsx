@@ -1,15 +1,15 @@
 import { BadgeCheck, CalendarCheck, Clock3 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 const activities = [
   {
     id: 1,
     title: "Payment Successful",
-    description: `You paid ${formatPrice(360000)} for Kigali Marriott Hotel`,
+    description: `You paid ${formatCurrency(360000, "RWF")} for Kigali Marriott Hotel`,
     date: "May 15, 2024",
-    amount: formatPrice(360000),
+    amount: formatCurrency(360000, "RWF"),
     color: "bg-green-100 dark:bg-green-900/40",
     icon: BadgeCheck,
     statusColor: "text-green-600 dark:text-green-400",
@@ -19,7 +19,7 @@ const activities = [
     title: "Booking Confirmed",
     description: "Your booking for Toyota RAV4 2022 is confirmed",
     date: "May 14, 2024",
-    amount: formatPrice(225000),
+    amount: formatCurrency(225000, "RWF"),
     color: "bg-purple-100 dark:bg-purple-900/40",
     icon: CalendarCheck,
     statusColor: "text-green-600 dark:text-green-400",

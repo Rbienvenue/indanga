@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { fetcher } from "@/lib/fetcher";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 type PaymentWithBooking = {
   id: string;
@@ -73,7 +73,7 @@ export function RecentPayments() {
               {payments.map((payment) => (
                 <TableRow key={payment.id}>
                   <TableCell className="font-medium">
-                    {formatPrice(
+                    {formatCurrency(
                       Number(payment.amount),
                       payment.booking.house.currency ?? "RWF",
                     )}

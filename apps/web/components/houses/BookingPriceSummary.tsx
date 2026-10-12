@@ -1,6 +1,6 @@
 import type { BookingKind } from "@/lib/booking-kind";
 import { getServiceFeeLabel, type ServiceFee } from "@/lib/service-fee";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 interface BookingPriceSummaryProps {
   bookingKind: BookingKind;
@@ -42,7 +42,7 @@ export function BookingPriceSummary({
         <div className="flex justify-between gap-3">
           <dt className="text-muted-foreground">{priceLabel}</dt>
           <dd className="text-right font-medium">
-            {formatPrice(unitPrice, displayCurrency)} / {unit}
+            {formatCurrency(unitPrice, displayCurrency)} / {unit}
           </dd>
         </div>
         <div className="flex justify-between gap-3">
@@ -59,21 +59,23 @@ export function BookingPriceSummary({
         ) : null}
         <div className="flex justify-between gap-3">
           <dt className="text-muted-foreground">Subtotal</dt>
-          <dd className="font-medium">{ready ? formatPrice(subtotal, displayCurrency) : "—"}</dd>
+          <dd className="font-medium">{ready ? formatCurrency(subtotal, displayCurrency) : "—"}</dd>
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-muted-foreground">{getServiceFeeLabel(serviceFeeConfig)}</dt>
-          <dd className="font-medium">{ready ? formatPrice(serviceFee, displayCurrency) : "—"}</dd>
+          <dd className="font-medium">
+            {ready ? formatCurrency(serviceFee, displayCurrency) : "—"}
+          </dd>
         </div>
         {!isHotel && cautionFee != null && cautionFee > 0 ? (
           <div className="flex justify-between gap-3">
             <dt className="text-muted-foreground">Caution fee (fixed)</dt>
-            <dd className="font-medium">{formatPrice(cautionFee, displayCurrency)}</dd>
+            <dd className="font-medium">{formatCurrency(cautionFee, displayCurrency)}</dd>
           </div>
         ) : null}
         <div className="flex justify-between gap-3 border-t pt-3 text-base font-bold">
           <dt>Total</dt>
-          <dd>{ready ? formatPrice(total, displayCurrency) : "—"}</dd>
+          <dd>{ready ? formatCurrency(total, displayCurrency) : "—"}</dd>
         </div>
       </dl>
     </div>

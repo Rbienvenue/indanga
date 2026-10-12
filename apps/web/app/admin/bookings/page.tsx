@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 type BookingWithDetails = {
   id: string;
@@ -139,7 +139,7 @@ function AdminBookingActions({ booking }: { booking: BookingWithDetails }) {
                 <dt className="text-muted-foreground">Total</dt>
                 <dd className="mt-1 font-medium">
                   {booking.totalAmount != null
-                    ? formatPrice(booking.totalAmount, booking.house.currency ?? "RWF")
+                    ? formatCurrency(booking.totalAmount, booking.house.currency ?? "RWF")
                     : "—"}
                 </dd>
               </div>
@@ -227,7 +227,7 @@ const columns: ColumnDef<BookingWithDetails>[] = [
     cell: ({ row }) =>
       row.original.totalAmount != null ? (
         <span className="font-medium">
-          {formatPrice(row.original.totalAmount, row.original.house.currency ?? "RWF")}
+          {formatCurrency(row.original.totalAmount, row.original.house.currency ?? "RWF")}
         </span>
       ) : (
         <span className="text-muted-foreground">—</span>

@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { fetcher } from "@/lib/fetcher";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 const plugins = [themePlugin, dayGridPlugin, interactionPlugin];
 const emptyBookings: CalendarBooking[] = [];
@@ -447,7 +447,7 @@ export function CarCalendar() {
                   <dt className="text-muted-foreground">Total</dt>
                   <dd className="mt-1 font-medium">
                     {selectedBooking.totalAmount != null
-                      ? formatPrice(
+                      ? formatCurrency(
                           selectedBooking.totalAmount,
                           selectedBooking.house.currency ?? "RWF",
                         )

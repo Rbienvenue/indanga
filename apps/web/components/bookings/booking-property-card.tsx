@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getBookingKind } from "@/lib/booking-kind";
 import { firstImageUrl } from "@/lib/property-media";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 export type BookingCardStatus =
   | "PENDING"
@@ -135,7 +135,7 @@ export function BookingPropertyCard({
         ) : null}
         {booking.totalAmount != null ? (
           <p className="mt-2 text-sm font-medium">
-            {formatPrice(booking.totalAmount, booking.house.currency ?? "RWF")} total
+            {formatCurrency(booking.totalAmount, booking.house.currency ?? "RWF")} total
           </p>
         ) : null}
       </div>
@@ -168,7 +168,7 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
         {booking.totalAmount != null && (
           <div className="mt-3 flex items-baseline gap-1">
             <span className="text-lg font-bold text-primary">
-              {formatPrice(booking.totalAmount, booking.house.currency ?? "RWF")}
+              {formatCurrency(booking.totalAmount, booking.house.currency ?? "RWF")}
             </span>
             <span className="text-sm text-muted-foreground">total</span>
           </div>
@@ -179,7 +179,7 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
             {booking.roomType.name}
             {booking.roomCount && booking.roomCount > 1 ? ` × ${booking.roomCount} rooms` : ""}
             {booking.unitPrice != null
-              ? ` · ${formatPrice(booking.unitPrice, booking.house.currency ?? "RWF")} / night`
+              ? ` · ${formatCurrency(booking.unitPrice, booking.house.currency ?? "RWF")} / night`
               : ""}
           </p>
         ) : null}

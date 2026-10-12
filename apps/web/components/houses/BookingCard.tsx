@@ -26,7 +26,7 @@ import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
 import { calcServiceFee, type ServiceFee } from "@/lib/service-fee";
 import { getDisplayPrice } from "@/lib/room-pricing";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 import {
   bookingSchema,
@@ -176,7 +176,7 @@ export function BookingCard({
             From
           </span>
         ) : null}
-        {formatPrice(cardPrice, currency)}
+        {formatCurrency(cardPrice, currency)}
       </>
     ) : (
       "Contact for price"
@@ -249,7 +249,7 @@ export function BookingCard({
                   From
                 </span>
               ) : null}
-              <span>{formatPrice(cardPrice, currency)}</span>
+              <span>{formatCurrency(cardPrice, currency)}</span>
               <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
                 / {priceUnitLabel.replace("per ", "")}
               </span>

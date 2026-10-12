@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { BookingValues } from "@/lib/validations/booking";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 type RoomAvailability = {
   roomType: RoomType;
@@ -85,7 +85,7 @@ export function HotelBookingFields({
                     <SelectItem key={room.id} value={room.id} disabled={left <= 0}>
                       <span className="flex items-center gap-2">
                         <BedDouble className="size-4 text-muted-foreground" />
-                        {room.name} · {formatPrice(room.price, currency)} / night · Sleeps{" "}
+                        {room.name} · {formatCurrency(room.price, currency)} / night · Sleeps{" "}
                         {room.capacity} ·{" "}
                         {left <= 0 ? "sold out" : `${left} room${left > 1 ? "s" : ""} left`}
                       </span>

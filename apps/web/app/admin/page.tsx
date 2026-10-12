@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 type AdminStats = {
   totalUsers: number;
@@ -109,7 +109,7 @@ export default function AdminPage() {
             />
             <StatCard
               title="Commission earned"
-              value={formatPrice(stats?.totalRevenue ?? 0)}
+              value={formatCurrency(stats?.totalRevenue ?? 0, "RWF")}
               icon={<CreditCard className="size-5" />}
             />
           </section>

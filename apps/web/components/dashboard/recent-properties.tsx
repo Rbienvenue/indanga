@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { fetcher } from "@/lib/fetcher";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 type House = {
   id: string;
@@ -75,7 +75,7 @@ export function RecentProperties() {
                   <TableCell className="text-muted-foreground">{property.location}</TableCell>
                   <TableCell>
                     {property.price != null
-                      ? formatPrice(property.price, property.currency ?? "RWF")
+                      ? formatCurrency(property.price, property.currency ?? "RWF")
                       : "—"}
                   </TableCell>
                   <TableCell>

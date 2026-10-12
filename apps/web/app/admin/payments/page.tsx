@@ -14,7 +14,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 type PaymentWithBooking = {
   id: string;
@@ -85,7 +85,7 @@ const columns: ColumnDef<PaymentWithBooking>[] = [
     header: "Customer paid / due",
     cell: ({ row }) => (
       <span className="font-medium">
-        {formatPrice(row.original.amount, row.original.booking.house.currency ?? "RWF")}
+        {formatCurrency(row.original.amount, row.original.booking.house.currency ?? "RWF")}
       </span>
     ),
   },
@@ -95,7 +95,7 @@ const columns: ColumnDef<PaymentWithBooking>[] = [
     accessorFn: (row) => (row.status === "COMPLETED" ? (row.booking.serviceFee ?? 0) : 0),
     cell: ({ row, getValue }) => (
       <span className="font-medium">
-        {formatPrice(getValue<number>(), row.original.booking.house.currency ?? "RWF")}
+        {formatCurrency(getValue<number>(), row.original.booking.house.currency ?? "RWF")}
       </span>
     ),
   },
@@ -211,12 +211,12 @@ export default function AdminPaymentsPage() {
         <section className="grid gap-4 sm:grid-cols-2">
           <StatCard
             title="Commission earned · all time"
-            value={formatPrice(statsQuery.data?.data.totalRevenue ?? 0)}
+            value={formatCurrency(statsQuery.data?.data.totalRevenue ?? 0, "RWF")}
             icon={<WalletCards className="size-5" />}
           />
           <StatCard
             title="Customer payments collected · all time"
-            value={formatPrice(statsQuery.data?.data.totalCollected ?? 0)}
+            value={formatCurrency(statsQuery.data?.data.totalCollected ?? 0, "RWF")}
             icon={<CreditCard className="size-5" />}
           />
         </section>

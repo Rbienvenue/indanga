@@ -33,7 +33,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { BookingKind } from "@/lib/booking-kind";
 import { fetcher } from "@/lib/fetcher";
 import { calcServiceFee, type ServiceFee, type ServiceFeeType } from "@/lib/service-fee";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 const feeSchema = z
   .object({
@@ -301,10 +301,10 @@ function ServiceFeeCard({
             />
             <div className="rounded-lg border border-dashed bg-muted/40 px-3 py-2.5 text-sm">
               <p className="text-xs font-medium text-muted-foreground">
-                Example on a {formatPrice(PREVIEW_SUBTOTAL)} subtotal
+                Example on a {formatCurrency(PREVIEW_SUBTOTAL, "RWF")} subtotal
               </p>
               <p className="mt-0.5 font-semibold">
-                Service fee: {preview > 0 ? formatPrice(preview) : "Free"}
+                Service fee: {preview > 0 ? formatCurrency(preview, "RWF") : "Free"}
               </p>
             </div>
             <Button type="submit" className="h-10 w-full font-bold" disabled={mutation.isPending}>

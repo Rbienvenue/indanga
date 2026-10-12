@@ -22,7 +22,7 @@ import { fetcher } from "@/lib/fetcher";
 import { isVideoMediaUrl } from "@/lib/property-media";
 import { getPriceUnit } from "@/lib/booking-kind";
 import { getDisplayPrice } from "@/lib/room-pricing";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { useSession } from "./providers/session-provider";
 
 export type ProductCardProps = {
@@ -279,7 +279,9 @@ export function ProductCard({
             {displayPrice != null ? (
               <>
                 {fromRooms ? <span className="text-sm text-muted-foreground">From</span> : null}
-                <span className="text-lg font-bold text-primary">{formatPrice(displayPrice, displayCurrency)}</span>
+                <span className="text-lg font-bold text-primary">
+                  {formatCurrency(displayPrice, displayCurrency)}
+                </span>
                 <span className="text-sm text-muted-foreground">{resolvedPriceUnit}</span>
               </>
             ) : (

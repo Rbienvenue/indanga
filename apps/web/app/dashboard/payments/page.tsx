@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Skeleton } from "@/components/ui/skeleton";
 import { getBookingKind } from "@/lib/booking-kind";
 import { fetcher } from "@/lib/fetcher";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { ReceiptDialog } from "@/components/payments/receipt-dialog";
 
 type Payment = {
@@ -102,7 +102,7 @@ export default function PaymentsPage() {
       accessorFn: (payment) => (isProvider ? payment.bookingAmount : Number(payment.amount)),
       cell: ({ row, getValue }) => (
         <span className="font-semibold tabular-nums">
-          {formatPrice(getValue<number>(), row.original.booking.house.currency ?? "RWF")}
+          {formatCurrency(getValue<number>(), row.original.booking.house.currency ?? "RWF")}
         </span>
       ),
     },
@@ -164,7 +164,7 @@ export default function PaymentsPage() {
           <section className="grid gap-4 sm:grid-cols-3">
             <StatCard
               title="Booking earnings · all time"
-              value={formatPrice(stats?.earnings ?? 0)}
+              value={formatCurrency(stats?.earnings ?? 0, "RWF")}
               icon={<WalletCards className="size-5" />}
             />
             <StatCard
@@ -276,7 +276,7 @@ export default function PaymentsPage() {
                   {isProvider ? "Booking amount" : "Amount"}
                 </dt>
                 <dd className="text-xl font-semibold tabular-nums">
-                  {formatPrice(
+                  {formatCurrency(
                     isProvider ? selected.bookingAmount : selected.amount,
                     selected.booking.house.currency ?? "RWF",
                   )}

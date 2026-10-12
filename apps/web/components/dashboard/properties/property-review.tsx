@@ -3,6 +3,7 @@
 import { Pencil } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/utils";
 import { getPriceUnit } from "@/lib/booking-kind";
 import { propertyAmenityLabels, type CreateHouseValues } from "@/lib/validations/house";
 
@@ -86,20 +87,19 @@ export function PropertyReview({
                   {room.name} · {room.totalRooms} rooms
                 </span>
                 <span className="font-medium">
-                  {Number(room.price).toLocaleString()} {values.currency} / night
+                  {formatCurrency(room.price, values.currency)} / night
                 </span>
               </li>
             ))}
           </ul>
         ) : (
           <p className="font-medium">
-            {Number(values.price).toLocaleString()} {values.currency}{" "}
-            {getPriceUnit(values.propertyType)}
+            {formatCurrency(values.price ?? 0, values.currency)} {getPriceUnit(values.propertyType)}
           </p>
         )}
         {values.propertyType !== "Hotel" && values.cautionFee !== undefined && (
           <p className="text-sm">
-            Caution fee: {Number(values.cautionFee).toLocaleString()} {values.currency} (fixed)
+            Caution fee: {formatCurrency(values.cautionFee, values.currency)} (fixed)
           </p>
         )}
         {values.propertyType === "House" && (

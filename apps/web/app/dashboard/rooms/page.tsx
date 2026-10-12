@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 type Hotel = House & { rooms: RoomType[] };
 type Availability = {
@@ -195,7 +195,7 @@ export default function RoomsPage() {
                           </div>
                           <div>
                             <dd className="font-semibold">
-                              {formatPrice(room.price, hotel.currency ?? "RWF")}
+                              {formatCurrency(room.price, hotel.currency ?? "RWF")}
                             </dd>
                             <dt className="mt-1 text-xs text-muted-foreground">Per night</dt>
                           </div>

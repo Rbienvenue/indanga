@@ -41,7 +41,7 @@ import { getBookingKind } from "@/lib/booking-kind";
 import { isVideoMediaUrl } from "@/lib/property-media";
 import { amenityIcons, parseAmenities } from "@/lib/amenities";
 import { propertyAmenityLabels } from "@/lib/validations/house";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { Footer } from "@/components/home/footer";
 
 function Gallery({ house }: { house: House }) {
@@ -405,7 +405,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                   <h2 className="mt-2 text-2xl font-bold tracking-tight">
                     Rooms
                     {fromPrice != null
-                      ? ` · from ${fromPrice.toLocaleString("en-US")} ${house.currency ?? "RWF"}`
+                      ? ` · from ${formatCurrency(fromPrice, house.currency ?? "RWF")}`
                       : ""}
                   </h2>
                   <ul className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -422,7 +422,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                           </p>
                         </div>
                         <p className="text-lg font-black text-primary">
-                          {room.price.toLocaleString("en-US")} {house.currency ?? "RWF"}
+                          {formatCurrency(room.price, house.currency ?? "RWF")}
                         </p>
                       </li>
                     ))}
@@ -520,7 +520,7 @@ function ListingInformation({
       <AccordionRow icon={WalletCards} title="Price details">
         <p>
           {house.price
-            ? `${formatPrice(house.price, house.currency ?? "RWF")} per ${priceUnit}.`
+            ? `${formatCurrency(house.price, house.currency ?? "RWF")} per ${priceUnit}.`
             : ""}{" "}
           The displayed price is the listing rate; confirm the total at booking.
         </p>

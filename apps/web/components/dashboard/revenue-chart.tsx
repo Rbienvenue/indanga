@@ -3,7 +3,7 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 type RevenuePoint = {
   month: string;
@@ -22,7 +22,7 @@ function RevenueTooltip({ active, payload }: { active?: boolean; payload?: Toolt
   return (
     <div className="rounded-lg border bg-card px-3 py-2 text-sm shadow-sm">
       <p className="font-medium">{data.month}</p>
-      <p className="text-muted-foreground">{formatPrice(data.revenue)}</p>
+      <p className="text-muted-foreground">{formatCurrency(data.revenue, "RWF")}</p>
     </div>
   );
 }

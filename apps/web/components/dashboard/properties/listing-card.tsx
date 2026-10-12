@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getBookingKind, getPriceUnit, type HouseWithRooms } from "@/lib/booking-kind";
 import { firstImageUrl } from "@/lib/property-media";
 import { getDisplayPrice } from "@/lib/room-pricing";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { DeletePropertyDialog } from "./delete-property-dialog";
 
 export function ListingCard({
@@ -49,7 +49,7 @@ export function ListingCard({
         </p>
         <p className="mt-2 text-sm">
           {displayPrice != null
-            ? `${fromRooms ? "From " : ""}${formatPrice(displayPrice, listing.currency ?? "RWF")} ${getPriceUnit(listing.propertyType)}`
+            ? `${fromRooms ? "From " : ""}${formatCurrency(displayPrice, listing.currency ?? "RWF")} ${getPriceUnit(listing.propertyType)}`
             : "Contact for price"}
         </p>
       </div>
@@ -89,7 +89,7 @@ export function ListingDetails({ listing }: { listing: HouseWithRooms }) {
             <dt className="text-muted-foreground">Price</dt>
             <dd className="mt-1 font-medium">
               {displayPrice != null
-                ? `${fromRooms ? "From " : ""}${formatPrice(displayPrice, listing.currency ?? "RWF")} ${getPriceUnit(listing.propertyType)}`
+                ? `${fromRooms ? "From " : ""}${formatCurrency(displayPrice, listing.currency ?? "RWF")} ${getPriceUnit(listing.propertyType)}`
                 : "Contact for price"}
             </dd>
           </div>
@@ -119,7 +119,7 @@ export function ListingDetails({ listing }: { listing: HouseWithRooms }) {
                   {room.name} · {room.totalRooms} room(s)
                 </span>
                 <span className="text-muted-foreground">
-                  {formatPrice(room.price, listing.currency ?? "RWF")} / night
+                  {formatCurrency(room.price, listing.currency ?? "RWF")} / night
                 </span>
               </div>
             ))}
