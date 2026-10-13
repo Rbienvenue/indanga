@@ -22,6 +22,8 @@ import { ReceiptDialog } from "@/components/payments/receipt-dialog";
 type Payment = {
   id: string;
   amount: string;
+  currency: "RWF";
+  exchangeRate: string | null;
   bookingAmount: number;
   status: "PENDING" | "COMPLETED" | "FAILED";
   method: string;
@@ -102,7 +104,7 @@ export default function PaymentsPage() {
       accessorFn: (payment) => (isProvider ? payment.bookingAmount : Number(payment.amount)),
       cell: ({ row, getValue }) => (
         <span className="font-semibold tabular-nums">
-          {formatCurrency(getValue<number>(), row.original.booking.house.currency ?? "RWF")}
+          {formatCurrency(getValue<number>(), row.original.currency)}
         </span>
       ),
     },
@@ -278,7 +280,7 @@ export default function PaymentsPage() {
                 <dd className="text-xl font-semibold tabular-nums">
                   {formatCurrency(
                     isProvider ? selected.bookingAmount : selected.amount,
-                    selected.booking.house.currency ?? "RWF",
+                    selected.currency,
                   )}
                 </dd>
               </div>

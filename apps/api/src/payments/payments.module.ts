@@ -1,3 +1,4 @@
+import { ExchangeRatesService } from "./exchange-rates.service";
 import { Module } from "@nestjs/common";
 import { PrismaModule } from "src/prisma/prisma.module";
 import { PaymentsController } from "./payments.controller";
@@ -10,6 +11,6 @@ import { ReceiptsService } from "./receipts.service";
 @Module({
   imports: [PrismaModule, NotificationsModule, WsModule],
   controllers: [PaymentsController],
-  providers: [PaymentsService, ITECService, ReceiptsService],
+  providers: [PaymentsService, ITECService, ReceiptsService, ExchangeRatesService],
 })
 export class PaymentsModule {}

@@ -145,6 +145,7 @@ export class BookingsService {
         unitPrice,
         serviceFee,
         cautionFee,
+        currency: house.currency,
         totalAmount: subtotal + serviceFee + cautionFee,
       },
       include: { house: true, roomType: true, client: true },

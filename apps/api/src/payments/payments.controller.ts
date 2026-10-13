@@ -69,6 +69,12 @@ export class PaymentsController {
     return new ApiResponse(result);
   }
 
+  @Get("quote/:bookingId")
+  @Roles(["tenant", "landlord", "admin"])
+  async quote(@Param("bookingId") bookingId: string, @Session() session: UserSession) {
+    return new ApiResponse(await this.paymentsService.getQuote(session.user.id, bookingId));
+  }
+
   @Post()
   @Roles(["tenant", "landlord", "admin"])
   async createPayment(@Session() session: UserSession, @Body() body: CreateOrderDto) {

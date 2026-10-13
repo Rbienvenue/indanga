@@ -19,6 +19,8 @@ import { formatCurrency } from "@/lib/utils";
 type PaymentWithBooking = {
   id: string;
   amount: string;
+  currency: "RWF";
+  exchangeRate: string | null;
   status: "PENDING" | "COMPLETED" | "FAILED";
   method: string;
   transactionReference: string;
@@ -85,17 +87,20 @@ const columns: ColumnDef<PaymentWithBooking>[] = [
     header: "Customer paid / due",
     cell: ({ row }) => (
       <span className="font-medium">
-        {formatCurrency(row.original.amount, row.original.booking.house.currency ?? "RWF")}
+        {formatCurrency(row.original.amount, row.original.currency)}
       </span>
     ),
   },
   {
     id: "commission",
     header: "Commission earned",
-    accessorFn: (row) => (row.status === "COMPLETED" ? (row.booking.serviceFee ?? 0) : 0),
+    accessorFn: (row) =>
+      row.status === "COMPLETED"
+        ? Math.round((row.booking.serviceFee ?? 0) * Number(row.exchangeRate ?? 1))
+        : 0,
     cell: ({ row, getValue }) => (
       <span className="font-medium">
-        {formatCurrency(getValue<number>(), row.original.booking.house.currency ?? "RWF")}
+        {formatCurrency(getValue<number>(), row.original.currency)}
       </span>
     ),
   },

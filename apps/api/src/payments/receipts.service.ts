@@ -31,8 +31,9 @@ export class ReceiptsService {
       throw new BadRequestException("Receipts are available for successful payments only");
     const booking = payment.booking;
     const total = Number(payment.amount);
-    const serviceFee = booking.serviceFee ?? 0;
-    const cautionFee = booking.cautionFee ?? 0;
+    const exchangeRate = payment.exchangeRate?.toNumber() ?? 1;
+    const serviceFee = Math.round((booking.serviceFee ?? 0) * exchangeRate);
+    const cautionFee = Math.round((booking.cautionFee ?? 0) * exchangeRate);
     const kind = getBookingKind(booking.house.propertyType);
     const period =
       booking.checkIn && booking.checkOut
@@ -53,7 +54,7 @@ export class ReceiptsService {
       provider: booking.house.owner.name,
       description: `${booking.house.name}${booking.roomType ? ` · ${booking.roomType.name} × ${booking.roomCount ?? 1}` : ""}`,
       period,
-      rate: booking.unitPrice,
+      rate: booking.unitPrice == null ? null : Math.round(booking.unitPrice * exchangeRate),
       duration: kind === "home" ? 1 : booking.nights,
       quantity: kind === "hotel" ? (booking.roomCount ?? 1) : 1,
       unit: kind === "car" ? "day" : kind === "hotel" ? "night" : "month",
@@ -62,7 +63,7 @@ export class ReceiptsService {
       serviceFee,
       total,
       amountPaid: total,
-      currency: booking.house.currency ?? "RWF",
+      currency: payment.currency,
     };
   }
 }

@@ -26,12 +26,18 @@ const MONTH_LABELS = [
 ] as const;
 
 function bucketRevenueByMonth(
-  payments: { booking: { serviceFee: number | null }; createdAt: Date }[],
+  payments: {
+    booking: { serviceFee: number | null };
+    exchangeRate: Prisma.Decimal | null;
+    createdAt: Date;
+  }[],
 ) {
   const totals = Array.from({ length: 12 }, () => 0);
 
   for (const payment of payments) {
-    totals[payment.createdAt.getMonth()] += payment.booking.serviceFee ?? 0;
+    totals[payment.createdAt.getMonth()] += Math.round(
+      (payment.booking.serviceFee ?? 0) * (payment.exchangeRate?.toNumber() ?? 1),
+    );
   }
 
   return MONTH_LABELS.map((month, index) => ({
@@ -120,7 +126,12 @@ export class AdminService {
       this.db.payment.count({ where: { status: "FAILED" } }),
       this.db.payment.findMany({
         where: { status: "COMPLETED" },
-        select: { amount: true, createdAt: true, booking: { select: { serviceFee: true } } },
+        select: {
+          amount: true,
+          exchangeRate: true,
+          createdAt: true,
+          booking: { select: { serviceFee: true } },
+        },
       }),
     ]);
 
@@ -137,7 +148,9 @@ export class AdminService {
       failedPayments,
       // Fees are stored on the booking when it is priced, not recalculated from today's fee settings.
       totalRevenue: completedPayments.reduce(
-        (total, payment) => total + (payment.booking.serviceFee ?? 0),
+        (total, payment) =>
+          total +
+          Math.round((payment.booking.serviceFee ?? 0) * (payment.exchangeRate?.toNumber() ?? 1)),
         0,
       ),
       totalCollected: completedPayments.reduce(

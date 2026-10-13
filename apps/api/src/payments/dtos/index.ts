@@ -1,5 +1,13 @@
 import { Type } from "class-transformer";
-import { IsEnum, IsInt, IsOptional, IsString, ValidateIf, ValidateNested } from "class-validator";
+import {
+  IsEnum,
+  IsInt,
+  Min,
+  IsOptional,
+  IsString,
+  ValidateIf,
+  ValidateNested,
+} from "class-validator";
 import { PaymentStatus } from "@indanga/db";
 
 export class FilterPaymentsDto {
@@ -26,6 +34,10 @@ const paymentMethods = ["MOMO", "AIRTEL", "CARD"] as const;
 export class CreateOrderDto {
   @IsString()
   bookingId: string;
+
+  @IsInt()
+  @Min(1)
+  expectedAmount: number;
 
   @ValidateIf((o) => o.method !== "CARD")
   @IsString()

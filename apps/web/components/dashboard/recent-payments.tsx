@@ -21,6 +21,8 @@ import { formatCurrency } from "@/lib/utils";
 type PaymentWithBooking = {
   id: string;
   amount: string;
+  currency: "RWF";
+  exchangeRate: string | null;
   status: "PENDING" | "COMPLETED" | "FAILED";
   createdAt: string;
   booking: {
@@ -73,10 +75,7 @@ export function RecentPayments() {
               {payments.map((payment) => (
                 <TableRow key={payment.id}>
                   <TableCell className="font-medium">
-                    {formatCurrency(
-                      Number(payment.amount),
-                      payment.booking.house.currency ?? "RWF",
-                    )}
+                    {formatCurrency(Number(payment.amount), payment.currency)}
                   </TableCell>
                   <TableCell>{payment.booking.client.name}</TableCell>
                   <TableCell className="text-muted-foreground">

@@ -80,6 +80,18 @@ model House {
   @@map("house")
 }
 
+model ExchangeRate {
+  id        String   @id @default(cuid())
+  base      Currency
+  quote     Currency
+  rate      Decimal  @db.Decimal(20, 10)
+  rateDate  DateTime @db.Date
+  fetchedAt DateTime @default(now())
+
+  @@unique([base, quote])
+  @@map("exchange_rate")
+}
+
 model RoomType {
   id         String    @id @default(cuid())
   houseId    String
@@ -123,6 +135,7 @@ model Booking {
   unitPrice        Int?
   serviceFee       Int?           @default(0)
   cautionFee       Int?
+  currency         Currency?
   totalAmount      Int?
   declineReason    String?
   responseDeadline DateTime?
@@ -146,6 +159,11 @@ model Booking {
 model Payment {
   id                   String         @id @default(cuid())
   amount               Decimal        @db.Decimal(12, 2)
+  currency             Currency       @default(RWF)
+  originalCurrency     Currency?
+  originalAmount       Decimal?       @db.Decimal(12, 2)
+  exchangeRate         Decimal?       @db.Decimal(20, 10)
+  rateDate             DateTime?      @db.Date
   bookingId            String
   status               PaymentStatus  @default(PENDING)
   method               String

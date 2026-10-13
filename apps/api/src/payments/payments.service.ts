@@ -1,3 +1,4 @@
+import { ExchangeRatesService } from "./exchange-rates.service";
 import {
   BadRequestException,
   ConflictException,
@@ -27,7 +28,29 @@ export class PaymentsService {
     private readonly notifications: NotificationsService,
     private readonly itec: ITECService,
     private readonly ws: WsGateway,
+    private readonly exchangeRates: ExchangeRatesService,
   ) {}
+  async getQuote(clientId: string, bookingId: string) {
+    const booking = await this.db.booking.findFirst({
+      where: { id: bookingId, clientId },
+      include: { house: { select: { currency: true } } },
+    });
+    if (!booking) throw new NotFoundException("Booking not found");
+    if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
+      throw new BadRequestException("This booking is not awaiting payment");
+    }
+    if (!booking.paymentDeadline || booking.paymentDeadline <= new Date()) {
+      throw new BadRequestException("The payment deadline has passed");
+    }
+    if (booking.totalAmount == null) {
+      throw new BadRequestException("This booking has no payment amount");
+    }
+    const originalCurrency = booking.currency ?? booking.house.currency;
+    const converted = await this.exchangeRates.convertToRwf(booking.totalAmount, originalCurrency);
+    this.itec.validateAmount(converted.amount);
+    return { bookingId, originalAmount: booking.totalAmount, originalCurrency, ...converted };
+  }
+
   async initiatePayment(clientId: string, data: CreateOrderDto) {
     return this.initiateAcceptedBookingPayment(clientId, data.bookingId, data);
   }
@@ -57,6 +80,14 @@ export class PaymentsService {
       throw new BadRequestException("The payment deadline has passed");
     }
 
+    // Fetch external rates before opening the payment transaction.
+    const quote = await this.getQuote(clientId, bookingId);
+    if (data.expectedAmount !== quote.amount) {
+      throw new ConflictException(
+        "The payment amount changed. Review the updated amount and try again.",
+      );
+    }
+
     const { booking, payment, result } = await this.db.$transaction(
       async (tx) => {
         const booking = await tx.booking.findUnique({
@@ -75,6 +106,14 @@ export class PaymentsService {
         if (booking.totalAmount == null) {
           throw new BadRequestException("This booking has no payment amount");
         }
+        if (
+          booking.totalAmount !== quote.originalAmount ||
+          (booking.currency ?? booking.house.currency) !== quote.originalCurrency
+        ) {
+          throw new ConflictException(
+            "The booking price changed. Review the updated amount and try again.",
+          );
+        }
         const activePayment = await tx.payment.findFirst({
           where: { bookingId: booking.id, status: { in: ["PENDING", "COMPLETED"] } },
         });
@@ -87,7 +126,12 @@ export class PaymentsService {
 
         const payment = await tx.payment.create({
           data: {
-            amount: booking.totalAmount,
+            amount: quote.amount,
+            currency: quote.currency,
+            originalAmount: quote.originalAmount,
+            originalCurrency: quote.originalCurrency,
+            exchangeRate: quote.exchangeRate,
+            rateDate: quote.rateDate ? new Date(quote.rateDate) : null,
             bookingId: booking.id,
             status: "PENDING",
             method: data.method,
@@ -116,6 +160,10 @@ export class PaymentsService {
     return {
       id: payment.id,
       amount: Number(payment.amount),
+      currency: payment.currency,
+      exchangeRate: quote.exchangeRate,
+      rateDate: quote.rateDate,
+      stale: quote.stale,
       phone: data.phone,
       method: data.method,
       nights: booking.nights ?? undefined,
@@ -344,7 +392,9 @@ export class PaymentsService {
       data: payments.map((payment) => ({
         ...payment,
         checkoutUrl: payment.booking.clientId === user.id ? payment.checkoutUrl : null,
-        bookingAmount: payment.amount.toNumber() - (payment.booking.serviceFee ?? 0),
+        bookingAmount:
+          payment.amount.toNumber() -
+          Math.round((payment.booking.serviceFee ?? 0) * (payment.exchangeRate?.toNumber() ?? 1)),
       })),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
@@ -353,12 +403,19 @@ export class PaymentsService {
   async getProviderPaymentStats(ownerId: string) {
     const payments = await this.db.payment.findMany({
       where: { booking: { house: { ownerId } }, status: { in: ["COMPLETED", "PENDING"] } },
-      select: { amount: true, status: true, booking: { select: { serviceFee: true } } },
+      select: {
+        amount: true,
+        exchangeRate: true,
+        status: true,
+        booking: { select: { serviceFee: true } },
+      },
     });
     return payments.reduce(
       (totals, payment) => {
         if (payment.status === "COMPLETED") {
-          totals.earnings += payment.amount.toNumber() - (payment.booking.serviceFee ?? 0);
+          totals.earnings +=
+            payment.amount.toNumber() -
+            Math.round((payment.booking.serviceFee ?? 0) * (payment.exchangeRate?.toNumber() ?? 1));
           totals.completedPayments += 1;
         } else {
           totals.pendingPayments += 1;

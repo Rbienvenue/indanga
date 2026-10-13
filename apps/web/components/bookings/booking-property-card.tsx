@@ -51,6 +51,7 @@ const statusLabels: Record<BookingCardStatus, string> = {
 };
 
 export interface BookingPropertyCardBooking {
+  currency?: "USD" | "RWF" | null;
   id: string;
   bookingId?: string | null;
   status: BookingCardStatus;

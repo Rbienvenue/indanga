@@ -51,11 +51,23 @@ const paymentSchema = z
     }
   });
 
+type PaymentQuote = {
+  amount: number;
+  currency: "RWF";
+  originalAmount: number;
+  originalCurrency: "USD" | "RWF";
+  exchangeRate: number | null;
+  rateDate: string | null;
+  stale: boolean;
+};
+
 type BookingPayment = {
   id: string;
   status: "PENDING" | "COMPLETED" | "FAILED";
   method: string;
   checkoutUrl: string | null;
+  amount: number | string;
+  currency: "RWF";
   booking: { status: string };
 };
 
@@ -88,19 +100,31 @@ function BookingPaymentForm({
   const { socket, isConnected } = useSocketIo(Boolean(paymentId));
   const deadlinePassed =
     !booking.paymentDeadline || new Date(booking.paymentDeadline) <= new Date();
+  const quote = useQuery<ApiResponse<PaymentQuote>>({
+    queryKey: ["payment-quote", session?.user.id, booking.id],
+    queryFn: () => fetcher(`/payments/quote/${encodeURIComponent(booking.id)}`),
+    enabled: Boolean(session?.user) && !deadlinePassed && !paymentId && !completed,
+    staleTime: 0,
+  });
+  const charge = paymentId || completed ? Number(payment?.amount) : quote.data?.data.amount;
   const mutation = useMutation({
     mutationFn: (values: z.infer<typeof paymentSchema>) => {
       if (!booking.paymentDeadline || new Date(booking.paymentDeadline) <= new Date()) {
         throw new Error("The payment deadline has passed");
       }
-      return fetcher<ApiResponse<{ id: string; link?: string }>>("/payments", {
-        method: "POST",
-        body: JSON.stringify({
-          bookingId: booking.id,
-          method: values.method,
-          ...(values.method === "CARD" ? {} : { phone: values.phone.replace(/\D/g, "") }),
-        }),
-      });
+      if (!quote.data) throw new Error("Wait for the payment amount before paying.");
+      return fetcher<ApiResponse<{ id: string; link?: string; amount: number; currency: "RWF" }>>(
+        "/payments",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            bookingId: booking.id,
+            expectedAmount: quote.data.data.amount,
+            method: values.method,
+            ...(values.method === "CARD" ? {} : { phone: values.phone.replace(/\D/g, "") }),
+          }),
+        },
+      );
     },
     onSuccess: ({ data }, values) => {
       queryClient.setQueryData<PaginationResponse<BookingPayment>>(paymentKey, {
@@ -110,6 +134,8 @@ function BookingPaymentForm({
             status: "PENDING",
             method: values.method,
             checkoutUrl: data.link ?? null,
+            amount: data.amount,
+            currency: data.currency,
             booking: { status: booking.status },
           },
         ],
@@ -127,6 +153,7 @@ function BookingPaymentForm({
     },
     onError: (error: Error) => {
       void refreshPayment();
+      void quote.refetch();
       toast.error("Could not start payment", { description: error.message });
     },
   });
@@ -168,7 +195,14 @@ function BookingPaymentForm({
   }, [payment?.status, queryClient]);
 
   const disabled =
-    mutation.isPending || Boolean(paymentId) || completed || recovery.isPending || recovery.isError;
+    mutation.isPending ||
+    Boolean(paymentId) ||
+    completed ||
+    recovery.isPending ||
+    recovery.isError ||
+    quote.isPending ||
+    quote.isError ||
+    quote.isFetching;
   const kind = getBookingKind(booking.house.propertyType);
   const quantity = booking.roomCount ?? 1;
   const duration = kind === "home" ? 1 : (booking.nights ?? 1);
@@ -182,6 +216,7 @@ function BookingPaymentForm({
     <div className="space-y-4">
       <BookingPriceSummary
         bookingKind={kind}
+        currency={booking.currency ?? booking.house.currency}
         unitPrice={unitPrice}
         nights={booking.nights ?? 0}
         quantity={quantity}
@@ -197,6 +232,19 @@ function BookingPaymentForm({
         total={booking.totalAmount ?? subtotal}
         ready
       />
+      {charge != null ? (
+        <div className="rounded-lg bg-muted p-3 text-sm" role="status">
+          <p className="font-medium">You will be charged {formatCurrency(charge, "RWF")}.</p>
+        </div>
+      ) : null}
+      {quote.isError && !paymentId && !completed ? (
+        <div role="alert" className="space-y-2 text-sm">
+          <p>{quote.error.message}</p>
+          <Button variant="outline" size="sm" onClick={() => void quote.refetch()}>
+            Retry exchange rate
+          </Button>
+        </div>
+      ) : null}
       {booking.checkIn && booking.checkOut ? (
         <p className="text-sm text-muted-foreground">
           {new Date(booking.checkIn).toLocaleDateString()} →{" "}
@@ -308,11 +356,19 @@ function BookingPaymentForm({
             ) : disabled ? (
               <>
                 <Loader2 className="size-4 animate-spin" />{" "}
-                {paymentId ? "Waiting for payment…" : "Starting payment…"}
+                {paymentId
+                  ? "Waiting for payment…"
+                  : mutation.isPending
+                    ? "Starting payment…"
+                    : "Getting payment amount…"}
               </>
             ) : (
               <>
-                Pay {formatCurrency(booking.totalAmount ?? 0, booking.house.currency ?? "RWF")}{" "}
+                Pay{" "}
+                {formatCurrency(
+                  booking.totalAmount ?? 0,
+                  booking.currency ?? booking.house.currency ?? "RWF",
+                )}{" "}
                 <ArrowRight className="size-4" />
               </>
             )}
