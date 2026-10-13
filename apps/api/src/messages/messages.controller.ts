@@ -1,7 +1,8 @@
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
-import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
+import { Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { ApiResponse, PaginationResponse } from "src/@types";
 import {
+  BroadcastMessageDto,
   CreatePropertyConversationDto,
   MessagePaginationDto,
   ReadConversationDto,
@@ -21,6 +22,13 @@ export class MessagesController {
   @Post("property")
   async property(@Session() session: UserSession, @Body() body: CreatePropertyConversationDto) {
     return new ApiResponse(await this.messages.createProperty(session.user, body.bookingId));
+  }
+
+  @Post("broadcast")
+  @Roles(["admin"])
+  async broadcast(@Session() session: UserSession, @Body() body: BroadcastMessageDto) {
+    const result = await this.messages.broadcast(session.user.id, body);
+    return new ApiResponse(result, "broadcast sent");
   }
 
   @Get()

@@ -13,6 +13,7 @@ import { fetcher } from "@/lib/fetcher";
 import { cn } from "@/lib/utils";
 import { ConversationList } from "./conversation-list";
 import { ConversationThread } from "./conversation-thread";
+import { BroadcastDialog } from "./broadcast-dialog";
 import { MessageButton } from "./message-button";
 import type { Conversation, ConversationPreview } from "./types";
 
@@ -52,7 +53,7 @@ export function MessagesInbox() {
       <PageHeader
         title={session.user.role === "admin" ? "Support inbox" : "Messages"}
         description="Keep booking conversations and support together on INDANGA."
-        actions={session.user.role !== "admin" ? <MessageButton /> : undefined}
+        actions={session.user.role === "admin" ? <BroadcastDialog /> : <MessageButton />}
       />
       {inbox.isError ? (
         <div role="alert" className="flex items-center gap-3 rounded-lg border p-4 text-sm">

@@ -1,9 +1,11 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma, type Message } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
 import { WsGateway } from "src/ws/ws.gateway";
 import { conversationAccess, type MessageUser } from "./messages-access";
-import type { MessagePaginationDto } from "./dtos";
+import type { BroadcastMessageDto, MessagePaginationDto } from "./dtos";
+
+const MAX_BROADCAST_RECIPIENTS = 2000;
 
 const conversationInclude = {
   client: { select: { name: true } },
@@ -49,6 +51,84 @@ export class MessagesService {
     void user;
     // Direct client↔provider messaging is disabled: all conversations go through support.
     throw new ForbiddenException("Direct messaging is disabled. Please contact support.");
+  }
+
+  async broadcast(adminId: string, data: BroadcastMessageDto) {
+    const { scope, providerType, userId, text } = data;
+    if (scope === "provider" && !providerType) {
+      throw new BadRequestException("Select a provider category");
+    }
+    if (scope === "user" && !userId) {
+      throw new BadRequestException("Select a user");
+    }
+
+    const where: Prisma.UserWhereInput =
+      scope === "user"
+        ? { id: userId, role: { not: "admin" } }
+        : {
+            role:
+              scope === "all"
+                ? { in: ["tenant", "landlord"] }
+                : scope === "clients"
+                  ? "tenant"
+                  : "landlord",
+            ...(scope === "provider" ? { providerType } : {}),
+            banned: false,
+          };
+
+    const recipients = await this.db.user.findMany({
+      where,
+      select: { id: true },
+      take: MAX_BROADCAST_RECIPIENTS + 1,
+    });
+    if (recipients.length === 0) throw new NotFoundException("No recipients found");
+    if (recipients.length > MAX_BROADCAST_RECIPIENTS) {
+      throw new BadRequestException("Audience too large, narrow it down and try again");
+    }
+
+    // Reuse each recipient's support thread so replies land in the normal inbox flow.
+    const keys = recipients.map((recipient) => `support:${recipient.id}`);
+    const existing = await this.db.conversation.findMany({
+      where: { key: { in: keys } },
+      select: { id: true, key: true },
+    });
+    const existingKeys = new Set(existing.map((conversation) => conversation.key));
+    const missing = recipients.filter(
+      (recipient) => !existingKeys.has(`support:${recipient.id}`),
+    );
+    if (missing.length > 0) {
+      await this.db.conversation.createMany({
+        data: missing.map((recipient) => ({
+          key: `support:${recipient.id}`,
+          type: "SUPPORT",
+          clientId: recipient.id,
+        })),
+      });
+    }
+    const conversations = await this.db.conversation.findMany({
+      where: { key: { in: keys } },
+      select: { id: true },
+    });
+
+    const now = new Date();
+    await this.db.message.createMany({
+      data: conversations.map((conversation, index) => ({
+        conversationId: conversation.id,
+        senderId: adminId,
+        senderType: "SUPPORT",
+        text,
+        createdAt: new Date(now.getTime() + index),
+      })),
+    });
+    await this.db.conversation.updateMany({
+      where: { id: { in: conversations.map((conversation) => conversation.id) } },
+      data: { updatedAt: now },
+    });
+    await Promise.all(
+      conversations.map((conversation) => this.ws.emitConversationUpdate(conversation.id)),
+    );
+
+    return { recipients: conversations.length };
   }
 
   async list(user: MessageUser, { page, limit }: MessagePaginationDto) {
