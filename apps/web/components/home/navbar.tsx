@@ -101,9 +101,9 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
           : "bg-transparent"
       }`}
     >
-      <nav className="mx-auto flex min-h-18 max-w-7xl flex-wrap items-center justify-between gap-x-4 px-4 sm:px-6 lg:flex-nowrap lg:px-8">
+      <nav className="mx-auto flex min-h-18 max-w-7xl flex-nowrap items-center justify-between gap-x-1 px-4 sm:px-6 md:flex-wrap md:gap-x-4 lg:flex-nowrap lg:px-8">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5">
           <Image
             src="/logo.png"
             alt="INDANGA"
@@ -120,11 +120,11 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
         {hasPropertySearch ? (
           <div
             id="header-property-search"
-            className="order-last w-full pb-3 lg:order-none lg:max-w-md lg:min-w-0 lg:flex-1 lg:pb-0"
+            className="min-w-0 flex-1 max-md:[&_input]:pr-1 max-md:[&_input]:pl-7 md:order-last md:w-full md:flex-none md:pb-3 lg:order-none lg:max-w-md lg:flex-1 lg:pb-0"
           />
         ) : null}
 
-        <div className="flex h-18 shrink-0 items-center gap-4">
+        <div className="hidden h-18 shrink-0 items-center gap-4 md:flex">
           {/* Desktop Nav Links */}
           <div className="hidden items-center gap-1 md:flex">
             {navLinks.map((link) => (
@@ -209,13 +209,12 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
         </div>
 
         {/* Mobile Auth and Menu */}
-        <div className="flex items-center gap-1.5 md:hidden">
+        <div className="flex shrink-0 items-center gap-1.5 md:hidden">
           {session ? (
             <>
-              <UserAvatar />
               {pathname === "/" && (
                 <Button asChild size="sm">
-                  <Link href="/dashboard">Open Dashboard</Link>
+                  <Link href="/dashboard">Dashboard</Link>
                 </Button>
               )}
             </>

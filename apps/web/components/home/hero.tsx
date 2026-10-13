@@ -55,7 +55,7 @@ export function Hero() {
   }, [displayText, isDeleting, wordIndex]);
 
   return (
-    <section className="relative w-full overflow-hidden pt-31 pb-14 lg:pt-18">
+    <section className="relative w-full overflow-hidden pt-18 pb-14 md:pt-31 lg:pt-18">
       {slides.map((slide, index) => (
         <div
           key={slide.image}

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/components/providers/session-provider";
 import { signOut } from "@/lib/auth-client";
+import ThemeToggle from "@/components/providers/theme-toggle";
 
 function getInitials(name: string) {
   return name
@@ -27,9 +28,10 @@ function getInitials(name: string) {
 
 interface UserAvatarProps {
   showDashboard?: boolean;
+  showThemeToggle?: boolean;
 }
 
-export function UserAvatar({ showDashboard = true }: UserAvatarProps) {
+export function UserAvatar({ showDashboard = true, showThemeToggle = false }: UserAvatarProps) {
   const router = useRouter();
   const session = useSession();
   const user = session?.user;
@@ -71,6 +73,15 @@ export function UserAvatar({ showDashboard = true }: UserAvatarProps) {
             Profile
           </DropdownMenuItem>
         </DropdownMenuGroup>
+        {showThemeToggle ? (
+          <>
+            <DropdownMenuSeparator />
+            <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+              <span className="text-sm">Theme</span>
+              <ThemeToggle />
+            </div>
+          </>
+        ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"
