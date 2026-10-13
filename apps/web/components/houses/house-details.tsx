@@ -1,6 +1,6 @@
 "use client";
 
-import type { House, RoomType } from "@indanga/db";
+import type { House, RoomType } from "@/@types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,

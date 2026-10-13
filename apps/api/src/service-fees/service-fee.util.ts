@@ -1,4 +1,4 @@
-import type { FeeType } from "@indanga/db";
+import { Currency, type Prisma, type FeeType } from "@indanga/db";
 
 export type BookingKind = "home" | "hotel" | "car";
 
@@ -24,8 +24,22 @@ export function normalizeBookingKind(value?: string | null): BookingKind {
   return "home";
 }
 
-export function calcServiceFee(subtotal: number, fee: ServiceFeeConfig): number {
+export function calcServiceFee(
+  subtotal: number,
+  fee: ServiceFeeConfig,
+  currency: Currency = Currency.RWF,
+): number {
   if (!fee.isActive || subtotal <= 0) return 0;
   if (fee.feeType === "fixed") return Math.max(Math.round(fee.amount), 0);
-  return Math.round(subtotal * (fee.amount / 100));
+  const precision = currency === Currency.USD ? 100 : 1;
+  return Math.round((Math.round(subtotal * precision) * fee.amount) / 100) / precision;
+}
+
+export function getPaymentServiceFeeRwf(payment: {
+  serviceFeeAmount: Prisma.Decimal | null;
+  exchangeRate: Prisma.Decimal | null;
+  booking: { serviceFee: Prisma.Decimal | null };
+}): number {
+  if (payment.serviceFeeAmount != null) return Number(payment.serviceFeeAmount);
+  return Math.round(Number(payment.booking.serviceFee ?? 0) * Number(payment.exchangeRate ?? 1));
 }

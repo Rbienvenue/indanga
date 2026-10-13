@@ -24,6 +24,7 @@ type Payment = {
   amount: string;
   currency: "RWF";
   exchangeRate: string | null;
+  serviceFeeAmount: number | null;
   bookingAmount: number;
   status: "PENDING" | "COMPLETED" | "FAILED";
   method: string;

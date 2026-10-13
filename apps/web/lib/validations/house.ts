@@ -58,7 +58,10 @@ export const propertyAmenityLabels: Record<PropertyAmenity, string> = {
 export const roomTypeSchema = z.object({
   id: z.string().optional(),
   name: z.string().trim().min(2, "Room name must be at least 2 characters"),
-  price: z.coerce.number<number>().positive("Enter a valid price"),
+  price: z.coerce
+    .number<number>()
+    .positive("Enter a valid price")
+    .multipleOf(0.01, "Use at most two decimal places"),
   totalRooms: z.coerce.number<number>().int().min(1, "At least 1 room"),
   capacity: z.coerce.number<number>().int().min(1, "At least 1 guest"),
 });
@@ -67,7 +70,11 @@ export type RoomTypeValues = z.infer<typeof roomTypeSchema>;
 
 const optionalPrice = z.preprocess(
   (value) => (value === "" || value === undefined || value === null ? undefined : value),
-  z.coerce.number<number>().positive("Enter a valid price").optional(),
+  z.coerce
+    .number<number>()
+    .positive("Enter a valid price")
+    .multipleOf(0.01, "Use at most two decimal places")
+    .optional(),
 );
 
 export const createHouseSchema = z
@@ -80,7 +87,7 @@ export const createHouseSchema = z
       (value) => (value === "" || value == null ? undefined : value),
       z.coerce
         .number<number>()
-        .int()
+        .multipleOf(0.01, "Use at most two decimal places")
         .positive("Enter a valid caution fee")
         .max(2147483647)
         .optional(),
@@ -99,6 +106,21 @@ export const createHouseSchema = z
     metadata: z.array(z.enum(propertyAmenities)).optional(),
   })
   .superRefine((data, ctx) => {
+    if (data.currency === "RWF") {
+      const amounts = [
+        data.price,
+        data.cautionFee,
+        ...(data.rooms?.map((room) => room.price) ?? []),
+      ];
+      if (amounts.some((value) => value != null && !Number.isInteger(value))) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["currency"],
+          message: "RWF prices must be whole francs",
+        });
+      }
+    }
+
     if (data.propertyType === "Hotel") {
       if (!data.rooms || data.rooms.length === 0) {
         ctx.addIssue({

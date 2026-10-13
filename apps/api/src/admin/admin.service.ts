@@ -1,3 +1,4 @@
+import { getPaymentServiceFeeRwf } from "src/service-fees/service-fee.util";
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
@@ -27,7 +28,8 @@ const MONTH_LABELS = [
 
 function bucketRevenueByMonth(
   payments: {
-    booking: { serviceFee: number | null };
+    booking: { serviceFee: Prisma.Decimal | null };
+    serviceFeeAmount: Prisma.Decimal | null;
     exchangeRate: Prisma.Decimal | null;
     createdAt: Date;
   }[],
@@ -35,9 +37,7 @@ function bucketRevenueByMonth(
   const totals = Array.from({ length: 12 }, () => 0);
 
   for (const payment of payments) {
-    totals[payment.createdAt.getMonth()] += Math.round(
-      (payment.booking.serviceFee ?? 0) * (payment.exchangeRate?.toNumber() ?? 1),
-    );
+    totals[payment.createdAt.getMonth()] += getPaymentServiceFeeRwf(payment);
   }
 
   return MONTH_LABELS.map((month, index) => ({
@@ -129,6 +129,7 @@ export class AdminService {
         select: {
           amount: true,
           exchangeRate: true,
+          serviceFeeAmount: true,
           createdAt: true,
           booking: { select: { serviceFee: true } },
         },
@@ -148,9 +149,7 @@ export class AdminService {
       failedPayments,
       // Fees are stored on the booking when it is priced, not recalculated from today's fee settings.
       totalRevenue: completedPayments.reduce(
-        (total, payment) =>
-          total +
-          Math.round((payment.booking.serviceFee ?? 0) * (payment.exchangeRate?.toNumber() ?? 1)),
+        (total, payment) => total + getPaymentServiceFeeRwf(payment),
         0,
       ),
       totalCollected: completedPayments.reduce(

@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { fetcher } from "@/lib/fetcher";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatBookingTotal } from "@/lib/utils";
 
 const plugins = [themePlugin, dayGridPlugin, interactionPlugin];
 const emptyBookings: CalendarBooking[] = [];
@@ -60,6 +60,9 @@ type CalendarBooking = {
   checkOut: string | null;
   paymentDeadline: string | null;
   totalAmount: number | null;
+  currency?: string | null;
+  serviceFee?: number | null;
+  serviceFeeCurrency?: string | null;
   client: { name: string; email: string };
   roomType: { name: string } | null;
   house: { name: string; currency: string | null };
@@ -383,7 +386,9 @@ export function CarCalendar() {
               {calendarQuery.isLoading ? (
                 <Skeleton className="h-20" />
               ) : selectedDayBookings.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No rentals or requests for this day.</p>
+                <p className="text-sm text-muted-foreground">
+                  No rentals or requests for this day.
+                </p>
               ) : (
                 selectedDayBookings.map((booking) => {
                   const isPickup = booking.checkIn?.slice(0, 10) === selectedDate;
@@ -447,10 +452,7 @@ export function CarCalendar() {
                   <dt className="text-muted-foreground">Total</dt>
                   <dd className="mt-1 font-medium">
                     {selectedBooking.totalAmount != null
-                      ? formatCurrency(
-                          selectedBooking.totalAmount,
-                          selectedBooking.house.currency ?? "RWF",
-                        )
+                      ? formatBookingTotal(selectedBooking)
                       : "—"}
                   </dd>
                 </div>

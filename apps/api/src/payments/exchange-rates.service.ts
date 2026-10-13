@@ -1,5 +1,5 @@
 import { Injectable, Logger, ServiceUnavailableException } from "@nestjs/common";
-import { Currency, Prisma } from "@indanga/db";
+import { Currency } from "@indanga/db";
 import { PrismaService } from "src/prisma/prisma.service";
 import { z } from "zod";
 
@@ -33,7 +33,7 @@ export class ExchangeRatesService {
         if (!response.ok) throw new Error(`Frankfurter returned ${response.status}`);
         const data = rateResponse.parse(await response.json());
         const values = {
-          rate: new Prisma.Decimal(data.rate),
+          rate: data.rate,
           rateDate: new Date(data.date),
           fetchedAt: new Date(),
         };
@@ -56,7 +56,7 @@ export class ExchangeRatesService {
     }
 
     return {
-      amount: new Prisma.Decimal(amount).mul(cached.rate).toDecimalPlaces(0).toNumber(),
+      amount: Math.round(amount * Number(cached.rate)),
       currency: Currency.RWF,
       exchangeRate: cached.rate.toNumber(),
       rateDate: cached.rateDate.toISOString().slice(0, 10),

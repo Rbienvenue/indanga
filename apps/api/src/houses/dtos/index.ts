@@ -7,6 +7,7 @@ import {
   IsArray,
   IsEnum,
   IsInt,
+  IsNumber,
   IsOptional,
   IsPositive,
   IsString,
@@ -51,7 +52,7 @@ export class RoomTypeInputDto {
   name: string;
 
   @Type(() => Number)
-  @IsInt()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   price: number;
 
@@ -92,13 +93,13 @@ export class CreateHouseDto {
 
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   price?: number;
 
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   @Max(2147483647)
   cautionFee?: number | null;

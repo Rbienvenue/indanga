@@ -37,16 +37,14 @@ export function PropertyDetails() {
               <FormControl>
                 <Input
                   type="number"
-                  min={1}
-                  step={1}
+                  min={form.watch("currency") === "USD" ? 0.01 : 1}
+                  step={form.watch("currency") === "USD" ? 0.01 : 1}
                   placeholder="Enter a fixed amount"
                   {...field}
                   value={field.value ?? ""}
                 />
               </FormControl>
-              <FormDescription>
-                Optional Security money.
-              </FormDescription>
+              <FormDescription>Optional Security money.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -71,7 +69,8 @@ function PriceField({ unit }: { unit: "month" | "day" }) {
           <FormControl>
             <Input
               type="number"
-              min={1}
+              min={currency === "USD" ? 0.01 : 1}
+              step={currency === "USD" ? 0.01 : 1}
               placeholder="e.g. 150000"
               {...field}
               value={field.value ?? ""}
@@ -193,6 +192,7 @@ function HotelDetails() {
                   <Input
                     type="number"
                     min={0}
+                    step={currency === "USD" ? 0.01 : 1}
                     placeholder="e.g. 45000"
                     {...field}
                     value={field.value ?? ""}

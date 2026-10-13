@@ -1,3 +1,4 @@
+import { getPaymentServiceFeeRwf } from "src/service-fees/service-fee.util";
 import { ExchangeRatesService } from "./exchange-rates.service";
 import {
   BadRequestException,
@@ -46,9 +47,26 @@ export class PaymentsService {
       throw new BadRequestException("This booking has no payment amount");
     }
     const originalCurrency = booking.currency ?? booking.house.currency;
-    const converted = await this.exchangeRates.convertToRwf(booking.totalAmount, originalCurrency);
-    this.itec.validateAmount(converted.amount);
-    return { bookingId, originalAmount: booking.totalAmount, originalCurrency, ...converted };
+    const originalAmount = Number(booking.totalAmount);
+    const originalServiceFee = Number(booking.serviceFee ?? 0);
+    const serviceFeeCurrency = booking.serviceFeeCurrency ?? originalCurrency;
+    const converted = await this.exchangeRates.convertToRwf(originalAmount, originalCurrency);
+    const serviceFeeAmount = Math.round(
+      originalServiceFee * (serviceFeeCurrency === "RWF" ? 1 : (converted.exchangeRate ?? 1)),
+    );
+    const amount =
+      converted.amount + (serviceFeeCurrency !== originalCurrency ? serviceFeeAmount : 0);
+    this.itec.validateAmount(amount);
+    return {
+      bookingId,
+      originalAmount,
+      originalCurrency,
+      originalServiceFee,
+      serviceFeeCurrency,
+      ...converted,
+      amount,
+      serviceFeeAmount,
+    };
   }
 
   async initiatePayment(clientId: string, data: CreateOrderDto) {
@@ -107,7 +125,10 @@ export class PaymentsService {
           throw new BadRequestException("This booking has no payment amount");
         }
         if (
-          booking.totalAmount !== quote.originalAmount ||
+          Number(booking.totalAmount) !== quote.originalAmount ||
+          Number(booking.serviceFee ?? 0) !== quote.originalServiceFee ||
+          (booking.serviceFeeCurrency ?? booking.currency ?? booking.house.currency) !==
+            quote.serviceFeeCurrency ||
           (booking.currency ?? booking.house.currency) !== quote.originalCurrency
         ) {
           throw new ConflictException(
@@ -128,6 +149,7 @@ export class PaymentsService {
           data: {
             amount: quote.amount,
             currency: quote.currency,
+            serviceFeeAmount: quote.serviceFeeAmount,
             originalAmount: quote.originalAmount,
             originalCurrency: quote.originalCurrency,
             exchangeRate: quote.exchangeRate,
@@ -392,9 +414,7 @@ export class PaymentsService {
       data: payments.map((payment) => ({
         ...payment,
         checkoutUrl: payment.booking.clientId === user.id ? payment.checkoutUrl : null,
-        bookingAmount:
-          payment.amount.toNumber() -
-          Math.round((payment.booking.serviceFee ?? 0) * (payment.exchangeRate?.toNumber() ?? 1)),
+        bookingAmount: payment.amount.toNumber() - getPaymentServiceFeeRwf(payment),
       })),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
@@ -406,6 +426,7 @@ export class PaymentsService {
       select: {
         amount: true,
         exchangeRate: true,
+        serviceFeeAmount: true,
         status: true,
         booking: { select: { serviceFee: true } },
       },
@@ -413,9 +434,7 @@ export class PaymentsService {
     return payments.reduce(
       (totals, payment) => {
         if (payment.status === "COMPLETED") {
-          totals.earnings +=
-            payment.amount.toNumber() -
-            Math.round((payment.booking.serviceFee ?? 0) * (payment.exchangeRate?.toNumber() ?? 1));
+          totals.earnings += payment.amount.toNumber() - getPaymentServiceFeeRwf(payment);
           totals.completedPayments += 1;
         } else {
           totals.pendingPayments += 1;

@@ -1,6 +1,6 @@
 "use client";
 
-import type { House } from "@indanga/db";
+import type { House } from "@/@types";
 import { BadgeCheck } from "lucide-react";
 import Link from "next/link";
 

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getBookingKind } from "@/lib/booking-kind";
 import { firstImageUrl } from "@/lib/property-media";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, formatBookingTotal } from "@/lib/utils";
 
 export type BookingCardStatus =
   | "PENDING"
@@ -51,7 +51,7 @@ const statusLabels: Record<BookingCardStatus, string> = {
 };
 
 export interface BookingPropertyCardBooking {
-  currency?: "USD" | "RWF" | null;
+  currency?: string | null;
   id: string;
   bookingId?: string | null;
   status: BookingCardStatus;
@@ -64,6 +64,8 @@ export interface BookingPropertyCardBooking {
   nights?: number | null;
   totalAmount?: number | null;
   serviceFee?: number | null;
+  serviceFeeType?: "fixed" | "percentage" | null;
+  serviceFeeCurrency?: string | null;
   cautionFee?: number | null;
   unitPrice?: number | null;
   roomCount?: number | null;
@@ -135,9 +137,7 @@ export function BookingPropertyCard({
           </p>
         ) : null}
         {booking.totalAmount != null ? (
-          <p className="mt-2 text-sm font-medium">
-            {formatCurrency(booking.totalAmount, booking.house.currency ?? "RWF")} total
-          </p>
+          <p className="mt-2 text-sm font-medium">{formatBookingTotal(booking)} total</p>
         ) : null}
       </div>
     </button>
@@ -168,9 +168,7 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
 
         {booking.totalAmount != null && (
           <div className="mt-3 flex items-baseline gap-1">
-            <span className="text-lg font-bold text-primary">
-              {formatCurrency(booking.totalAmount, booking.house.currency ?? "RWF")}
-            </span>
+            <span className="text-lg font-bold text-primary">{formatBookingTotal(booking)}</span>
             <span className="text-sm text-muted-foreground">total</span>
           </div>
         )}
@@ -180,7 +178,7 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
             {booking.roomType.name}
             {booking.roomCount && booking.roomCount > 1 ? ` × ${booking.roomCount} rooms` : ""}
             {booking.unitPrice != null
-              ? ` · ${formatCurrency(booking.unitPrice, booking.house.currency ?? "RWF")} / night`
+              ? ` · ${formatCurrency(booking.unitPrice, booking.currency ?? booking.house.currency ?? "RWF")} / night`
               : ""}
           </p>
         ) : null}

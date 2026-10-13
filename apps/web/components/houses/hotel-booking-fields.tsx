@@ -1,6 +1,6 @@
 "use client";
 
-import type { RoomType } from "@indanga/db";
+import type { RoomType } from "@/@types";
 import type { UseFormReturn } from "react-hook-form";
 import { BedDouble, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";

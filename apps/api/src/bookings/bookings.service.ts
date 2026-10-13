@@ -100,11 +100,11 @@ export class BookingsService {
         throw new ConflictException("Not enough rooms available for those dates");
       }
       roomTypeId = room.id;
-      unitPrice = room.price;
-      subtotal = room.price * roomCount * nights!;
+      unitPrice = Number(room.price);
+      subtotal = unitPrice * roomCount * nights!;
     } else {
       if (house.price == null) throw new BadRequestException("This property has no price set");
-      unitPrice = house.price;
+      unitPrice = Number(house.price);
       if (bookingKind === "car") {
         const overlapping = await this.db.booking.count({
           where: {
@@ -117,18 +117,21 @@ export class BookingsService {
         if (overlapping > 0) {
           throw new ConflictException("Property is already booked for those dates");
         }
-        subtotal = house.price * nights!;
+        subtotal = unitPrice * nights!;
       } else {
         if (house.status !== HouseStatus.AVAILABLE) {
           throw new ConflictException("Property is already booked");
         }
-        subtotal = house.price;
+        subtotal = Number(house.price);
       }
     }
 
     const feeConfig = await this.serviceFees.getByKind(bookingKind);
-    const serviceFee = calcServiceFee(subtotal, feeConfig);
-    const cautionFee = bookingKind === "hotel" ? 0 : (house.cautionFee ?? 0);
+    const serviceFee = calcServiceFee(subtotal, feeConfig, house.currency);
+    const cautionFee = bookingKind === "hotel" ? 0 : Number(house.cautionFee ?? 0);
+    const serviceFeeCurrency = feeConfig.feeType === "fixed" ? "RWF" : house.currency;
+    const total = Math.round((subtotal + cautionFee +
+      (serviceFeeCurrency === house.currency ? serviceFee : 0)) * 100) / 100;
     const booking = await this.db.booking.create({
       data: {
         bookingId: createBookingId(bookingKind),
@@ -144,9 +147,11 @@ export class BookingsService {
         nights,
         unitPrice,
         serviceFee,
+        serviceFeeType: feeConfig.feeType,
+        serviceFeeCurrency,
         cautionFee,
         currency: house.currency,
-        totalAmount: subtotal + serviceFee + cautionFee,
+        totalAmount: total,
       },
       include: { house: true, roomType: true, client: true },
     });
@@ -303,6 +308,9 @@ export class BookingsService {
         checkOut: true,
         paymentDeadline: true,
         totalAmount: true,
+        currency: true,
+        serviceFee: true,
+        serviceFeeCurrency: true,
         client: { select: { name: true, email: true } },
         roomType: { select: { name: true } },
         house: { select: { name: true, currency: true } },

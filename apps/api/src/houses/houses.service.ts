@@ -1,3 +1,5 @@
+import { ExchangeRatesService } from "src/payments/exchange-rates.service";
+import { currencyPriceFilter, validateCurrencyPrices } from "./currency-pricing";
 import {
   BadRequestException,
   ConflictException,
@@ -24,7 +26,10 @@ function isHotelProperty(propertyType?: string | null): boolean {
 
 @Injectable()
 export class HousesService {
-  constructor(private readonly db: PrismaService) {}
+  constructor(
+    private readonly db: PrismaService,
+    private readonly exchangeRates: ExchangeRatesService,
+  ) {}
 
   async createHouse(ownerId: string, role: UserRole, kycStatus: KycStatus, data: CreateHouseDto) {
     this.assertVerified(role, kycStatus);
@@ -51,6 +56,11 @@ export class HousesService {
     };
 
     this.assertRoomsAndPrice(data.propertyType, data.price, rooms);
+    validateCurrencyPrices(data.currency ?? "RWF", [
+      data.price,
+      data.cautionFee,
+      ...(rooms?.map((room) => room.price) ?? []),
+    ]);
 
     const house = await this.db.house.create({
       data: {
@@ -155,14 +165,8 @@ export class HousesService {
       }
     }
     if (minPrice !== undefined || maxPrice !== undefined) {
-      const priceRange = {
-        gte: minPrice,
-        lte: maxPrice,
-      };
-      // Match either the base price or any room price so null-priced hotels still filter.
-      andConditions.push({
-        OR: [{ price: priceRange }, { rooms: { some: { price: priceRange } } }],
-      });
+      const { exchangeRate } = await this.exchangeRates.convertToRwf(1, "USD");
+      andConditions.push(currencyPriceFilter(minPrice, maxPrice, exchangeRate!));
     }
 
     if (andConditions.length > 0) {
@@ -279,9 +283,18 @@ export class HousesService {
     };
 
     const effectiveType = data.propertyType ?? house.propertyType;
-    const effectivePrice = data.price ?? house.price ?? undefined;
+    validateCurrencyPrices(data.currency ?? house.currency, [
+      Number(data.price ?? house.price ?? 0),
+      Number(data.cautionFee ?? house.cautionFee ?? 0),
+      ...(rooms ?? house.rooms).map((room) => Number(room.price)),
+    ]);
+    const effectivePrice = data.price ?? (house.price == null ? undefined : Number(house.price));
     if (rooms !== undefined || data.propertyType !== undefined || data.price !== undefined) {
-      this.assertRoomsAndPrice(effectiveType, effectivePrice, rooms ?? house.rooms);
+      this.assertRoomsAndPrice(
+        effectiveType,
+        effectivePrice,
+        rooms ?? house.rooms.map((room) => ({ ...room, price: Number(room.price) })),
+      );
     }
 
     const updateData: Prisma.HouseUpdateInput = {

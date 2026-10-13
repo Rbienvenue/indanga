@@ -11,6 +11,7 @@ import { ReceiptsService } from "./receipts.service";
 @Module({
   imports: [PrismaModule, NotificationsModule, WsModule],
   controllers: [PaymentsController],
+  exports: [ExchangeRatesService],
   providers: [PaymentsService, ITECService, ReceiptsService, ExchangeRatesService],
 })
 export class PaymentsModule {}

@@ -21,6 +21,7 @@ type PaymentWithBooking = {
   amount: string;
   currency: "RWF";
   exchangeRate: string | null;
+  serviceFeeAmount: number | null;
   status: "PENDING" | "COMPLETED" | "FAILED";
   method: string;
   transactionReference: string;
@@ -96,7 +97,10 @@ const columns: ColumnDef<PaymentWithBooking>[] = [
     header: "Commission earned",
     accessorFn: (row) =>
       row.status === "COMPLETED"
-        ? Math.round((row.booking.serviceFee ?? 0) * Number(row.exchangeRate ?? 1))
+        ? Number(
+            row.serviceFeeAmount ??
+              Math.round((row.booking.serviceFee ?? 0) * Number(row.exchangeRate ?? 1)),
+          )
         : 0,
     cell: ({ row, getValue }) => (
       <span className="font-medium">

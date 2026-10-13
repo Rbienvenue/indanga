@@ -23,6 +23,7 @@ type PaymentWithBooking = {
   amount: string;
   currency: "RWF";
   exchangeRate: string | null;
+  serviceFeeAmount: number | null;
   status: "PENDING" | "COMPLETED" | "FAILED";
   createdAt: string;
   booking: {

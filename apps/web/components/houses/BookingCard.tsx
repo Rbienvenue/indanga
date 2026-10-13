@@ -1,6 +1,6 @@
 "use client";
 
-import type { House, RoomType } from "@indanga/db";
+import type { House, RoomType } from "@/@types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, CalendarIcon, Headphones, Loader2 } from "lucide-react";
@@ -90,7 +90,7 @@ export function BookingCard({
   const nights = isDated ? getNights(checkIn, checkOut) : 0;
   const selectedRoom = isHotel ? rooms.find((room) => room.id === roomTypeId) : undefined;
   const quantity = isHotel ? Math.max(Number(roomCount) || 1, 1) : 1;
-  const unitPrice = selectedRoom?.price ?? house.price ?? fromPrice ?? 0;
+  const unitPrice = Number(selectedRoom?.price ?? house.price ?? fromPrice ?? 0);
   const subtotal = isHotel
     ? unitPrice * quantity * (nights > 0 ? nights : 1)
     : isDated && nights > 0
@@ -102,9 +102,10 @@ export function BookingCard({
     staleTime: 5 * 60 * 1000,
   });
   const serviceFeeConfig = serviceFeeQuery.data?.data;
-  const serviceFee = calcServiceFee(subtotal, serviceFeeConfig);
-  const cautionFee = isHotel ? 0 : (house.cautionFee ?? 0);
-  const total = subtotal + serviceFee + cautionFee;
+  const serviceFee = calcServiceFee(subtotal, serviceFeeConfig, house.currency ?? "RWF");
+  const cautionFee = isHotel ? 0 : Number(house.cautionFee ?? 0);
+  const separateFee = serviceFeeConfig?.feeType === "fixed" && house.currency === "USD";
+  const total = Math.round((subtotal + cautionFee + (separateFee ? 0 : serviceFee)) * 100) / 100;
   const priceReady = (!isDated || nights > 0) && (!isHotel || Boolean(selectedRoom));
 
   const availabilityQuery = useQuery({

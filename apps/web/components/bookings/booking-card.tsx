@@ -12,7 +12,7 @@ import { ReceiptDialog } from "@/components/payments/receipt-dialog";
 import { MessageButton } from "@/components/messages/message-button";
 import { fetcher } from "@/lib/fetcher";
 import { firstImageUrl } from "@/lib/property-media";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatBookingTotal } from "@/lib/utils";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -74,6 +74,9 @@ export type Booking = {
   checkIn: string | null;
   checkOut: string | null;
   totalAmount: number | null;
+  currency?: string | null;
+  serviceFee?: number | null;
+  serviceFeeCurrency?: string | null;
   roomCount: number | null;
   guestCount?: number | null;
   roomType: { name: string } | null;
@@ -276,9 +279,7 @@ export function BookingDetails({ booking, isCar }: { booking?: Booking; isCar: b
               <div>
                 <dt className="text-muted-foreground">Total</dt>
                 <dd className="mt-1 font-medium">
-                  {booking.totalAmount != null
-                    ? formatCurrency(booking.totalAmount, booking.house.currency)
-                    : "—"}
+                  {booking.totalAmount != null ? formatBookingTotal(booking) : "—"}
                 </dd>
               </div>
             </dl>

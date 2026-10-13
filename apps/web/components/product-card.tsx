@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Bath, BedDouble, ChevronLeft, ChevronRight, Heart, MapPin, Pencil, Users } from "lucide-react";
 
 import type { ApiResponse } from "@/@types";
-import type { House } from "@indanga/db";
+import type { House } from "@/@types";
 import { DeletePropertyDialog } from "@/components/dashboard/properties/delete-property-dialog";
 import { PropertyVerificationBadge } from "@/components/properties/property-verification-badge";
 import {

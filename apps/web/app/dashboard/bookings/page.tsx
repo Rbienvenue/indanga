@@ -1,6 +1,7 @@
 "use client";
 
-import type { BookingStatus, House } from "@indanga/db";
+import type { BookingStatus } from "@indanga/db";
+import type { House } from "@/@types";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -10,9 +11,7 @@ import { useState } from "react";
 import type { PaginationResponse } from "@/@types";
 import { useSession } from "@/components/providers/session-provider";
 import { BookingCard, BookingDetails, type Booking } from "@/components/bookings/booking-card";
-import {
-  BookingPropertyCard,
-} from "@/components/bookings/booking-property-card";
+import { BookingPropertyCard } from "@/components/bookings/booking-property-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";

@@ -10,6 +10,7 @@ interface BookingPriceSummaryProps {
   quantity: number;
   subtotal: number;
   serviceFee: number;
+  serviceFeeCurrency?: string | null;
   cautionFee?: number | null;
   serviceFeeConfig?: ServiceFee | null;
   total: number;
@@ -24,11 +25,15 @@ export function BookingPriceSummary({
   quantity,
   subtotal,
   serviceFee,
+  serviceFeeCurrency,
   cautionFee,
   serviceFeeConfig,
   total,
   ready,
 }: BookingPriceSummaryProps) {
+  const feeCurrency =
+    serviceFeeCurrency ?? (serviceFeeConfig?.feeType === "fixed" ? "RWF" : (currency ?? "RWF"));
+  const separateFee = feeCurrency !== (currency ?? "RWF") && serviceFee > 0;
   const isHotel = bookingKind === "hotel";
   const isCar = bookingKind === "car";
   const displayCurrency = currency ?? "RWF";
@@ -63,9 +68,7 @@ export function BookingPriceSummary({
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-muted-foreground">{getServiceFeeLabel(serviceFeeConfig)}</dt>
-          <dd className="font-medium">
-            {ready ? formatCurrency(serviceFee, displayCurrency) : "—"}
-          </dd>
+          <dd className="font-medium">{ready ? formatCurrency(serviceFee, feeCurrency) : "—"}</dd>
         </div>
         {!isHotel && cautionFee != null && cautionFee > 0 ? (
           <div className="flex justify-between gap-3">
@@ -75,7 +78,10 @@ export function BookingPriceSummary({
         ) : null}
         <div className="flex justify-between gap-3 border-t pt-3 text-base font-bold">
           <dt>Total</dt>
-          <dd>{ready ? formatCurrency(total, displayCurrency) : "—"}</dd>
+          <dd className="text-right">
+            {ready ? formatCurrency(total, displayCurrency) : "—"}
+            {ready && separateFee ? ` + ${formatCurrency(serviceFee, feeCurrency)}` : ""}
+          </dd>
         </div>
       </dl>
     </div>

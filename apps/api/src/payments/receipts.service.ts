@@ -1,3 +1,4 @@
+import { getPaymentServiceFeeRwf } from "src/service-fees/service-fee.util";
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import type { UserSession } from "@thallesp/nestjs-better-auth";
 import { PrismaService } from "src/prisma/prisma.service";
@@ -32,8 +33,8 @@ export class ReceiptsService {
     const booking = payment.booking;
     const total = Number(payment.amount);
     const exchangeRate = payment.exchangeRate?.toNumber() ?? 1;
-    const serviceFee = Math.round((booking.serviceFee ?? 0) * exchangeRate);
-    const cautionFee = Math.round((booking.cautionFee ?? 0) * exchangeRate);
+    const serviceFee = getPaymentServiceFeeRwf(payment);
+    const cautionFee = Math.round(Number(booking.cautionFee ?? 0) * exchangeRate);
     const kind = getBookingKind(booking.house.propertyType);
     const period =
       booking.checkIn && booking.checkOut
@@ -54,7 +55,7 @@ export class ReceiptsService {
       provider: booking.house.owner.name,
       description: `${booking.house.name}${booking.roomType ? ` · ${booking.roomType.name} × ${booking.roomCount ?? 1}` : ""}`,
       period,
-      rate: booking.unitPrice == null ? null : Math.round(booking.unitPrice * exchangeRate),
+      rate: booking.unitPrice == null ? null : Math.round(Number(booking.unitPrice) * exchangeRate),
       duration: kind === "home" ? 1 : booking.nights,
       quantity: kind === "hotel" ? (booking.roomCount ?? 1) : 1,
       unit: kind === "car" ? "day" : kind === "hotel" ? "night" : "month",

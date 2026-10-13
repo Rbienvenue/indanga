@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getBookingKind } from "@/lib/booking-kind";
 import { fetcher } from "@/lib/fetcher";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, formatBookingTotal } from "@/lib/utils";
 
 const paymentMethods = [
   { method: "MOMO", label: "MoMo", logo: "/mtn.png" },
@@ -223,6 +223,9 @@ function BookingPaymentForm({
         subtotal={subtotal}
         cautionFee={booking.cautionFee}
         serviceFee={serviceFee}
+        serviceFeeCurrency={
+          booking.serviceFeeCurrency ?? booking.currency ?? booking.house.currency
+        }
         serviceFeeConfig={{
           bookingKind: kind,
           feeType: "fixed",
@@ -364,11 +367,7 @@ function BookingPaymentForm({
               </>
             ) : (
               <>
-                Pay{" "}
-                {formatCurrency(
-                  booking.totalAmount ?? 0,
-                  booking.currency ?? booking.house.currency ?? "RWF",
-                )}{" "}
+                Pay {formatBookingTotal(booking)}
                 <ArrowRight className="size-4" />
               </>
             )}

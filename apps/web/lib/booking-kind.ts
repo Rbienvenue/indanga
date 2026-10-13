@@ -1,4 +1,4 @@
-import type { House, RoomType } from "@indanga/db";
+import type { House, RoomType } from "@/@types";
 
 export type BookingKind = "home" | "hotel" | "car";
 

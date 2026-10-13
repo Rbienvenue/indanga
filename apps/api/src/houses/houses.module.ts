@@ -1,3 +1,4 @@
+import { PaymentsModule } from "src/payments/payments.module";
 import { Module } from "@nestjs/common";
 import { HousesController } from "./houses.controller";
 import { HousesService } from "./houses.service";
@@ -6,7 +7,7 @@ import { StorageService } from "src/storage/storage.service";
 import { UploadAuthorizationService } from "./upload-authorization.service";
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, PaymentsModule],
   controllers: [HousesController],
   providers: [HousesService, StorageService, UploadAuthorizationService],
 })

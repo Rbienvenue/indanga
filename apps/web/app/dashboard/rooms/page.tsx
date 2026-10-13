@@ -1,6 +1,6 @@
 "use client";
 
-import type { House, RoomType } from "@indanga/db";
+import type { House, RoomType } from "@/@types";
 import { useQuery } from "@tanstack/react-query";
 import { format, addDays } from "date-fns";
 import { BedDouble } from "lucide-react";

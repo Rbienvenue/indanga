@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { RoomType } from "@indanga/db";
+import type { RoomType } from "@/@types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
@@ -56,8 +56,9 @@ export function RoomDialog({
   const mutation = useMutation({
     mutationFn: (values: RoomValues) => {
       // The property API replaces the room list, so preserve every other room and its ID.
-      const updatedRooms: RoomTypeValues[] = rooms.map(({ id, name, price, totalRooms, capacity }) =>
-        id === room?.id ? { id, ...values } : { id, name, price, totalRooms, capacity },
+      const updatedRooms: RoomTypeValues[] = rooms.map(
+        ({ id, name, price, totalRooms, capacity }) =>
+          id === room?.id ? { id, ...values } : { id, name, price, totalRooms, capacity },
       );
       if (!room) updatedRooms.push(values);
       return fetcher(`/properties/${houseId}`, {
@@ -130,7 +131,12 @@ export function RoomDialog({
                   <FormItem>
                     <FormLabel>Price per night ({currency ?? "RWF"})</FormLabel>
                     <FormControl>
-                      <Input type="number" min={1} step={1} {...field} />
+                      <Input
+                        type="number"
+                        min={currency === "USD" ? 0.01 : 1}
+                        step={currency === "USD" ? 0.01 : 1}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,6 +1,6 @@
 "use client";
 
-import type { House } from "@indanga/db";
+import type { House } from "@/@types";
 import { useQueries } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";

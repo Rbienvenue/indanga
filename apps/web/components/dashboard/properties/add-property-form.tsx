@@ -1,7 +1,7 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { House, RoomType } from "@indanga/db";
+import type { House, RoomType } from "@/@types";
 import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, type FieldErrors, type Resolver } from "react-hook-form";

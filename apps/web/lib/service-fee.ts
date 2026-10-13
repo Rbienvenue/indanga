@@ -16,11 +16,16 @@ export const DEFAULT_SERVICE_FEE: ServiceFee = {
   isActive: true,
 };
 
-export function calcServiceFee(subtotal: number, fee?: ServiceFee | null): number {
+export function calcServiceFee(
+  subtotal: number,
+  fee?: ServiceFee | null,
+  currency = "RWF",
+): number {
   const config = fee ?? DEFAULT_SERVICE_FEE;
   if (!config.isActive || subtotal <= 0) return 0;
   if (config.feeType === "fixed") return Math.max(Math.round(config.amount), 0);
-  return Math.round(subtotal * (config.amount / 100));
+  const precision = currency === "USD" ? 100 : 1;
+  return Math.round((Math.round(subtotal * precision) * config.amount) / 100) / precision;
 }
 
 export function getServiceFeeLabel(fee?: ServiceFee | null): string {

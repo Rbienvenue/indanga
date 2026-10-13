@@ -152,7 +152,12 @@ export function EditPropertyDialog({ house }: { house: HouseData }) {
                   <FormItem>
                     <FormLabel>Price ({form.watch("currency") ?? "RWF"})</FormLabel>
                     <FormControl>
-                      <Input type="number" min={0} {...field} />
+                      <Input
+                        type="number"
+                        min={0}
+                        step={form.watch("currency") === "USD" ? 0.01 : 1}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
