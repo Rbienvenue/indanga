@@ -17,6 +17,7 @@ export type SupportArea = {
   title: string;
   description: string;
   items: string[];
+  faqIds: string[];
 };
 
 export const supportAreas: SupportArea[] = [
@@ -34,6 +35,7 @@ export const supportAreas: SupportArea[] = [
       "What should I do if the provider does not respond?",
       "What should I do if the property or car is unavailable?",
     ],
+    faqIds: ["how-to-book", "booking-confirmed", "after-booking-request", "provider-no-response"],
   },
   {
     icon: CreditCard,
@@ -51,6 +53,13 @@ export const supportAreas: SupportArea[] = [
       "What should I do if I was charged twice?",
       "What should I do if I do not recognize a payment?",
     ],
+    faqIds: [
+      "listed-price-includes",
+      "final-price-differs",
+      "deposit-required",
+      "when-to-pay",
+      "charged-twice",
+    ],
   },
   {
     icon: ReceiptText,
@@ -67,6 +76,7 @@ export const supportAreas: SupportArea[] = [
       "What if the listing was unavailable or substantially different?",
       "How do I submit a refund request?",
     ],
+    faqIds: ["how-to-cancel", "full-refund", "refund-time", "provider-cancels"],
   },
   {
     icon: Building2,
@@ -82,6 +92,7 @@ export const supportAreas: SupportArea[] = [
       "How do I report a suspicious provider?",
       "Can I request a property or car to be reviewed?",
     ],
+    faqIds: ["reviewed-meaning", "verified-meaning", "report-listing"],
   },
   {
     icon: ShieldCheck,
@@ -95,6 +106,7 @@ export const supportAreas: SupportArea[] = [
       "How do I report harassment, fraud, or unsafe behaviour?",
       "What information should I include in a safety report?",
     ],
+    faqIds: ["pay-outside"],
   },
   {
     icon: UserRound,
@@ -109,6 +121,7 @@ export const supportAreas: SupportArea[] = [
       "How do I manage saved listings?",
       "How does INDANGA use my personal information?",
     ],
+    faqIds: ["cannot-sign-in", "how-data-used"],
   },
   {
     icon: Briefcase,
@@ -125,6 +138,7 @@ export const supportAreas: SupportArea[] = [
       "What fees or commissions apply?",
       "What happens if a customer reports a listing?",
     ],
+    faqIds: ["become-provider", "listing-review", "provider-update-price"],
   },
 ];
 
@@ -149,7 +163,7 @@ export const supportChannels: SupportChannel[] = [
     title: "Call us",
     value: "+250 788 765 547",
     href: "tel:+250788765547",
-    description: "Available Monday to Saturday, 8:00 AM - 6:00 PM.",
+    description: "Available 24/7",
   },
   {
     icon: Siren,

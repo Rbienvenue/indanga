@@ -106,6 +106,8 @@ export default function Page() {
   const [query, setQuery] = useState("");
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
   const [openFaqId, setOpenFaqId] = useState<string | null>(null);
+  const [openArea, setOpenArea] = useState<string | null>(null);
+  const [openAreaFaq, setOpenAreaFaq] = useState<string | null>(null);
   const [reference, setReference] = useState<string | null>(null);
 
   // Deep-link support: /support#faq-<id> opens that answer.
@@ -214,7 +216,7 @@ export default function Page() {
               )}
             </div>
             <p className="mt-3 text-[11px] text-white/70">
-              Usually replies within 24 hours. For urgent booking or payment issues, include
+              Usually replies within 1 hr. For urgent booking or payment issues, include
               your booking reference.
             </p>
             <Button asChild className="mt-3 bg-[#0a7bd7] hover:bg-[#0869b8]">
@@ -237,26 +239,75 @@ export default function Page() {
             <p className="text-sm text-muted-foreground">
               Find help and useful information about using INDANGA.
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {supportAreas.map(({ icon: Icon, title, description }) => (
-                <div
-                  key={title}
-                  className="flex items-start justify-between gap-3 rounded-xl border bg-white p-4 shadow-sm dark:bg-card"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                      <Icon className="size-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold">{title}</h3>
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                        {description}
-                      </p>
-                    </div>
+            <div className="mt-4 grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {supportAreas.map(({ icon: Icon, title, description, faqIds }) => {
+                const open = openArea === title;
+                const faqs = faqIds.flatMap((id) => faqItems.find((item) => item.id === id) ?? []);
+                return (
+                  <div
+                    key={title}
+                    className="rounded-xl border bg-white shadow-sm transition-colors hover:border-primary/40 dark:bg-card"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpenArea(open ? null : title);
+                        setOpenAreaFaq(null);
+                      }}
+                      aria-expanded={open}
+                      className="flex w-full cursor-pointer items-start justify-between gap-3 p-4 text-left"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                          <Icon className="size-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold">{title}</h3>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                            {description}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronDown
+                        className={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? "" : "-rotate-90"}`}
+                      />
+                    </button>
+                    {open && (
+                      <div className="border-t px-4 py-3">
+                        {faqs.map((faq) => {
+                          const faqOpen = openAreaFaq === faq.id;
+                          return (
+                            <div key={faq.id} className="border-b py-2 last:border-b-0">
+                              <button
+                                type="button"
+                                onClick={() => setOpenAreaFaq(faqOpen ? null : faq.id)}
+                                aria-expanded={faqOpen}
+                                className="flex w-full cursor-pointer items-start justify-between gap-2 py-1 text-left"
+                              >
+                                <span className="text-[13px] font-medium">{faq.question}</span>
+                                <ChevronDown
+                                  className={`mt-0.5 size-3.5 shrink-0 text-muted-foreground transition-transform ${faqOpen ? "rotate-180" : ""}`}
+                                />
+                              </button>
+                              {faqOpen && (
+                                <p className="py-1 pr-2 text-xs leading-6 text-muted-foreground">
+                                  {faq.answer}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                        <Link
+                          href="#contact-form"
+                          className="mt-2 inline-block text-xs font-semibold text-primary hover:underline"
+                        >
+                          Still need help? Contact support
+                        </Link>
+                      </div>
+                    )}
                   </div>
-                  <ChevronDown className="size-4 -rotate-90 shrink-0 text-muted-foreground" />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
@@ -639,7 +690,7 @@ export default function Page() {
               <LifeBuoy className="size-5 text-amber-600" />
               <div>
                 <p className="text-sm font-semibold">Local support</p>
-                <p className="text-xs text-muted-foreground">Usually replies within 24 hours</p>
+                <p className="text-xs text-muted-foreground">Usually replies within one hour</p>
               </div>
             </div>
           </section>
