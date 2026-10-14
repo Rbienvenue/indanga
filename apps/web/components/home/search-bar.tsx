@@ -268,8 +268,6 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
       {searchContainer ? createPortal(searchInput, searchContainer) : null}
       <div className="mx-auto max-w-5xl rounded-xl border border-border/60 bg-card/95 px-5 py-4 shadow-xl shadow-black/10 backdrop-blur-sm sm:px-6">
         <div className="flex flex-col gap-3">
-          {!searchContainer ? searchInput : null}
-
           {!lockedType ? (
             <Tabs value={propertyType} onValueChange={handleTypeChange}>
               <TabsList className="mx-auto w-fit bg-muted p-1">

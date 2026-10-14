@@ -3,13 +3,15 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
   Post,
   Query,
   UseGuards,
   Param,
   Res,
+  Req,
 } from "@nestjs/common";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import { ReceiptsService } from "./receipts.service";
 import { generateReceiptPdf } from "./receipt-pdf";
 import { AllowAnonymous, Roles, Session, type UserSession } from "@thallesp/nestjs-better-auth";
@@ -92,25 +94,51 @@ export class PaymentsController {
   @Post("callback")
   @AllowAnonymous()
   @UseGuards(CallbackGuard)
-  async handleCallback(@Body() body: Record<string, unknown>) {
-    if (isCardPaymentCallback(body)) {
-      const card = plainToInstance(CardPaymentCallbackDto, body);
-      const errors = await validate(card);
-      if (errors.length > 0) {
-        throw new BadRequestException("Invalid card payment callback");
+  async handleCallback(@Body() body: Record<string, unknown>, @Req() request: Request) {
+    // Temporary callback diagnostics; remove after verifying the gateway payload.
+    console.log(
+      "[payment-callback-debug] received",
+      JSON.stringify({
+        body,
+        contentType: request.headers["content-type"],
+        vercelId: request.headers["x-vercel-id"],
+      }),
+    );
+    try {
+      if (isCardPaymentCallback(body)) {
+        const card = plainToInstance(CardPaymentCallbackDto, body);
+        const errors = await validate(card);
+        if (errors.length > 0) {
+          console.error("[payment-callback-debug] card validation failed", JSON.stringify(errors));
+          throw new BadRequestException("Invalid card payment callback");
+        }
+        const result = await this.paymentsService.handleCardCallback(card);
+        return new ApiResponse(result, "payment status checked");
       }
-      const result = await this.paymentsService.handleCardCallback(card);
-      return new ApiResponse(result, "payment status checked");
-    }
-    if (isMobilePaymentCallback(body)) {
-      const mobile = plainToInstance(MobilePaymentCallbackDto, body);
-      const errors = await validate(mobile);
-      if (errors.length > 0) {
-        throw new BadRequestException("Invalid mobile payment callback");
+      if (isMobilePaymentCallback(body)) {
+        const mobile = plainToInstance(MobilePaymentCallbackDto, body);
+        const errors = await validate(mobile);
+        if (errors.length > 0) {
+          console.error(
+            "[payment-callback-debug] mobile validation failed",
+            JSON.stringify(errors),
+          );
+          throw new BadRequestException("Invalid mobile payment callback");
+        }
+        const result = await this.paymentsService.checkPaymentStatus(mobile.data.transaction_id);
+        return new ApiResponse(result, "payment status checked");
       }
-      const result = await this.paymentsService.checkPaymentStatus(mobile.data.transaction_id);
-      return new ApiResponse(result, "payment status checked");
+      throw new BadRequestException("Unsupported payment callback payload");
+    } catch (error) {
+      console.error(
+        "[payment-callback-debug] rejected",
+        JSON.stringify({
+          error: error instanceof HttpException ? error.getResponse() : String(error),
+          status: error instanceof HttpException ? error.getStatus() : 500,
+          stack: error instanceof Error ? error.stack : undefined,
+        }),
+      );
+      throw error;
     }
-    throw new BadRequestException("Unsupported payment callback payload");
   }
 }
