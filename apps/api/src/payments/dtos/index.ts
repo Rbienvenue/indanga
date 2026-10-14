@@ -2,6 +2,7 @@ import { Type } from "class-transformer";
 import {
   IsEnum,
   IsInt,
+  IsNumber,
   Min,
   IsOptional,
   IsString,
@@ -62,8 +63,8 @@ export class CardPaymentCallbackDto {
   @IsString()
   PCODE: string;
 
-  @IsString()
-  amount: string;
+  @IsNumber()
+  amount: number;
 
   @IsString()
   transID: string;
