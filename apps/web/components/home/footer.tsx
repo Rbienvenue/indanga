@@ -3,10 +3,11 @@ import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { FaEnvelope, FaFacebookF, FaInstagram, FaLinkedinIn, FaRegEnvelope, FaTiktok, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { Separator } from "@/components/ui/separator";
+import { ProviderAgreementDialog } from "@/components/legal/provider-agreement-dialog";
 
 const exploreLinks = [
   { label: "Homes", href: "/homes" },
-  { label: "Hotels", href: "/hotels" },
+  { label: "Hotels & Apartments", href: "/hotels" },
   { label: "Cars", href: "/cars" },
 ];
 
@@ -108,6 +109,9 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <ProviderAgreementDialog />
+              </li>
             </ul>
           </div>
 
