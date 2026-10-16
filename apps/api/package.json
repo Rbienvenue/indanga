@@ -12,7 +12,7 @@
     "fmt:check": "oxfmt . --check",
     "dev": "nest start --watch",
     "email:dev": "email dev --dir src/email --port 3005",
-    "start": "NODE_ENV=production node dist/main.js",
+    "start": "node dist/main.js",
     "lint": "oxlint . --type-aware --type-check",
     "lint:fix": "oxlint . --fix --type-aware --type-check",
     "typecheck": "tsc --noEmit",
