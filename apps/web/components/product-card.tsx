@@ -4,7 +4,16 @@ import { useCallback, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
-import { Bath, BedDouble, ChevronLeft, ChevronRight, Heart, MapPin, Pencil, Users } from "lucide-react";
+import {
+  Bath,
+  BedDouble,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  MapPin,
+  Pencil,
+  Users,
+} from "lucide-react";
 
 import type { ApiResponse } from "@/@types";
 import type { House } from "@/@types";
@@ -80,8 +89,7 @@ export function ProductCard({
   const [isHovered, setIsHovered] = useState(false);
 
   // Card views stay image-first and lightweight: videos never reach next/image here.
-  const photoSlides = media?.filter((url) => !isVideoMediaUrl(url)) ?? [];
-  const images = photoSlides.length > 0 ? photoSlides : ["/image2.jpeg"];
+  const images = media?.filter((url) => !isVideoMediaUrl(url)) ?? [];
   const hasMultipleImages = images.length > 1;
 
   const goToPrev = useCallback(
@@ -149,29 +157,31 @@ export function ProductCard({
       )}
       <div className="relative aspect-[16/10] w-full overflow-hidden">
         {/* Image slider track */}
-        <div
-          className="absolute inset-0 flex transition-transform duration-300 ease-in-out"
-          style={{
-            width: `${images.length * 100}%`,
-            transform: `translateX(-${(currentIndex * 100) / images.length}%)`,
-          }}
-        >
-          {images.map((src, index) => (
-            <div
-              key={src + index}
-              className="relative h-full"
-              style={{ width: `${100 / images.length}%` }}
-            >
-              <Image
-                src={src}
-                alt={`${name} - image ${index + 1}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-            </div>
-          ))}
-        </div>
+        {images.length > 0 && (
+          <div
+            className="absolute inset-0 flex transition-transform duration-300 ease-in-out"
+            style={{
+              width: `${images.length * 100}%`,
+              transform: `translateX(-${(currentIndex * 100) / images.length}%)`,
+            }}
+          >
+            {images.map((src, index) => (
+              <div
+                key={src + index}
+                className="relative h-full"
+                style={{ width: `${100 / images.length}%` }}
+              >
+                <Image
+                  src={src}
+                  alt={`${name} - image ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Navigation arrows — visible on hover when multiple images */}
         {hasMultipleImages && (
