@@ -1,0 +1,26 @@
+{
+  "name": "@indanga/translations",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt . --check",
+    "clean": "rm -rf node_modules dist .turbo"
+  },
+  "devDependencies": {
+    "tsdown": "^0.22.3",
+    "typescript": "^5"
+  }
+}

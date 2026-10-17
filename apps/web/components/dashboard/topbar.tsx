@@ -9,6 +9,7 @@ import { useSession } from "@/components/providers/session-provider";
 import { NotificationsDrawer } from "@/components/notifications/notifications-drawer";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { UserAvatar } from "../user/user-avatar";
+import { LocaleSelector } from "@/components/locale-selector";
 
 export function Topbar() {
   const pathname = usePathname();
@@ -43,6 +44,7 @@ export function Topbar() {
         </div>
       ) : null}
       <div className="flex h-16.5 shrink-0 items-center gap-1">
+        <LocaleSelector />
         <NotificationsDrawer />
         <UserAvatar showDashboard={false} showThemeToggle />
       </div>

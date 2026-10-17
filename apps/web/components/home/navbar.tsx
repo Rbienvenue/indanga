@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
+import { LocaleSelector } from "@/components/locale-selector";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -12,17 +14,17 @@ import { useSession } from "@/components/providers/session-provider";
 import { UserAvatar } from "@/components/user/user-avatar";
 
 const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "Explore", href: "/properties" },
-];
+  { label: "home", href: "/" },
+  { label: "explore", href: "/properties" },
+] as const;
 
 const aboutLinks = [
-  { label: "Who we are", href: "/about" },
-  { label: "Our purpose", href: "/about#our-purpose" },
-  { label: "Our team", href: "/about#team" },
-  { label: "Our operations", href: "/about#our-operations" },
-  { label: "Contact", href: "/about#contact" },
-];
+  { label: "whoWeAre", href: "/about" },
+  { label: "ourPurpose", href: "/about#our-purpose" },
+  { label: "ourTeam", href: "/about#team" },
+  { label: "ourOperations", href: "/about#our-operations" },
+  { label: "contact", href: "/about#contact" },
+] as const;
 
 const socialLinks = [
   { label: "LinkedIn", href: "#", icon: FaLinkedin },
@@ -32,6 +34,7 @@ const socialLinks = [
 ];
 
 export function Navbar({ solid = false }: { solid?: boolean } = {}) {
+  const t = useTranslations("navigation");
   const [scrolled, setScrolled] = React.useState(solid);
   const [aboutOpen, setAboutOpen] = React.useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = React.useState(false);
@@ -129,11 +132,11 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
           <div className="hidden items-center gap-1 md:flex">
             {navLinks.map((link) => (
               <Link
-                key={link.label}
+                key={link.href}
                 href={link.href}
                 className={`border-b-2 px-3.5 py-2 text-sm font-medium text-white/75 transition-colors hover:border-accent hover:text-accent ${isActiveLink(link.href) ? "border-accent text-accent" : "border-transparent"}`}
               >
-                {link.label}
+                {t(link.label)}
               </Link>
             ))}
             <div
@@ -158,7 +161,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                 }}
                 className={`flex items-center gap-1 border-b-2 px-3.5 py-2 text-sm font-medium text-white/75 transition-colors hover:border-accent hover:text-accent ${pathname === "/about" ? "border-accent text-accent" : "border-transparent"}`}
               >
-                About Us
+                {t("aboutUs")}
                 <ChevronDown
                   className={`size-4 transition-transform ${aboutOpen ? "rotate-180" : ""}`}
                 />
@@ -176,7 +179,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                       onClick={closeAboutMenu}
                       className="block rounded-md px-3 py-2 text-sm text-white/80 transition-colors hover:bg-[#101044] hover:text-accent"
                     >
-                      {link.label}
+                      {t(link.label)}
                     </Link>
                   ))}
                 </div>
@@ -186,22 +189,23 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
 
           {/* Desktop CTA - Show avatar if authenticated, otherwise show auth links */}
           <div className="hidden items-center gap-3 md:flex">
+            <LocaleSelector className="text-white hover:bg-white/10 hover:text-white" />
             {session ? (
               <>
                 <UserAvatar />
                 {pathname === "/" && (
                   <Button asChild size="lg" className="font-semibold">
-                    <Link href="/dashboard">Open Dashboard</Link>
+                    <Link href="/dashboard">{t("openDashboard")}</Link>
                   </Button>
                 )}
               </>
             ) : (
               <>
                 <Button size="lg" variant="outline" className="px-6 font-semibold" asChild>
-                  <Link href="/auth/login">Login</Link>
+                  <Link href="/auth/login">{t("login")}</Link>
                 </Button>
                 <Button size="lg" variant="default" className="px-6 font-semibold" asChild>
-                  <Link href="/auth/signup">Sign Up</Link>
+                  <Link href="/auth/signup">{t("signup")}</Link>
                 </Button>
               </>
             )}
@@ -214,7 +218,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
             <>
               {pathname === "/" && (
                 <Button asChild size="sm">
-                  <Link href="/dashboard">Dashboard</Link>
+                  <Link href="/dashboard">{t("dashboard")}</Link>
                 </Button>
               )}
             </>
@@ -226,10 +230,10 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                 variant="ghost"
                 className="px-2 text-white hover:text-accent"
               >
-                <Link href="/auth/login">Login</Link>
+                <Link href="/auth/login">{t("login")}</Link>
               </Button>
               <Button asChild size="sm" variant="default" className="px-2.5">
-                <Link href="/auth/signup">Sign Up</Link>
+                <Link href="/auth/signup">{t("signup")}</Link>
               </Button>
             </>
           )}
@@ -238,7 +242,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-white/80 hover:text-primary">
                 <Menu className="size-5" />
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t("openMenu")}</span>
               </Button>
             </SheetTrigger>
             <SheetContent
@@ -274,15 +278,18 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                   ))}
                 </div>
               </SheetTitle>
+              <div className="flex justify-center border-b border-primary/30 px-5 py-3">
+                <LocaleSelector className="text-white hover:bg-white/10 hover:text-white" />
+              </div>
               <div className="flex flex-col">
                 {navLinks.map((link) => (
                   <Link
-                    key={link.label}
+                    key={link.href}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex min-h-20 w-full items-center justify-center border-b-2 px-5 text-base font-semibold text-white/85 transition-colors hover:border-accent hover:bg-[#101044] hover:text-accent ${isActiveLink(link.href) ? "border-accent text-accent" : "border-primary/30"}`}
                   >
-                    {link.label}
+                    {t(link.label)}
                   </Link>
                 ))}
                 <div className="border-b-2 border-primary/30">
@@ -292,7 +299,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                     onClick={() => setMobileAboutOpen((open) => !open)}
                     className={`flex min-h-20 w-full items-center justify-center gap-2 px-5 text-base font-semibold text-white/85 transition-colors hover:bg-[#101044] hover:text-accent ${pathname === "/about" ? "text-accent" : ""}`}
                   >
-                    About Us
+                    {t("aboutUs")}
                     <ChevronDown
                       className={`size-5 transition-transform ${mobileAboutOpen ? "rotate-180" : ""}`}
                     />
@@ -310,7 +317,7 @@ export function Navbar({ solid = false }: { solid?: boolean } = {}) {
                           }}
                           className="block border-b border-white/10 px-3 py-3 text-center text-sm text-white/80 last:border-b-0 hover:text-accent"
                         >
-                          {link.label}
+                          {t(link.label)}
                         </Link>
                       ))}
                     </div>

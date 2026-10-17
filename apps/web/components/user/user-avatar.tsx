@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,10 +33,12 @@ interface UserAvatarProps {
 }
 
 export function UserAvatar({ showDashboard = true, showThemeToggle = false }: UserAvatarProps) {
+  const t = useTranslations("navigation");
+  const common = useTranslations("common");
   const router = useRouter();
   const session = useSession();
   const user = session?.user;
-  const displayName = user?.name ?? "Guest";
+  const displayName = user?.name ?? common("guest");
   const initials = getInitials(displayName) || "G";
 
   if (!session) return null;
@@ -64,20 +67,20 @@ export function UserAvatar({ showDashboard = true, showThemeToggle = false }: Us
           {showDashboard && (
             <>
               <DropdownMenuItem onClick={() => router.push("/dashboard")}>
-                Dashboard
+                {t("dashboard")}
               </DropdownMenuItem>
             </>
           )}
 
           <DropdownMenuItem onClick={() => router.push("/dashboard/profile")}>
-            Profile
+            {t("profile")}
           </DropdownMenuItem>
         </DropdownMenuGroup>
         {showThemeToggle ? (
           <>
             <DropdownMenuSeparator />
             <div className="flex items-center justify-between gap-2 px-2 py-1.5">
-              <span className="text-sm">Theme</span>
+              <span className="text-sm">{common("theme")}</span>
               <ThemeToggle />
             </div>
           </>
@@ -94,7 +97,7 @@ export function UserAvatar({ showDashboard = true, showThemeToggle = false }: Us
           }
         >
           <LogOut className="size-4" />
-          Sign out
+          {t("signOut")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,0 +1,10 @@
+{
+  "language": "Language",
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "rw": "Kinyarwanda"
+  },
+  "guest": "Guest",
+  "theme": "Theme"
+}

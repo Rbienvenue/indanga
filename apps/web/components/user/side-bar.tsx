@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
+import type { Messages } from "@indanga/translations";
 import { Collapsible } from "radix-ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ApiResponse } from "@/@types";
@@ -52,76 +54,85 @@ import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
-const tenantItems = [
-  { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { title: "My Bookings", href: "/dashboard/bookings", icon: Calendar },
-  { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
-  { title: "Messages", href: "/dashboard/messages", icon: MessageSquare },
-  { title: "My Favorites", href: "/dashboard/favorites", icon: Heart },
-  { title: "Search", href: "/dashboard/search", icon: Search },
-  { title: "Profile Settings", href: "/dashboard/profile", icon: User },
-  { title: "Support", href: "/dashboard/support", icon: LifeBuoy },
+type NavigationItem = {
+  title: keyof Messages["navigation"];
+  href: string;
+  icon: typeof LayoutDashboard;
+};
+
+const tenantItems: NavigationItem[] = [
+  { title: "overview", href: "/dashboard", icon: LayoutDashboard },
+  { title: "myBookings", href: "/dashboard/bookings", icon: Calendar },
+  { title: "payments", href: "/dashboard/payments", icon: CreditCard },
+  { title: "messages", href: "/dashboard/messages", icon: MessageSquare },
+  { title: "myFavorites", href: "/dashboard/favorites", icon: Heart },
+  { title: "search", href: "/dashboard/search", icon: Search },
+  { title: "profileSettings", href: "/dashboard/profile", icon: User },
+  { title: "support", href: "/dashboard/support", icon: LifeBuoy },
 ];
 
-const agentItems = [
-  { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { title: "Listings", href: "/dashboard/listings", icon: House },
-  { title: "Bookings", href: "/dashboard/bookings", icon: Calendar },
-  { title: "Calendar", href: "/dashboard/calendar", icon: Calendar },
-  { title: "Guests", href: "/dashboard/guest", icon: Users },
-  { title: "Messages", href: "/dashboard/messages", icon: MessageSquare },
-  { title: "Payments", href: "/dashboard/payments", icon: CreditCard },
-  { title: "Profile Settings", href: "/dashboard/profile", icon: User },
+const agentItems: NavigationItem[] = [
+  { title: "overview", href: "/dashboard", icon: LayoutDashboard },
+  { title: "listings", href: "/dashboard/listings", icon: House },
+  { title: "bookings", href: "/dashboard/bookings", icon: Calendar },
+  { title: "calendar", href: "/dashboard/calendar", icon: Calendar },
+  { title: "guests", href: "/dashboard/guest", icon: Users },
+  { title: "messages", href: "/dashboard/messages", icon: MessageSquare },
+  { title: "payments", href: "/dashboard/payments", icon: CreditCard },
+  { title: "profileSettings", href: "/dashboard/profile", icon: User },
 ];
 
-const carItems = agentItems
+const carItems: NavigationItem[] = agentItems
   .filter((item) => item.href !== "/dashboard/reviews")
   .map((item) => {
-    if (item.href === "/dashboard/listings") return { ...item, title: "Vehicles", icon: CarFront };
-    if (item.href === "/dashboard/guest") return { ...item, title: "Clients" };
+    if (item.href === "/dashboard/listings") return { ...item, title: "vehicles", icon: CarFront };
+    if (item.href === "/dashboard/guest") return { ...item, title: "clients" };
     return item;
   });
 // carItems.splice(7, 0, { title: "Compliance", href: "/dashboard/compliance", icon: ShieldCheck });
 
-const houseItems = agentItems
+const houseItems: NavigationItem[] = agentItems
   .filter((item) => item.href !== "/dashboard/calendar")
   .map((item) => {
-    if (item.href === "/dashboard/listings") return { ...item, title: "Houses" };
-    if (item.href === "/dashboard/guest") return { ...item, title: "Clients" };
-    if (item.href === "/dashboard/properties/new") return { ...item, title: "Add House" };
+    if (item.href === "/dashboard/listings") return { ...item, title: "houses" };
+    if (item.href === "/dashboard/guest") return { ...item, title: "clients" };
+    if (item.href === "/dashboard/properties/new") return { ...item, title: "addHouse" };
     return item;
   });
 
-const adminGroups = [
+const adminGroups: (Omit<NavigationItem, "href"> & { items: NavigationItem[] })[] = [
   {
-    title: "Users",
+    title: "users",
     icon: Users,
     items: [
-      { title: "Users", href: "/admin/users", icon: Users },
-      { title: "Verification", href: "/admin/kyc", icon: BadgeCheck },
+      { title: "users", href: "/admin/users", icon: Users },
+      { title: "verification", href: "/admin/kyc", icon: BadgeCheck },
     ],
   },
   {
-    title: "Listings",
+    title: "listings",
     icon: House,
     items: [
-      { title: "Listing", href: "/admin/properties", icon: House },
-      { title: "Listing Reports", href: "/admin/reports", icon: FileChartColumn },
+      { title: "listing", href: "/admin/properties", icon: House },
+      { title: "listingReports", href: "/admin/reports", icon: FileChartColumn },
     ],
   },
 ];
 
-const adminItems = [
-  { title: "Overview", href: "/admin", icon: Shield },
-  { title: "Booking Queue", href: "/admin/bookings", icon: Calendar },
-  { title: "Payments & Refunds", href: "/admin/payments", icon: CreditCard },
-  { title: "Support Inbox", href: "/admin/support", icon: LifeBuoy },
-  { title: "Settings", href: "/admin/settings", icon: Settings },
+const adminItems: NavigationItem[] = [
+  { title: "overview", href: "/admin", icon: Shield },
+  { title: "bookingQueue", href: "/admin/bookings", icon: Calendar },
+  { title: "paymentsRefunds", href: "/admin/payments", icon: CreditCard },
+  { title: "supportInbox", href: "/admin/support", icon: LifeBuoy },
+  { title: "settings", href: "/admin/settings", icon: Settings },
 ];
 
-const kycItems = [{ title: "Verification", href: "/dashboard/kyc", icon: ShieldCheck }];
+const kycItems: NavigationItem[] = [
+  { title: "verification", href: "/dashboard/kyc", icon: ShieldCheck },
+];
 
 export function AppSidebar() {
+  const t = useTranslations("navigation");
   const pathname = usePathname();
   const router = useRouter();
   const session = useSession();
@@ -132,7 +143,7 @@ export function AppSidebar() {
     setOpenMobile(false);
   }, [pathname, setOpenMobile]);
 
-  const items =
+  const items: NavigationItem[] =
     session?.user?.role === "admin"
       ? adminItems
       : session?.user?.role === "landlord"
@@ -144,7 +155,7 @@ export function AppSidebar() {
               ? houseItems
               : [
                   ...agentItems.slice(0, 4),
-                  { title: "Rooms", href: "/dashboard/rooms", icon: BedDouble },
+                  { title: "rooms", href: "/dashboard/rooms", icon: BedDouble },
                   ...agentItems.slice(4),
                 ]
         : tenantItems;
@@ -185,7 +196,7 @@ export function AppSidebar() {
     };
   }, [socket, isConnected, session, hasMessages, queryClient]);
 
-  function renderMenuItem(item: (typeof adminItems)[number]) {
+  function renderMenuItem(item: NavigationItem) {
     const active =
       pathname === item.href ||
       (item.href !== "/dashboard" &&
@@ -198,16 +209,16 @@ export function AppSidebar() {
     const label =
       badgeCount > 0
         ? messageItem
-          ? `${item.title}, ${badgeCount} unread messages`
-          : `${item.title}, ${badgeCount} bookings awaiting review`
-        : item.title;
+          ? t("unreadMessages", { title: t(item.title), count: badgeCount })
+          : t("pendingBookings", { title: t(item.title), count: badgeCount })
+        : t(item.title);
 
     return (
       <SidebarMenuItem key={item.href}>
         <SidebarMenuButton asChild isActive={active} tooltip={label}>
           <Link href={item.href} onClick={closeMobileSidebar} aria-label={label}>
             <item.icon />
-            <span>{item.title}</span>
+            <span>{t(item.title)}</span>
           </Link>
         </SidebarMenuButton>
         {badgeCount > 0 ? (
@@ -241,7 +252,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("menu")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {session?.user?.role === "admin" ? (
@@ -252,7 +263,7 @@ export function AppSidebar() {
                       <SidebarMenuItem>
                         <Collapsible.Trigger asChild>
                           <SidebarMenuButton
-                            tooltip={group.title}
+                            tooltip={t(group.title)}
                             isActive={group.items.some(
                               (item) =>
                                 pathname === item.href || pathname.startsWith(`${item.href}/`),
@@ -261,7 +272,7 @@ export function AppSidebar() {
                             className="group/collapsible"
                           >
                             <group.icon />
-                            <span>{group.title}</span>
+                            <span>{t(group.title)}</span>
                             <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
                           </SidebarMenuButton>
                         </Collapsible.Trigger>
@@ -293,7 +304,7 @@ export function AppSidebar() {
           }
         >
           <LogOut className="size-4" />
-          <span className="group-data-[collapsible=icon]:hidden">Sign out</span>
+          <span className="group-data-[collapsible=icon]:hidden">{t("signOut")}</span>
         </Button>
       </SidebarFooter>
       <SidebarRail />
