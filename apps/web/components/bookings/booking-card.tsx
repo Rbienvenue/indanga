@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReceiptDialog } from "@/components/payments/receipt-dialog";
 import { MessageButton } from "@/components/messages/message-button";
 import { fetcher } from "@/lib/fetcher";
+import { getBookingKind } from "@/lib/booking-kind";
 import { firstImageUrl } from "@/lib/property-media";
 import { formatCurrency, formatBookingTotal } from "@/lib/utils";
 import { useState } from "react";
@@ -77,10 +78,18 @@ export type Booking = {
   currency?: string | null;
   serviceFee?: number | null;
   serviceFeeCurrency?: string | null;
+  months?: number | null;
   roomCount: number | null;
   guestCount?: number | null;
   roomType: { name: string } | null;
-  house: { id: string; name: string; location: string; media: string[]; currency: string };
+  house: {
+    id: string;
+    name: string;
+    location: string;
+    media: string[];
+    currency: string;
+    propertyType?: string;
+  };
   client: { name: string; email: string };
 };
 
@@ -254,6 +263,12 @@ export function BookingDetails({ booking, isCar }: { booking?: Booking; isCar: b
               ) : null}
             </div>
             <dl className="grid grid-cols-2 gap-4 text-sm">
+              {getBookingKind(booking.house.propertyType) === "home" ? (
+                <div>
+                  <dt className="text-muted-foreground">Number of months</dt>
+                  <dd className="mt-1 font-medium">{booking.months ?? 1}</dd>
+                </div>
+              ) : null}
               {booking.guestCount != null ? (
                 <div>
                   <dt className="text-muted-foreground">Number of guests</dt>

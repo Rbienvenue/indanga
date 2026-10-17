@@ -6,6 +6,7 @@ interface BookingPriceSummaryProps {
   bookingKind: BookingKind;
   currency?: string | null;
   unitPrice: number;
+  months?: number | null;
   nights: number;
   quantity: number;
   subtotal: number;
@@ -21,6 +22,7 @@ export function BookingPriceSummary({
   bookingKind,
   currency,
   unitPrice,
+  months,
   nights,
   quantity,
   subtotal,
@@ -54,7 +56,9 @@ export function BookingPriceSummary({
           <dt className="text-muted-foreground">
             Number of {isHotel ? "nights" : isCar ? "days" : "months"}
           </dt>
-          <dd>{bookingKind === "home" ? 1 : nights > 0 ? nights : "—"}</dd>
+          <dd>
+            {bookingKind === "home" ? (ready ? (months ?? 1) : "—") : nights > 0 ? nights : "—"}
+          </dd>
         </div>
         {isHotel ? (
           <div className="flex justify-between gap-3">

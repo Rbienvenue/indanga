@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { MessageButton } from "@/components/messages/message-button";
+import { getBookingKind } from "@/lib/booking-kind";
 import { fetcher } from "@/lib/fetcher";
 
 type BookingStatusKey = BookingPropertyCardBooking["status"];
@@ -218,6 +219,11 @@ export function BookingRequestStatus({
           ) : null}
         </>
       )}
+      {getBookingKind(booking.house.propertyType) === "home" ? (
+        <p className="mt-2 text-sm text-muted-foreground">
+          {booking.months ?? 1} month{(booking.months ?? 1) === 1 ? "" : "s"} rent
+        </p>
+      ) : null}
       {booking.guestCount != null ? (
         <p className="mt-2 text-sm text-muted-foreground">
           {booking.roomType

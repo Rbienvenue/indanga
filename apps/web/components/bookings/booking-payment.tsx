@@ -204,8 +204,8 @@ function BookingPaymentForm({
     quote.isError ||
     quote.isFetching;
   const kind = getBookingKind(booking.house.propertyType);
-  const quantity = booking.roomCount ?? 1;
-  const duration = kind === "home" ? 1 : (booking.nights ?? 1);
+  const quantity = kind === "hotel" ? (booking.roomCount ?? 1) : 1;
+  const duration = kind === "home" ? (booking.months ?? 1) : (booking.nights ?? 1);
   const unitPrice = booking.unitPrice ?? booking.house.price ?? 0;
   const subtotal = unitPrice * quantity * duration;
   const serviceFee =
@@ -218,6 +218,7 @@ function BookingPaymentForm({
         bookingKind={kind}
         currency={booking.currency ?? booking.house.currency}
         unitPrice={unitPrice}
+        months={booking.months}
         nights={booking.nights ?? 0}
         quantity={quantity}
         subtotal={subtotal}

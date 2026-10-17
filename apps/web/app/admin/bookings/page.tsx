@@ -31,6 +31,7 @@ type BookingWithDetails = {
   createdAt: string;
   checkIn?: string | null;
   checkOut?: string | null;
+  months?: number | null;
   nights?: number | null;
   totalAmount?: number | null;
   currency?: string | null;
@@ -127,6 +128,12 @@ function AdminBookingActions({ booking }: { booking: BookingWithDetails }) {
                   <dd className="mt-1 font-medium">
                     {new Date(booking.checkOut).toLocaleDateString()}
                   </dd>
+                </div>
+              ) : null}
+              {getBookingKind(booking.house.propertyType) === "home" ? (
+                <div>
+                  <dt className="text-muted-foreground">Number of months</dt>
+                  <dd className="mt-1 font-medium">{booking.months ?? 1}</dd>
                 </div>
               ) : null}
               {booking.nights ? (

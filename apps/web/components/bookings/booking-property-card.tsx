@@ -61,6 +61,7 @@ export interface BookingPropertyCardBooking {
   responseDeadline?: string | null;
   checkIn?: string | null;
   checkOut?: string | null;
+  months?: number | null;
   nights?: number | null;
   totalAmount?: number | null;
   serviceFee?: number | null;
@@ -128,6 +129,11 @@ export function BookingPropertyCard({
             {new Date(booking.checkOut).toLocaleDateString()}
           </p>
         ) : null}
+        {getBookingKind(house.propertyType) === "home" ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            {booking.months ?? 1} month{(booking.months ?? 1) === 1 ? "" : "s"} rent
+          </p>
+        ) : null}
         {booking.guestCount != null ? (
           <p className="mt-2 text-sm text-muted-foreground">
             {booking.roomType
@@ -186,6 +192,12 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
         {booking.guestCount != null ? (
           <p className="mt-2 text-sm text-muted-foreground">
             Number of guests: {booking.guestCount}
+          </p>
+        ) : null}
+
+        {getBookingKind(house.propertyType) === "home" ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Number of months: {booking.months ?? 1}
           </p>
         ) : null}
 

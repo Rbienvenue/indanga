@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const bookingSchema = z.object({
   houseId: z.string().min(1),
+  months: z.coerce.number<number>().int().min(1, "Select at least 1 month").optional(),
   checkIn: z.string().optional(),
   checkOut: z.string().optional(),
   roomTypeId: z.string().optional(),

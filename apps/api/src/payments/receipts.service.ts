@@ -39,7 +39,7 @@ export class ReceiptsService {
     const period =
       booking.checkIn && booking.checkOut
         ? `${booking.checkIn.toLocaleDateString("en-GB", { timeZone: "Africa/Kigali" })} - ${booking.checkOut.toLocaleDateString("en-GB", { timeZone: "Africa/Kigali" })}`
-        : "Monthly rent";
+        : `${booking.months ?? 1} month${(booking.months ?? 1) === 1 ? "" : "s"} rent`;
     return {
       id: payment.id,
       bookingReference: booking.bookingId ?? booking.id,
@@ -56,7 +56,7 @@ export class ReceiptsService {
       description: `${booking.house.name}${booking.roomType ? ` · ${booking.roomType.name} × ${booking.roomCount ?? 1}` : ""}`,
       period,
       rate: booking.unitPrice == null ? null : Math.round(Number(booking.unitPrice) * exchangeRate),
-      duration: kind === "home" ? 1 : booking.nights,
+      duration: kind === "home" ? (booking.months ?? 1) : booking.nights,
       quantity: kind === "hotel" ? (booking.roomCount ?? 1) : 1,
       unit: kind === "car" ? "day" : kind === "hotel" ? "night" : "month",
       subtotal: total - serviceFee - cautionFee,

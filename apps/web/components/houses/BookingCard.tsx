@@ -15,6 +15,7 @@ import { ReportListingDialog } from "@/components/properties/report-listing-dial
 import { BookingRequestStatus } from "@/components/bookings/booking-request-status";
 import { usePropertyBooking } from "@/components/bookings/use-property-booking";
 import { PolicyAcceptance } from "@/components/houses/booking-policy-acceptance";
+import { HomeBookingFields } from "@/components/houses/home-booking-fields";
 import { HotelBookingFields } from "@/components/houses/hotel-booking-fields";
 import { BookingPriceSummary } from "@/components/houses/BookingPriceSummary";
 import { Button } from "@/components/ui/button";
@@ -76,6 +77,7 @@ export function BookingCard({
     ),
     defaultValues: {
       houseId: house.id,
+      months: 1,
       checkIn: "",
       checkOut: "",
       roomTypeId: "",
@@ -87,6 +89,8 @@ export function BookingCard({
   const checkOut = useWatch({ control: form.control, name: "checkOut" });
   const roomTypeId = useWatch({ control: form.control, name: "roomTypeId" });
   const roomCount = useWatch({ control: form.control, name: "roomCount" });
+  const months = useWatch({ control: form.control, name: "months" }) ?? 1;
+  const validMonths = Number.isInteger(months) && months >= 1;
   const nights = isDated ? getNights(checkIn, checkOut) : 0;
   const selectedRoom = isHotel ? rooms.find((room) => room.id === roomTypeId) : undefined;
   const quantity = isHotel ? Math.max(Number(roomCount) || 1, 1) : 1;
@@ -95,7 +99,7 @@ export function BookingCard({
     ? unitPrice * quantity * (nights > 0 ? nights : 1)
     : isDated && nights > 0
       ? unitPrice * nights
-      : unitPrice;
+      : unitPrice * (bookingKind === "home" && validMonths ? months : 1);
   const serviceFeeQuery = useQuery({
     queryKey: ["service-fees", bookingKind],
     queryFn: () => fetcher<ApiResponse<ServiceFee>>(`/service-fees?bookingKind=${bookingKind}`),
@@ -106,7 +110,7 @@ export function BookingCard({
   const cautionFee = isHotel ? 0 : Number(house.cautionFee ?? 0);
   const separateFee = serviceFeeConfig?.feeType === "fixed" && house.currency === "USD";
   const total = Math.round((subtotal + cautionFee + (separateFee ? 0 : serviceFee)) * 100) / 100;
-  const priceReady = (!isDated || nights > 0) && (!isHotel || Boolean(selectedRoom));
+  const priceReady = (isDated ? nights > 0 : validMonths) && (!isHotel || Boolean(selectedRoom));
 
   const availabilityQuery = useQuery({
     queryKey: ["properties", house.id, "availability", checkIn, checkOut],
@@ -129,6 +133,7 @@ export function BookingCard({
 
   const requestMutation = useMutation({
     mutationFn: ({
+      months,
       houseId,
       checkIn,
       checkOut,
@@ -140,7 +145,7 @@ export function BookingCard({
         method: "POST",
         body: JSON.stringify({
           houseId,
-          ...(isDated ? { checkIn, checkOut } : {}),
+          ...(isDated ? { checkIn, checkOut } : { months }),
           ...(isHotel ? { roomTypeId, roomCount: Number(roomCount) || 1, guestCount } : {}),
         }),
       }),
@@ -323,6 +328,7 @@ export function BookingCard({
         bookingKind={bookingKind}
         currency={currency}
         unitPrice={unitPrice}
+        months={months}
         nights={nights}
         quantity={quantity}
         subtotal={subtotal}
@@ -351,6 +357,9 @@ export function BookingCard({
           })}
           className="mt-5 space-y-4"
         >
+          {bookingKind === "home" ? (
+            <HomeBookingFields form={form} submitting={submitting} />
+          ) : null}
           {isDated ? (
             <div className="grid grid-cols-2 gap-3">
               <FormField

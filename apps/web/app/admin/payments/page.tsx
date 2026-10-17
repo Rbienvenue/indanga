@@ -30,6 +30,7 @@ type PaymentWithBooking = {
     id: string;
     checkIn?: string | null;
     checkOut?: string | null;
+    months?: number | null;
     nights?: number | null;
     serviceFee: number | null;
     house: { name: string; propertyType: string; currency: string | null };
@@ -132,7 +133,14 @@ const columns: ColumnDef<PaymentWithBooking>[] = [
     id: "stay",
     header: "Booking period",
     cell: ({ row }) => {
-      const { checkIn, checkOut, nights } = row.original.booking;
+      const { checkIn, checkOut, nights, months } = row.original.booking;
+      if (getBookingKind(row.original.booking.house.propertyType) === "home") {
+        return (
+          <span>
+            {months ?? 1} month{(months ?? 1) === 1 ? "" : "s"} rent
+          </span>
+        );
+      }
       const unit =
         getBookingKind(row.original.booking.house.propertyType) === "car" ? "day" : "night";
       if (!checkIn || !checkOut) return <span className="text-muted-foreground">—</span>;

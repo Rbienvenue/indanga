@@ -35,6 +35,7 @@ type Payment = {
     bookingId: string | null;
     checkIn: string | null;
     checkOut: string | null;
+    months?: number | null;
     nights: number | null;
     house: { id: string; name: string; propertyType: string; currency: string | null };
     client: { name: string; email: string };
@@ -262,6 +263,12 @@ export default function PaymentsPage() {
                   <dd>{selected.booking.client.name}</dd>
                 </div>
               )}
+              {getBookingKind(selected.booking.house.propertyType) === "home" ? (
+                <div>
+                  <dt className="text-muted-foreground">Number of months</dt>
+                  <dd>{selected.booking.months ?? 1}</dd>
+                </div>
+              ) : null}
               {selected.booking.checkIn && selected.booking.checkOut && (
                 <div>
                   <dt className="text-muted-foreground">Booking period</dt>

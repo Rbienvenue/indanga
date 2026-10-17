@@ -57,6 +57,7 @@ export class BookingsService {
     if (!house) throw new NotFoundException("Property not found");
     const bookingKind = getBookingKind(house.propertyType);
     const isDated = bookingKind !== "home";
+    const months = bookingKind === "home" ? (data.months ?? 1) : undefined;
     let checkIn: Date | undefined;
     let checkOut: Date | undefined;
     let nights: number | undefined;
@@ -122,7 +123,7 @@ export class BookingsService {
         if (house.status !== HouseStatus.AVAILABLE) {
           throw new ConflictException("Property is already booked");
         }
-        subtotal = Number(house.price);
+        subtotal = unitPrice * months!;
       }
     }
 
@@ -130,8 +131,10 @@ export class BookingsService {
     const serviceFee = calcServiceFee(subtotal, feeConfig, house.currency);
     const cautionFee = bookingKind === "hotel" ? 0 : Number(house.cautionFee ?? 0);
     const serviceFeeCurrency = feeConfig.feeType === "fixed" ? "RWF" : house.currency;
-    const total = Math.round((subtotal + cautionFee +
-      (serviceFeeCurrency === house.currency ? serviceFee : 0)) * 100) / 100;
+    const total =
+      Math.round(
+        (subtotal + cautionFee + (serviceFeeCurrency === house.currency ? serviceFee : 0)) * 100,
+      ) / 100;
     const booking = await this.db.booking.create({
       data: {
         bookingId: createBookingId(bookingKind),
@@ -145,6 +148,7 @@ export class BookingsService {
         checkIn,
         checkOut,
         nights,
+        months,
         unitPrice,
         serviceFee,
         serviceFeeType: feeConfig.feeType,

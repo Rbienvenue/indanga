@@ -131,6 +131,7 @@ model Booking {
   status             BookingStatus  @default(PENDING)
   checkIn            DateTime?
   checkOut           DateTime?
+  months             Int?
   nights             Int?
   unitPrice          Decimal?       @db.Decimal(12, 2)
   serviceFee         Decimal?       @default(0) @db.Decimal(12, 2)

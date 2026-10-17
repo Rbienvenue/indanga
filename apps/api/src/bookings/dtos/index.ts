@@ -17,6 +17,12 @@ export class CreateBookingDto {
   @IsString()
   houseId: string;
 
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  months?: number;
+
   @IsDateString()
   @IsOptional()
   checkIn?: string;
