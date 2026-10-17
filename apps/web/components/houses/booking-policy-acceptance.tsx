@@ -4,10 +4,12 @@ import Link from "next/link";
 
 export function PolicyAcceptance({
   id,
+  isPurchase = false,
   checked,
   onCheckedChange,
 }: {
   id: string;
+  isPurchase?: boolean;
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
 }) {
@@ -30,7 +32,7 @@ export function PolicyAcceptance({
         >
           Refund &amp; Cancellation Policy
         </Link>{" "}
-        before booking this property.
+        before {isPurchase ? "buying" : "booking"} this property.
       </span>
     </label>
   );

@@ -80,6 +80,7 @@ function buildSearchHref(
   pathname: string,
   filters: {
     type: string;
+    listingPurpose: string;
     budget: string;
     subType: string;
     province: string;
@@ -90,6 +91,7 @@ function buildSearchHref(
 ) {
   const params = new URLSearchParams();
   if (filters.search.trim() !== "") params.set("search", filters.search.trim());
+  if (filters.listingPurpose !== "all") params.set("listingPurpose", filters.listingPurpose);
   if (filters.type !== "all") params.set("type", filters.type);
   if (filters.subType !== "all") params.set("subType", filters.subType);
   if (filters.budget !== "any") params.set("budget", filters.budget);
@@ -137,6 +139,11 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
     "search",
     parseAsString.withDefault("").withOptions({ shallow: false }),
   );
+  const [purposeQuery, setPurposeQuery] = useQueryState(
+    "listingPurpose",
+    parseAsString.withDefault("all").withOptions({ shallow: false }),
+  );
+  const [draftPurpose, setDraftPurpose] = useState("all");
   const [draftType, setDraftType] = useState("all");
   const [draftSearch, setDraftSearch] = useState("");
   const [inputValue, setInputValue] = useState(searchQuery);
@@ -156,6 +163,7 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
   const inputText = redirectTo ? draftSearch : inputValue;
 
   const propertyType = lockedType ?? (redirectTo ? draftType : typeQuery);
+  const listingPurpose = redirectTo ? draftPurpose : purposeQuery;
   const budget = redirectTo ? draftBudget : budgetQuery;
   const subType = redirectTo ? draftSubType : subTypeQuery;
   const province = redirectTo ? draftProvince : provinceQuery;
@@ -213,6 +221,16 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
     void setSectorQuery(value === "all" ? null : value);
   }
 
+  function handlePurposeChange(value: string) {
+    if (redirectTo) {
+      setDraftPurpose(value);
+      setDraftBudget("any");
+      return;
+    }
+    void setPurposeQuery(value === "all" ? null : value);
+    void setBudgetQuery(null);
+  }
+
   function handleBudgetChange(value: string) {
     if (redirectTo) {
       setDraftBudget(value);
@@ -226,6 +244,7 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
       router.push(
         buildSearchHref(redirectTo, {
           type: propertyType,
+          listingPurpose,
           budget,
           subType,
           province,
@@ -281,7 +300,7 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
             </Tabs>
           ) : null}
 
-          <div className="grid grid-cols-2 items-center gap-2 sm:gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
+          <div className="grid grid-cols-2 items-center gap-2 sm:gap-3 lg:grid-cols-[repeat(6,minmax(0,1fr))_auto]">
             <Select
               value={province}
               onValueChange={handleProvinceChange}
@@ -356,6 +375,17 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
               </SelectContent>
             </Select>
 
+            <Select value={listingPurpose} onValueChange={handlePurposeChange}>
+              <SelectTrigger className="w-full" aria-label="Listing purpose">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Rent or buy</SelectItem>
+                <SelectItem value="RENT">For rent</SelectItem>
+                <SelectItem value="SELL">For sale</SelectItem>
+              </SelectContent>
+            </Select>
+
             <Select value={budget} onValueChange={handleBudgetChange}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -363,7 +393,11 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
               <SelectContent>
                 {budgetOptions.map(({ value, label }) => (
                   <SelectItem key={value} value={value}>
-                    {value === "any" ? (budgetAnyLabels[propertyType] ?? label) : label}
+                    {value === "any"
+                      ? listingPurpose === "RENT"
+                        ? (budgetAnyLabels[propertyType] ?? label)
+                        : label
+                      : label}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -17,6 +17,7 @@ import {
   RoomTypeInputDto,
   UpdateHouseDto,
 } from "./dtos";
+import { assertNoActiveBookings, validateListingPurpose } from "./listing-purpose";
 import { getBookingKind } from "./booking-kind.util";
 import { countOverlappingRooms, reservingBookingsWhere } from "src/bookings/booking-inventory";
 
@@ -55,6 +56,8 @@ export class HousesService {
       ownerId?: string;
     };
 
+    const listingPurpose = data.listingPurpose ?? "RENT";
+    validateListingPurpose(data.propertyType, listingPurpose, data.price);
     this.assertRoomsAndPrice(data.propertyType, data.price, rooms);
     validateCurrencyPrices(data.currency ?? "RWF", [
       data.price,
@@ -65,7 +68,9 @@ export class HousesService {
     const house = await this.db.house.create({
       data: {
         ...rest,
-        cautionFee: isHotelProperty(data.propertyType) ? null : data.cautionFee,
+        listingPurpose,
+        cautionFee:
+          listingPurpose === "SELL" || isHotelProperty(data.propertyType) ? null : data.cautionFee,
         ownerId,
         bedrooms: data.bedrooms ?? 0,
         bathrooms: data.bathrooms ?? 0,
@@ -133,6 +138,7 @@ export class HousesService {
         });
       }
     }
+    if (data.listingPurpose) where.listingPurpose = data.listingPurpose;
     if (ownerId) where.ownerId = ownerId;
     if (subType) {
       where.subType = { equals: subType, mode: "insensitive" };
@@ -289,6 +295,11 @@ export class HousesService {
       ...(rooms ?? house.rooms).map((room) => Number(room.price)),
     ]);
     const effectivePrice = data.price ?? (house.price == null ? undefined : Number(house.price));
+    const listingPurpose = data.listingPurpose ?? house.listingPurpose;
+    if (house.status === "SOLD" && listingPurpose !== house.listingPurpose) {
+      throw new ConflictException("A sold property cannot be converted to a rental");
+    }
+    validateListingPurpose(effectiveType, listingPurpose, effectivePrice);
     if (rooms !== undefined || data.propertyType !== undefined || data.price !== undefined) {
       this.assertRoomsAndPrice(
         effectiveType,
@@ -299,7 +310,9 @@ export class HousesService {
 
     const updateData: Prisma.HouseUpdateInput = {
       ...rest,
-      cautionFee: isHotelProperty(effectiveType) ? null : data.cautionFee,
+      listingPurpose,
+      cautionFee:
+        listingPurpose === "SELL" || isHotelProperty(effectiveType) ? null : data.cautionFee,
     };
 
     if (existingMedia !== undefined || rest.media !== undefined) {
@@ -317,6 +330,9 @@ export class HousesService {
     }
 
     const updatedHouse = await this.db.$transaction(async (tx) => {
+      if (house.listingPurpose !== listingPurpose) {
+        await assertNoActiveBookings(tx, id);
+      }
       if (rooms !== undefined) {
         await this.syncRooms(tx, id, rooms);
       }

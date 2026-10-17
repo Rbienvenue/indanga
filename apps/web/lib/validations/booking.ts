@@ -11,6 +11,8 @@ export const bookingSchema = z.object({
   guestCount: z.coerce.number<number>().int().min(1).optional(),
 });
 
+export const purchaseSchema = bookingSchema.pick({ houseId: true });
+
 export type BookingValues = z.infer<typeof bookingSchema>;
 
 function parseLocalDate(value: string): Date {

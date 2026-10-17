@@ -55,9 +55,10 @@ export class BookingsService {
       include: { rooms: true },
     });
     if (!house) throw new NotFoundException("Property not found");
+    const isPurchase = house.listingPurpose === "SELL";
     const bookingKind = getBookingKind(house.propertyType);
-    const isDated = bookingKind !== "home";
-    const months = bookingKind === "home" ? (data.months ?? 1) : undefined;
+    const isDated = !isPurchase && bookingKind !== "home";
+    const months = !isPurchase && bookingKind === "home" ? (data.months ?? 1) : undefined;
     let checkIn: Date | undefined;
     let checkOut: Date | undefined;
     let nights: number | undefined;
@@ -85,7 +86,19 @@ export class BookingsService {
     }
 
     let subtotal: number;
-    if (bookingKind === "hotel") {
+    if (isPurchase) {
+      if (house.status !== HouseStatus.AVAILABLE) {
+        throw new ConflictException("This property is not available for purchase");
+      }
+      if (house.price == null) throw new BadRequestException("This property has no price set");
+      const reserved = await this.db.booking.count({
+        where: { houseId: house.id, ...reservingBookingsWhere() },
+      });
+      if (reserved > 0)
+        throw new ConflictException("This property is reserved for another customer");
+      unitPrice = Number(house.price);
+      subtotal = unitPrice;
+    } else if (bookingKind === "hotel") {
       if (!data.roomTypeId) {
         throw new BadRequestException("Selecting a room type is required for hotels");
       }
@@ -129,7 +142,7 @@ export class BookingsService {
 
     const feeConfig = await this.serviceFees.getByKind(bookingKind);
     const serviceFee = calcServiceFee(subtotal, feeConfig, house.currency);
-    const cautionFee = bookingKind === "hotel" ? 0 : Number(house.cautionFee ?? 0);
+    const cautionFee = isPurchase || bookingKind === "hotel" ? 0 : Number(house.cautionFee ?? 0);
     const serviceFeeCurrency = feeConfig.feeType === "fixed" ? "RWF" : house.currency;
     const total =
       Math.round(
@@ -138,6 +151,7 @@ export class BookingsService {
     const booking = await this.db.booking.create({
       data: {
         bookingId: createBookingId(bookingKind),
+        listingPurpose: house.listingPurpose,
         clientId,
         houseId: house.id,
         roomTypeId,
@@ -180,6 +194,7 @@ export class BookingsService {
         OR: [
           { status: BookingStatus.REQUESTED, NOT: unansweredRequestsWhere() },
           reservingBookingsWhere(),
+          { listingPurpose: "SELL", status: BookingStatus.COMPLETED },
         ],
       },
       orderBy: { createdAt: "desc" },
@@ -260,7 +275,10 @@ export class BookingsService {
   }
 
   async getCalendar(user: User, query: CalendarBookingDto) {
-    if (user.role !== "landlord" || (user.providerType !== "HOTEL" && user.providerType !== "CAR")) {
+    if (
+      user.role !== "landlord" ||
+      (user.providerType !== "HOTEL" && user.providerType !== "CAR")
+    ) {
       throw new ForbiddenException("The calendar is available to hotel and car providers only");
     }
     const start = new Date(query.start);
@@ -279,7 +297,7 @@ export class BookingsService {
     const kind = user.providerType === "CAR" ? "car" : "hotel";
     const properties = (
       await this.db.house.findMany({
-        where: { ownerId: user.id },
+        where: { ownerId: user.id, listingPurpose: "RENT" },
         select: {
           id: true,
           name: true,
@@ -364,15 +382,12 @@ export class BookingsService {
       // Each car listing is a single vehicle, so the day status is binary.
       const carBooked = dayBookings.some(
         (booking) =>
-          booking.status === BookingStatus.CONFIRMED ||
-          booking.status === BookingStatus.APPROVED,
+          booking.status === BookingStatus.CONFIRMED || booking.status === BookingStatus.APPROVED,
       );
       const carHeld =
         !carBooked &&
         dayBookings.some((booking) => booking.status === BookingStatus.AWAITING_PAYMENT);
-      const totalUnits = isCarCalendar
-        ? 1
-        : rooms.reduce((sum, room) => sum + room.totalRooms, 0);
+      const totalUnits = isCarCalendar ? 1 : rooms.reduce((sum, room) => sum + room.totalRooms, 0);
       const bookedUnits = isCarCalendar
         ? carBooked
           ? 1

@@ -58,6 +58,7 @@ model House {
   ownerId            String
   description        String
   propertyType       String
+  listingPurpose     ListingPurpose     @default(RENT)
   subType            String?
   bedrooms           Int
   bathrooms          Int
@@ -123,6 +124,7 @@ model ServiceFee {
 model Booking {
   id                 String         @id @default(cuid())
   bookingId          String?
+  listingPurpose     ListingPurpose @default(RENT)
   clientId           String
   houseId            String
   roomTypeId         String?
@@ -336,7 +338,13 @@ enum KycDocumentType {
   ID_DOCUMENT
 }
 
+enum ListingPurpose {
+  RENT
+  SELL
+}
+
 enum HouseStatus {
+  SOLD
   BOOKED
   AVAILABLE
   PENDING

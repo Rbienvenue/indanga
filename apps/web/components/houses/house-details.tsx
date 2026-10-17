@@ -7,116 +7,36 @@ import {
   Bath,
   BedDouble,
   Building2,
-  BadgeCheck,
   ChevronRight,
   Heart,
   Home,
   KeyRound,
-  LockKeyhole,
   MapPin,
-  Maximize2,
   MessageCircle,
-  RotateCcw,
   ShieldCheck,
   Share2,
-  WalletCards,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
 import { BookingCard } from "@/components/houses/BookingCard";
-import { HousePhotoSlideshow } from "@/components/houses/house-photo-slideshow";
+import { Gallery } from "./property-gallery";
+import { ListingInformation } from "./listing-information";
 import { PropertyVerificationBadge } from "@/components/properties/property-verification-badge";
 import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
+import { HouseDetailsSkeleton } from "./house-details-skeleton";
 import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
-import { isVideoMediaUrl } from "@/lib/property-media";
 import { amenityIcons, parseAmenities } from "@/lib/amenities";
 import { propertyAmenityLabels } from "@/lib/validations/house";
 import { cn, formatCurrency } from "@/lib/utils";
 import { Footer } from "@/components/home/footer";
-
-function Gallery({ house }: { house: House }) {
-  const media = house.media.length > 0 ? house.media : [];
-  const images =
-    media.length > 0 ? Array.from({ length: 5 }, (_, index) => media[index % media.length]) : [];
-  const hasVideos = media.some(isVideoMediaUrl);
-  const [open, setOpen] = useState(false);
-  const [initialIndex, setInitialIndex] = useState(0);
-
-  function openSlideshow(index: number) {
-    setInitialIndex(index);
-    setOpen(true);
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <div className="relative grid h-[18rem] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-2xl sm:h-[22rem] lg:h-[24rem]">
-        {images.map((src, index) => (
-          <button
-            key={`${src}-${index}`}
-            type="button"
-            onClick={() => openSlideshow(index % media.length)}
-            className={cn(
-              "group relative overflow-hidden bg-muted text-left",
-              index === 0 ? "col-span-4 row-span-2 sm:col-span-2" : "hidden sm:block",
-            )}
-          >
-            {isVideoMediaUrl(src) ? (
-              <video
-                src={src}
-                preload="metadata"
-                muted
-                playsInline
-                aria-label={`${house.name} video ${index + 1}`}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <Image
-                src={src}
-                alt={`${house.name} view ${index + 1}`}
-                fill
-                priority={index === 0}
-                className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                sizes={index === 0 ? "(max-width: 640px) 100vw, 50vw" : "25vw"}
-              />
-            )}
-            <span className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
-          </button>
-        ))}
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => openSlideshow(0)}
-          className="absolute right-4 bottom-4 z-10 h-10 border border-black/10 bg-white/95 px-4 text-slate-950 shadow-lg hover:bg-white"
-        >
-          <Maximize2 />
-          {hasVideos ? "View all media" : "View all photos"}
-        </Button>
-      </div>
-
-      <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto bg-[#f7f5f0] p-5 dark:bg-slate-950 sm:max-w-5xl">
-        <DialogTitle className="text-xl">{house.name}</DialogTitle>
-        {open ? (
-          <HousePhotoSlideshow
-            key={initialIndex}
-            houseName={house.name}
-            media={media}
-            initialIndex={initialIndex}
-          />
-        ) : null}
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function ActionButton({
   icon: Icon,
@@ -230,8 +150,19 @@ export function HouseDetails({ houseId }: { houseId: string }) {
   const isAvailable = house.status === "AVAILABLE";
   const bookingKind = getBookingKind(house.propertyType);
   const amenities = parseAmenities(house.metadata);
-  const detailCopy =
-    bookingKind === "car"
+  const isSale = house.listingPurpose === "SELL";
+  const detailCopy = isSale
+    ? {
+        spaceEyebrow: bookingKind === "car" ? "The vehicle" : "The space",
+        spaceHeading: bookingKind === "car" ? "Your next vehicle" : "Your next home",
+        whyHeading: "Explore this listing",
+        firstTitle: "Available for sale",
+        firstDescription:
+          "The displayed price is the full asking price. Send a purchase request to the provider.",
+        availabilityDescription:
+          "The provider confirms availability before you pay for this property.",
+      }
+    : bookingKind === "car"
       ? {
           spaceEyebrow: "The vehicle",
           spaceHeading: "Ready for the road",
@@ -454,7 +385,11 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                 <Feature
                   icon={MessageCircle}
                   title="Support when needed"
-                  description="Your booking stays connected to INDANGA from confirmation onward."
+                  description={
+                    isSale
+                      ? "INDANGA support can help with your purchase and handover."
+                      : "Your booking stays connected to INDANGA from confirmation onward."
+                  }
                 />
               </div>
             </section>
@@ -491,113 +426,6 @@ export function HouseDetails({ houseId }: { houseId: string }) {
         />
       </div>
     </div>
-  );
-}
-
-function ListingInformation({
-  house,
-  bookingKind,
-  isAvailable,
-}: {
-  house: House;
-  bookingKind: "home" | "hotel" | "car";
-  isAvailable: boolean;
-}) {
-  const priceUnit = bookingKind === "hotel" ? "night" : bookingKind === "car" ? "day" : "month";
-
-  return (
-    <section className="divide-y divide-slate-900/10 border-b border-slate-900/10 dark:divide-white/10 dark:border-white/10">
-      <AccordionRow icon={Home} title="About this listing">
-        <p>{house.description}</p>
-        {bookingKind !== "car" && (
-          <p className="mt-3">
-            Located in {house.location}, this {house.propertyType.toLowerCase()} has{" "}
-            {house.bedrooms} {house.bedrooms === 1 ? "bedroom" : "bedrooms"} and {house.bathrooms}{" "}
-            {house.bathrooms === 1 ? "bathroom" : "bathrooms"}.
-          </p>
-        )}
-      </AccordionRow>
-      <AccordionRow icon={WalletCards} title="Price details">
-        <p>
-          {house.price
-            ? `${formatCurrency(house.price, house.currency ?? "RWF")} per ${priceUnit}.`
-            : ""}{" "}
-          The displayed price is the listing rate; confirm the total at booking.
-        </p>
-        <p className="mt-3">
-          INDANGA keeps payment inside the platform so your booking record stays connected to your
-          account.
-        </p>
-      </AccordionRow>
-      {house.status !== "PENDING" && (
-        <AccordionRow icon={BadgeCheck} title="Verification and listing information">
-          <p>
-            {house.verificationStatus === "VerifiedByIndanga"
-              ? "Verified by INDANGA. INDANGA checked the provider&apos;s identity and reviewed key listing information, including the location, photos, pricing, and availability."
-              : "Reviewed by INDANGA. We checked the information submitted by the provider before publishing this listing. Prices and availability can change, so review the latest details before booking."}
-          </p>
-          <p className="mt-3 text-muted-foreground">
-            {house.verificationStatus === "VerifiedByIndanga" ? "Verified" : "Reviewed"} on{" "}
-            {new Date(house.updatedAt).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-            . Verification does not guarantee future availability, unchanged pricing, or the quality
-            of every service. Review the listing and booking terms before making a payment.
-          </p>
-          <p className="mt-3">
-            Availability: {isAvailable ? "available to book now" : "currently unavailable"}.
-          </p>
-        </AccordionRow>
-      )}
-      <AccordionRow icon={RotateCcw} title="Cancellation and refunds">
-        <p>
-          Cancellation and refund eligibility depends on the booking status and the provider&apos;s
-          terms.
-        </p>
-        <p className="mt-3">
-          Contact INDANGA support before cancelling if you need help reviewing your booking.
-        </p>
-      </AccordionRow>
-      <AccordionRow icon={LockKeyhole} title="Stay safe">
-        <p>
-          Your safety matters Keep all booking details, payment instructions, and receipts. Confirm
-          the listing, provider, price, and cancellation terms before paying. INDANGA will never ask
-          you to hide a payment or bypass the official booking process.
-        </p>
-        <p className="mt-3">
-          Report suspicious activity to &nbsp;
-          <Link href="mailto:support@indanga.com" className="text-primary underline">
-            support@indanga.com
-          </Link>
-          .
-        </p>
-      </AccordionRow>
-    </section>
-  );
-}
-
-function AccordionRow({
-  icon: Icon,
-  title,
-  children,
-}: {
-  icon: typeof Home;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <details className="group py-5">
-      <summary className="flex cursor-pointer list-none items-center gap-4 text-sm font-bold [&::-webkit-details-marker]:hidden">
-        <Icon className="size-5 shrink-0 text-slate-700 dark:text-slate-300" />
-        <span className="flex-1">{title}</span>
-        <ChevronRight className="size-4 shrink-0 text-slate-500 transition-transform group-open:rotate-90" />
-      </summary>
-      <div className="ml-9 max-w-3xl pt-4 text-sm leading-6 text-slate-600 dark:text-slate-400">
-        {children}
-      </div>
-    </details>
   );
 }
 
@@ -639,32 +467,6 @@ function Feature({
         <h3 className="font-bold">{title}</h3>
         <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p>
       </div>
-    </div>
-  );
-}
-
-function HouseDetailsSkeleton() {
-  return (
-    <div className="min-h-screen bg-[#f7f5f0] dark:bg-slate-950">
-      <div className="h-18 border-b border-slate-900/8 dark:border-white/10" />
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <Skeleton className="mb-5 h-5 w-40" />
-        <Skeleton className="h-72 w-full rounded-2xl sm:h-88 lg:h-96" />
-        <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_32rem]">
-          <div>
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="mt-4 h-12 w-3/4" />
-            <Skeleton className="mt-4 h-5 w-1/2" />
-            <div className="mt-10 grid grid-cols-3 gap-5">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Skeleton key={index} className="h-16" />
-              ))}
-            </div>
-            <Skeleton className="mt-10 h-40 w-full" />
-          </div>
-          <Skeleton className="hidden h-96 rounded-2xl lg:block" />
-        </div>
-      </main>
     </div>
   );
 }

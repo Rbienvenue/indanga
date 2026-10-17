@@ -4,6 +4,7 @@ import { formatCurrency } from "@/lib/utils";
 
 interface BookingPriceSummaryProps {
   bookingKind: BookingKind;
+  isPurchase?: boolean;
   currency?: string | null;
   unitPrice: number;
   months?: number | null;
@@ -20,6 +21,7 @@ interface BookingPriceSummaryProps {
 
 export function BookingPriceSummary({
   bookingKind,
+  isPurchase = false,
   currency,
   unitPrice,
   months,
@@ -49,18 +51,21 @@ export function BookingPriceSummary({
         <div className="flex justify-between gap-3">
           <dt className="text-muted-foreground">{priceLabel}</dt>
           <dd className="text-right font-medium">
-            {formatCurrency(unitPrice, displayCurrency)} / {unit}
+            {formatCurrency(unitPrice, displayCurrency)}
+            {!isPurchase && ` / ${unit}`}
           </dd>
         </div>
-        <div className="flex justify-between gap-3">
-          <dt className="text-muted-foreground">
-            Number of {isHotel ? "nights" : isCar ? "days" : "months"}
-          </dt>
-          <dd>
-            {bookingKind === "home" ? (ready ? (months ?? 1) : "—") : nights > 0 ? nights : "—"}
-          </dd>
-        </div>
-        {isHotel ? (
+        {!isPurchase && (
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">
+              Number of {isHotel ? "nights" : isCar ? "days" : "months"}
+            </dt>
+            <dd>
+              {bookingKind === "home" ? (ready ? (months ?? 1) : "—") : nights > 0 ? nights : "—"}
+            </dd>
+          </div>
+        )}
+        {!isPurchase && isHotel ? (
           <div className="flex justify-between gap-3">
             <dt className="text-muted-foreground">Number of rooms</dt>
             <dd>{quantity}</dd>
@@ -74,7 +79,7 @@ export function BookingPriceSummary({
           <dt className="text-muted-foreground">{getServiceFeeLabel(serviceFeeConfig)}</dt>
           <dd className="font-medium">{ready ? formatCurrency(serviceFee, feeCurrency) : "—"}</dd>
         </div>
-        {!isHotel && cautionFee != null && cautionFee > 0 ? (
+        {!isPurchase && !isHotel && cautionFee != null && cautionFee > 0 ? (
           <div className="flex justify-between gap-3">
             <dt className="text-muted-foreground">Caution fee (fixed)</dt>
             <dd className="font-medium">{formatCurrency(cautionFee, displayCurrency)}</dd>

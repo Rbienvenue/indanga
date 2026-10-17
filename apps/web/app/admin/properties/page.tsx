@@ -44,6 +44,7 @@ type HouseWithOwner = {
   price: number;
   currency: string | null;
   propertyType: string;
+  listingPurpose: "RENT" | "SELL";
   status: PropertyStatus;
   verificationStatus: VerificationStatus;
   createdAt: string;
@@ -59,13 +60,10 @@ function PropertyVerificationControl({ property }: { property: HouseWithOwner })
 
   const verificationMutation = useMutation({
     mutationFn: (verificationStatus: VerificationStatus) =>
-      fetcher<ApiResponse<HouseWithOwner>>(
-        `/admin/properties/${property.id}/verification-status`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({ verificationStatus }),
-        },
-      ),
+      fetcher<ApiResponse<HouseWithOwner>>(`/admin/properties/${property.id}/verification-status`, {
+        method: "PATCH",
+        body: JSON.stringify({ verificationStatus }),
+      }),
     onSuccess: () => {
       toast.success("Verification status updated");
       void queryClient.invalidateQueries({ queryKey: ["properties", "admin"] });
@@ -232,6 +230,8 @@ const columns: ColumnDef<HouseWithOwner>[] = [
   {
     accessorKey: "propertyType",
     header: "Type",
+    cell: ({ row }) =>
+      `${row.original.propertyType} · ${row.original.listingPurpose === "SELL" ? "For sale" : "For rent"}`,
   },
   {
     accessorKey: "price",
@@ -321,6 +321,7 @@ export default function AdminPropertiesPage() {
               { label: "Pending", value: "PENDING" },
               { label: "Available", value: "AVAILABLE" },
               { label: "Booked", value: "BOOKED" },
+              { label: "Sold", value: "SOLD" },
             ],
           },
         ]}

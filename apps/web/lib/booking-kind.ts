@@ -19,7 +19,11 @@ export function getBookingKind(propertyType?: string): BookingKind {
   return "home";
 }
 
-export function getPriceUnit(propertyType?: string): string {
+export function getPriceUnit(
+  propertyType?: string,
+  listingPurpose: House["listingPurpose"] = "RENT",
+): string {
+  if (listingPurpose === "SELL") return "";
   const kind = getBookingKind(propertyType);
   if (kind === "hotel") return "/ night";
   if (kind === "car") return "/ day";

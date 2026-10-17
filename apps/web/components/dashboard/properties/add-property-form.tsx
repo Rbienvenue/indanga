@@ -29,6 +29,7 @@ import { PropertyReview } from "./property-review";
 
 const basicsFields: (keyof CreateHouseValues)[] = [
   "propertyType",
+  "listingPurpose",
   "subType",
   "name",
   "description",
@@ -85,6 +86,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
     defaultValues: {
       name: "",
       propertyType: initialType,
+      listingPurpose: "RENT",
       subType: undefined,
       price: undefined,
       cautionFee: undefined,
@@ -109,6 +111,7 @@ export function AddPropertyForm({ houseId }: AddPropertyFormProps) {
       form.reset({
         name: house.name,
         propertyType: house.propertyType as CreateHouseValues["propertyType"],
+        listingPurpose: house.listingPurpose,
         subType: house.subType ?? undefined,
         price: house.price ?? undefined,
         cautionFee: house.cautionFee ?? undefined,
@@ -362,9 +365,13 @@ function buildPropertyPayload(
   return {
     name: values.name,
     propertyType: values.propertyType,
+    listingPurpose: values.listingPurpose,
     subType: values.subType,
     price: values.price,
-    cautionFee: values.propertyType === "Hotel" ? null : (values.cautionFee ?? null),
+    cautionFee:
+      values.propertyType === "Hotel" || values.listingPurpose === "SELL"
+        ? null
+        : (values.cautionFee ?? null),
     currency: values.currency,
     rooms: values.rooms,
     province: values.province,

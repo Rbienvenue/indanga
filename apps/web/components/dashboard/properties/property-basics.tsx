@@ -65,6 +65,7 @@ export function PropertyBasics({ allowTypeSelection }: { allowTypeSelection: boo
                     value={field.value}
                     onValueChange={(value) => {
                       field.onChange(value);
+                      if (value === "Hotel") form.setValue("listingPurpose", "RENT");
                       form.setValue("subType", undefined);
                       if (value !== "Hotel") {
                         form.setValue("rooms", []);
@@ -88,6 +89,35 @@ export function PropertyBasics({ allowTypeSelection }: { allowTypeSelection: boo
                         <span className="text-sm font-medium">{type}</span>
                       </Label>
                     ))}
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {selectedType !== "Hotel" && (
+          <FormField
+            control={form.control}
+            name="listingPurpose"
+            render={({ field }) => (
+              <FormItem className="sm:col-span-2">
+                <FormLabel>Listing purpose</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      if (value === "SELL") form.setValue("cautionFee", undefined);
+                    }}
+                    className="flex gap-6"
+                  >
+                    <Label className="flex items-center gap-2" htmlFor="purpose-rent">
+                      <RadioGroupItem id="purpose-rent" value="RENT" /> For rent
+                    </Label>
+                    <Label className="flex items-center gap-2" htmlFor="purpose-sell">
+                      <RadioGroupItem id="purpose-sell" value="SELL" /> For sale
+                    </Label>
                   </RadioGroup>
                 </FormControl>
                 <FormMessage />

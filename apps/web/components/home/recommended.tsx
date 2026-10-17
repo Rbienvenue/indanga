@@ -78,6 +78,7 @@ export function Recommended({ className }: Props) {
                   bedrooms={house.bedrooms}
                   bathrooms={house.bathrooms}
                   propertyType={house.propertyType}
+                  listingPurpose={house.listingPurpose}
                   badge="Featured"
                   status={house.status}
                   verificationStatus={house.verificationStatus}

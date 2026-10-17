@@ -22,9 +22,10 @@ import {
 } from "@/components/ui/sheet";
 import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
-import { formatCurrency, formatBookingTotal } from "@/lib/utils";
+import { formatBookingTotal } from "@/lib/utils";
 
 type BookingWithDetails = {
+  listingPurpose: "RENT" | "SELL";
   id: string;
   bookingId?: string | null;
   status: BookingStatus;
@@ -130,7 +131,8 @@ function AdminBookingActions({ booking }: { booking: BookingWithDetails }) {
                   </dd>
                 </div>
               ) : null}
-              {getBookingKind(booking.house.propertyType) === "home" ? (
+              {booking.listingPurpose !== "SELL" &&
+              getBookingKind(booking.house.propertyType) === "home" ? (
                 <div>
                   <dt className="text-muted-foreground">Number of months</dt>
                   <dd className="mt-1 font-medium">{booking.months ?? 1}</dd>

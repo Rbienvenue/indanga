@@ -3,8 +3,7 @@
 import type { House, RoomType } from "@/@types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, CalendarIcon, Headphones, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { ArrowLeft, ArrowRight, Headphones, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -19,10 +18,7 @@ import { HomeBookingFields } from "@/components/houses/home-booking-fields";
 import { HotelBookingFields } from "@/components/houses/hotel-booking-fields";
 import { BookingPriceSummary } from "@/components/houses/BookingPriceSummary";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Form } from "@/components/ui/form";
 import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
 import { calcServiceFee, type ServiceFee } from "@/lib/service-fee";
@@ -31,12 +27,13 @@ import { cn, formatCurrency } from "@/lib/utils";
 
 import {
   bookingSchema,
+  purchaseSchema,
   BookingValues,
   datedBookingSchema,
   getNights,
   hotelBookingSchema,
 } from "@/lib/validations/booking";
-import { addDays, format, startOfDay } from "date-fns";
+import { DatedBookingFields } from "./dated-booking-fields";
 
 type RoomAvailability = {
   roomType: RoomType;
@@ -67,17 +64,24 @@ export function BookingCard({
   const bookingQuery = usePropertyBooking(house.id);
   const bookingRequest = bookingQuery.data?.data;
   const bookingKind = getBookingKind(house.propertyType);
-  const isDated = bookingKind === "hotel" || bookingKind === "car";
-  const isHotel = bookingKind === "hotel";
+  const isPurchase = house.listingPurpose === "SELL";
+  const isDated = !isPurchase && (bookingKind === "hotel" || bookingKind === "car");
+  const isHotel = !isPurchase && bookingKind === "hotel";
   const rooms = house.rooms ?? [];
   const { fromPrice } = getDisplayPrice(house.price, rooms);
   const form = useForm<BookingValues>({
     resolver: zodResolver(
-      isHotel ? hotelBookingSchema : isDated ? datedBookingSchema : bookingSchema,
+      isPurchase
+        ? purchaseSchema
+        : isHotel
+          ? hotelBookingSchema
+          : isDated
+            ? datedBookingSchema
+            : bookingSchema,
     ),
     defaultValues: {
       houseId: house.id,
-      months: 1,
+      months: isPurchase ? undefined : 1,
       checkIn: "",
       checkOut: "",
       roomTypeId: "",
@@ -95,11 +99,13 @@ export function BookingCard({
   const selectedRoom = isHotel ? rooms.find((room) => room.id === roomTypeId) : undefined;
   const quantity = isHotel ? Math.max(Number(roomCount) || 1, 1) : 1;
   const unitPrice = Number(selectedRoom?.price ?? house.price ?? fromPrice ?? 0);
-  const subtotal = isHotel
-    ? unitPrice * quantity * (nights > 0 ? nights : 1)
-    : isDated && nights > 0
-      ? unitPrice * nights
-      : unitPrice * (bookingKind === "home" && validMonths ? months : 1);
+  const subtotal = isPurchase
+    ? unitPrice
+    : isHotel
+      ? unitPrice * quantity * (nights > 0 ? nights : 1)
+      : isDated && nights > 0
+        ? unitPrice * nights
+        : unitPrice * (bookingKind === "home" && validMonths ? months : 1);
   const serviceFeeQuery = useQuery({
     queryKey: ["service-fees", bookingKind],
     queryFn: () => fetcher<ApiResponse<ServiceFee>>(`/service-fees?bookingKind=${bookingKind}`),
@@ -107,10 +113,11 @@ export function BookingCard({
   });
   const serviceFeeConfig = serviceFeeQuery.data?.data;
   const serviceFee = calcServiceFee(subtotal, serviceFeeConfig, house.currency ?? "RWF");
-  const cautionFee = isHotel ? 0 : Number(house.cautionFee ?? 0);
+  const cautionFee = isPurchase || isHotel ? 0 : Number(house.cautionFee ?? 0);
   const separateFee = serviceFeeConfig?.feeType === "fixed" && house.currency === "USD";
   const total = Math.round((subtotal + cautionFee + (separateFee ? 0 : serviceFee)) * 100) / 100;
-  const priceReady = (isDated ? nights > 0 : validMonths) && (!isHotel || Boolean(selectedRoom));
+  const priceReady =
+    isPurchase || ((isDated ? nights > 0 : validMonths) && (!isHotel || Boolean(selectedRoom)));
 
   const availabilityQuery = useQuery({
     queryKey: ["properties", house.id, "availability", checkIn, checkOut],
@@ -123,11 +130,9 @@ export function BookingCard({
   const availabilityByRoom = new Map(
     (availabilityQuery.data?.data ?? []).map((entry) => [entry.roomType.id, entry]),
   );
-  const today = startOfDay(new Date());
-  const checkInDate = checkIn ? new Date(`${checkIn}T00:00:00`) : undefined;
-  const checkOutDate = checkOut ? new Date(`${checkOut}T00:00:00`) : undefined;
-  const checkOutMinDate = checkInDate ? addDays(checkInDate, 1) : addDays(today, 1);
-  const bookThisLabel = `Book this ${bookingKind === "hotel" ? "room" : bookingKind}`;
+  const bookThisLabel = isPurchase
+    ? "Buy now"
+    : `Book this ${bookingKind === "hotel" ? "room" : bookingKind}`;
   const priceUnitLabel =
     bookingKind === "hotel" ? "per night" : bookingKind === "car" ? "per day" : "per month";
 
@@ -145,7 +150,7 @@ export function BookingCard({
         method: "POST",
         body: JSON.stringify({
           houseId,
-          ...(isDated ? { checkIn, checkOut } : { months }),
+          ...(!isPurchase ? (isDated ? { checkIn, checkOut } : { months }) : {}),
           ...(isHotel ? { roomTypeId, roomCount: Number(roomCount) || 1, guestCount } : {}),
         }),
       }),
@@ -153,17 +158,23 @@ export function BookingCard({
       bookingQuery.saveBooking(data);
       setDismissedBookingId(null);
       setStep("booking");
-      toast.success("Booking request sent — we've got you!", {
-        description:
-          "Providers usually respond within 30 minutes. We'll notify you here as soon as they do.",
-        position: "top-center",
-      });
+      toast.success(
+        isPurchase ? "Purchase request sent" : "Booking request sent — we've got you!",
+        {
+          description:
+            "Providers usually respond within 30 minutes. We'll notify you here as soon as they do.",
+          position: "top-center",
+        },
+      );
     },
     onError: (error) => {
-      toast.error("Could not send booking request", {
-        description: error instanceof Error ? error.message : "Please try again.",
-        position: "top-center",
-      });
+      toast.error(
+        isPurchase ? "Could not send purchase request" : "Could not send booking request",
+        {
+          description: error instanceof Error ? error.message : "Please try again.",
+          position: "top-center",
+        },
+      );
     },
   });
 
@@ -237,6 +248,7 @@ export function BookingCard({
             </Button>
           </div>
           <PolicyAcceptance
+            isPurchase={isPurchase}
             id="mobile-policy-consent"
             checked={hasAcceptedPolicy}
             onCheckedChange={onPolicyAcceptanceChange}
@@ -256,9 +268,11 @@ export function BookingCard({
                 </span>
               ) : null}
               <span>{formatCurrency(cardPrice, currency)}</span>
-              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                / {priceUnitLabel.replace("per ", "")}
-              </span>
+              {!isPurchase && (
+                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                  / {priceUnitLabel.replace("per ", "")}
+                </span>
+              )}
             </p>
           ) : (
             <p className="text-lg font-bold text-slate-500 dark:text-slate-400">
@@ -266,6 +280,7 @@ export function BookingCard({
             </p>
           )}
           <PolicyAcceptance
+            isPurchase={isPurchase}
             id="desktop-policy-consent"
             checked={hasAcceptedPolicy}
             onCheckedChange={onPolicyAcceptanceChange}
@@ -326,6 +341,7 @@ export function BookingCard({
       </Button>
       <BookingPriceSummary
         bookingKind={bookingKind}
+        isPurchase={isPurchase}
         currency={currency}
         unitPrice={unitPrice}
         months={months}
@@ -357,108 +373,11 @@ export function BookingCard({
           })}
           className="mt-5 space-y-4"
         >
-          {bookingKind === "home" ? (
+          {!isPurchase && bookingKind === "home" ? (
             <HomeBookingFields form={form} submitting={submitting} />
           ) : null}
           {isDated ? (
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="checkIn"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <Label className="text-sm font-semibold">
-                      {bookingKind === "car" ? "Pick date" : "Check-in"}
-                    </Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={submitting}
-                            className={cn(
-                              "mt-2 h-11 justify-start px-3 text-left font-normal",
-                              !field.value && "text-muted-foreground",
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 size-4" />
-                            {checkInDate ? (
-                              format(checkInDate, "LLL dd, y")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={checkInDate}
-                          disabled={{ before: today }}
-                          onSelect={(date) => {
-                            field.onChange(date ? format(date, "yyyy-MM-dd") : "");
-                            const nextCheckOut = form.getValues("checkOut");
-                            if (
-                              date &&
-                              nextCheckOut &&
-                              new Date(`${nextCheckOut}T00:00:00`) <= startOfDay(date)
-                            ) {
-                              form.setValue("checkOut", "", { shouldValidate: true });
-                            }
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="checkOut"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <Label className="text-sm font-semibold">
-                      {bookingKind === "car" ? "Return date" : "Check-out"}
-                    </Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={submitting}
-                            className={cn(
-                              "mt-2 h-11 justify-start px-3 text-left font-normal",
-                              !field.value && "text-muted-foreground",
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 size-4" />
-                            {checkOutDate ? (
-                              format(checkOutDate, "LLL dd, y")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={checkOutDate}
-                          disabled={{ before: checkOutMinDate }}
-                          onSelect={(date) =>
-                            field.onChange(date ? format(date, "yyyy-MM-dd") : "")
-                          }
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <DatedBookingFields form={form} submitting={submitting} isCar={bookingKind === "car"} />
           ) : null}
 
           {isHotel ? (
@@ -483,7 +402,8 @@ export function BookingCard({
               </>
             ) : (
               <>
-                Send booking request <ArrowRight className="size-4" />
+                {isPurchase ? "Send purchase request" : "Send booking request"}{" "}
+                <ArrowRight className="size-4" />
               </>
             )}
           </Button>

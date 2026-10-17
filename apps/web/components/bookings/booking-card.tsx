@@ -13,7 +13,7 @@ import { MessageButton } from "@/components/messages/message-button";
 import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
 import { firstImageUrl } from "@/lib/property-media";
-import { formatCurrency, formatBookingTotal } from "@/lib/utils";
+import { formatBookingTotal } from "@/lib/utils";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -66,6 +66,7 @@ const declineSchema = z
   });
 
 export type Booking = {
+  listingPurpose: "RENT" | "SELL";
   id: string;
   bookingId: string | null;
   status: BookingStatus;
@@ -242,7 +243,9 @@ export function BookingDetails({ booking, isCar }: { booking?: Booking; isCar: b
   return (
     <Card className="h-fit">
       <CardHeader>
-        <CardTitle>Booking details</CardTitle>
+        <CardTitle>
+          {booking?.listingPurpose === "SELL" ? "Purchase details" : "Booking details"}
+        </CardTitle>
         <p className="text-sm text-muted-foreground">{booking?.bookingId ?? "Select a booking"}</p>
       </CardHeader>
       <CardContent>
@@ -263,7 +266,8 @@ export function BookingDetails({ booking, isCar }: { booking?: Booking; isCar: b
               ) : null}
             </div>
             <dl className="grid grid-cols-2 gap-4 text-sm">
-              {getBookingKind(booking.house.propertyType) === "home" ? (
+              {booking.listingPurpose !== "SELL" &&
+              getBookingKind(booking.house.propertyType) === "home" ? (
                 <div>
                   <dt className="text-muted-foreground">Number of months</dt>
                   <dd className="mt-1 font-medium">{booking.months ?? 1}</dd>
@@ -367,6 +371,7 @@ export function BookingCard({
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {booking.client.name} · {booking.bookingId ?? "Booking request"}
+            {booking.listingPurpose === "SELL" ? " · Purchase" : ""}
           </p>
           {booking.checkIn && booking.checkOut ? (
             <p className="mt-2 text-sm">

@@ -285,12 +285,26 @@ export class PaymentsService {
           }
           return "review";
         }
+        const isPurchase = current.listingPurpose === "SELL";
+        if (isPurchase) {
+          const sold = await tx.house.updateMany({
+            where: { id: current.houseId, status: HouseStatus.AVAILABLE, listingPurpose: "SELL" },
+            data: { status: HouseStatus.SOLD },
+          });
+          if (sold.count === 0) {
+            await tx.booking.update({
+              where: { id: current.id },
+              data: { status: BookingStatus.EXPIRED },
+            });
+            return "review";
+          }
+        }
         await tx.booking.update({
           where: { id: current.id },
-          data: { status: BookingStatus.CONFIRMED },
+          data: { status: isPurchase ? BookingStatus.COMPLETED : BookingStatus.CONFIRMED },
         });
         const stayStarted = !current.checkIn || startOfDay(current.checkIn) <= startOfDay(now);
-        if (stayStarted && getBookingKind(booking.house.propertyType) !== "hotel") {
+        if (!isPurchase && stayStarted && getBookingKind(booking.house.propertyType) !== "hotel") {
           await tx.house.update({
             where: { id: current.houseId },
             data: { status: HouseStatus.BOOKED },
@@ -325,15 +339,21 @@ export class PaymentsService {
       await this.notifications.create({
         userId: booking.house.ownerId,
         type: "BOOKING_CONFIRMED",
-        title: "New booking confirmed",
-        message: `Booking ${booking.bookingId ?? booking.id}: ${booking.client.name} booked ${booking.house.name}. Message the customer to arrange check-in or pickup.`,
+        title: booking.listingPurpose === "SELL" ? "Property sold" : "New booking confirmed",
+        message:
+          booking.listingPurpose === "SELL"
+            ? `Purchase ${booking.bookingId ?? booking.id}: ${booking.client.name} bought ${booking.house.name}. Contact support to arrange the handover.`
+            : `Booking ${booking.bookingId ?? booking.id}: ${booking.client.name} booked ${booking.house.name}. Message the customer to arrange check-in or pickup.`,
         bookingId: booking.id,
       });
       await this.notifications.create({
         userId: booking.client.id,
         type: "BOOKING_CONFIRMED",
-        title: "Booking confirmed",
-        message: `Booking ${booking.bookingId ?? booking.id} for ${booking.house.name} is confirmed. Keep this reference and message the provider to arrange check-in or pickup.`,
+        title: booking.listingPurpose === "SELL" ? "Purchase completed" : "Booking confirmed",
+        message:
+          booking.listingPurpose === "SELL"
+            ? `Purchase ${booking.bookingId ?? booking.id} for ${booking.house.name} is complete. Keep this reference and contact support to arrange the handover.`
+            : `Booking ${booking.bookingId ?? booking.id} for ${booking.house.name} is confirmed. Keep this reference and message the provider to arrange check-in or pickup.`,
         bookingId: booking.id,
       });
     }

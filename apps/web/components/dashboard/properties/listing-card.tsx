@@ -45,11 +45,12 @@ export function ListingCard({
           <PropertyStatusBadge status={listing.status} />
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          {listing.location} · {listing.propertyType}
+          {listing.location} · {listing.propertyType} ·{" "}
+          {listing.listingPurpose === "SELL" ? "For sale" : "For rent"}
         </p>
         <p className="mt-2 text-sm">
           {displayPrice != null
-            ? `${fromRooms ? "From " : ""}${formatCurrency(displayPrice, listing.currency ?? "RWF")} ${getPriceUnit(listing.propertyType)}`
+            ? `${fromRooms ? "From " : ""}${formatCurrency(displayPrice, listing.currency ?? "RWF")} ${getPriceUnit(listing.propertyType, listing.listingPurpose)}`
             : "Contact for price"}
         </p>
       </div>
@@ -65,7 +66,9 @@ export function ListingDetails({ listing }: { listing: HouseWithRooms }) {
     <Card className="h-fit">
       <CardHeader>
         <CardTitle>Listing details</CardTitle>
-        <p className="text-sm text-muted-foreground">{listing.propertyType}</p>
+        <p className="text-sm text-muted-foreground">
+          {listing.propertyType} · {listing.listingPurpose === "SELL" ? "For sale" : "For rent"}
+        </p>
       </CardHeader>
       <CardContent className="space-y-5">
         <div>
@@ -89,7 +92,7 @@ export function ListingDetails({ listing }: { listing: HouseWithRooms }) {
             <dt className="text-muted-foreground">Price</dt>
             <dd className="mt-1 font-medium">
               {displayPrice != null
-                ? `${fromRooms ? "From " : ""}${formatCurrency(displayPrice, listing.currency ?? "RWF")} ${getPriceUnit(listing.propertyType)}`
+                ? `${fromRooms ? "From " : ""}${formatCurrency(displayPrice, listing.currency ?? "RWF")} ${getPriceUnit(listing.propertyType, listing.listingPurpose)}`
                 : "Contact for price"}
             </dd>
           </div>

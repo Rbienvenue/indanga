@@ -27,7 +27,7 @@ export function PropertyDetails() {
   return (
     <div className="space-y-6">
       {type === "Hotel" ? <HotelDetails /> : type === "House" ? <HouseDetails /> : <CarDetails />}
-      {type !== "Hotel" && (
+      {type !== "Hotel" && form.watch("listingPurpose") !== "SELL" && (
         <FormField
           control={form.control}
           name="cautionFee"
@@ -57,6 +57,7 @@ export function PropertyDetails() {
 function PriceField({ unit }: { unit: "month" | "day" }) {
   const form = useFormContext<CreateHouseValues>();
   const currency = form.watch("currency") ?? "RWF";
+  const isSale = form.watch("listingPurpose") === "SELL";
   return (
     <FormField
       control={form.control}
@@ -64,7 +65,11 @@ function PriceField({ unit }: { unit: "month" | "day" }) {
       render={({ field }) => (
         <FormItem>
           <FormLabel>
-            {unit === "month" ? `Monthly rent (${currency})` : `Daily rental price (${currency})`}
+            {isSale
+              ? `Selling price (${currency})`
+              : unit === "month"
+                ? `Monthly rent (${currency})`
+                : `Daily rental price (${currency})`}
           </FormLabel>
           <FormControl>
             <Input
@@ -120,9 +125,14 @@ function HouseDetails() {
   );
 }
 function CarDetails() {
+  const form = useFormContext<CreateHouseValues>();
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">Clients rent this vehicle by the day.</p>
+      <p className="text-sm text-muted-foreground">
+        {form.watch("listingPurpose") === "SELL"
+          ? "Enter the full asking price for this vehicle."
+          : "Clients rent this vehicle by the day."}
+      </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <PriceField unit="day" />
         <CurrencyField />

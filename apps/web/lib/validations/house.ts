@@ -81,6 +81,7 @@ export const createHouseSchema = z
   .object({
     name: z.string().trim().min(2, "Property name must be at least 2 characters"),
     propertyType: z.enum(propertyTypes, { message: "Select a property type" }),
+    listingPurpose: z.enum(["RENT", "SELL"]).default("RENT"),
     subType: z.string().trim().optional(),
     price: optionalPrice,
     cautionFee: z.preprocess(
@@ -106,6 +107,13 @@ export const createHouseSchema = z
     metadata: z.array(z.enum(propertyAmenities)).optional(),
   })
   .superRefine((data, ctx) => {
+    if (data.propertyType === "Hotel" && data.listingPurpose === "SELL") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["listingPurpose"],
+        message: "Hotels are booking-only",
+      });
+    }
     if (data.currency === "RWF") {
       const amounts = [
         data.price,

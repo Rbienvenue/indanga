@@ -73,6 +73,7 @@ export class CronService {
       where: {
         status: { in: [BookingStatus.APPROVED, BookingStatus.CONFIRMED] },
         checkOut: { lt: today },
+        listingPurpose: "RENT",
       },
       select: { id: true, houseId: true, clientId: true },
     });
@@ -106,8 +107,8 @@ export class CronService {
           include: { house: true, client: true },
         });
         if (stillActive === 0 && full.house.rooms.length === 0) {
-          await tx.house.update({
-            where: { id: full.houseId },
+          await tx.house.updateMany({
+            where: { id: full.houseId, status: HouseStatus.BOOKED, listingPurpose: "RENT" },
             data: { status: HouseStatus.AVAILABLE },
           });
         }
@@ -172,7 +173,7 @@ export class CronService {
     const stay = currentStay(today);
 
     // Room-based hotels manage capacity per room type; only flip whole-property listings.
-    const wholeProperty = { rooms: { none: {} } };
+    const wholeProperty = { rooms: { none: {} }, listingPurpose: "RENT" as const };
     const toBook = await this.db.house.findMany({
       where: { status: HouseStatus.AVAILABLE, bookings: { some: stay }, ...wholeProperty },
       select: { id: true },
@@ -184,13 +185,21 @@ export class CronService {
 
     if (toBook.length > 0) {
       await this.db.house.updateMany({
-        where: { id: { in: toBook.map((h) => h.id) } },
+        where: {
+          id: { in: toBook.map((h) => h.id) },
+          status: HouseStatus.AVAILABLE,
+          listingPurpose: "RENT",
+        },
         data: { status: HouseStatus.BOOKED },
       });
     }
     if (toFree.length > 0) {
       await this.db.house.updateMany({
-        where: { id: { in: toFree.map((h) => h.id) } },
+        where: {
+          id: { in: toFree.map((h) => h.id) },
+          status: HouseStatus.BOOKED,
+          listingPurpose: "RENT",
+        },
         data: { status: HouseStatus.AVAILABLE },
       });
     }

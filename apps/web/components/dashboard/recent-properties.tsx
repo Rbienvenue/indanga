@@ -25,11 +25,13 @@ type House = {
   price: number;
   currency: string | null;
   propertyType: string;
-  status: "AVAILABLE" | "BOOKED";
+  status: "AVAILABLE" | "BOOKED" | "PENDING" | "SOLD";
 };
 
 const statusColors: Record<House["status"], string> = {
   AVAILABLE: "bg-green-100 text-green-700",
+  PENDING: "bg-amber-100 text-amber-700",
+  SOLD: "bg-slate-100 text-slate-700",
   BOOKED: "bg-blue-100 text-blue-700",
 };
 

@@ -51,6 +51,7 @@ const statusLabels: Record<BookingCardStatus, string> = {
 };
 
 export interface BookingPropertyCardBooking {
+  listingPurpose: "RENT" | "SELL";
   currency?: string | null;
   id: string;
   bookingId?: string | null;
@@ -122,6 +123,7 @@ export function BookingPropertyCard({
         <p className="mt-1 text-sm text-muted-foreground">
           {booking.bookingId ?? "Booking request"}
           {house.propertyType ? ` · ${house.propertyType}` : ""}
+          {booking.listingPurpose === "SELL" ? " · Purchase" : ""}
         </p>
         {booking.checkIn && booking.checkOut ? (
           <p className="mt-2 text-sm">
@@ -129,7 +131,7 @@ export function BookingPropertyCard({
             {new Date(booking.checkOut).toLocaleDateString()}
           </p>
         ) : null}
-        {getBookingKind(house.propertyType) === "home" ? (
+        {booking.listingPurpose !== "SELL" && getBookingKind(house.propertyType) === "home" ? (
           <p className="mt-2 text-sm text-muted-foreground">
             {booking.months ?? 1} month{(booking.months ?? 1) === 1 ? "" : "s"} rent
           </p>
@@ -158,7 +160,9 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
   return (
     <Card className="h-fit gap-0">
       <CardHeader>
-        <CardTitle>Booking details</CardTitle>
+        <CardTitle>
+          {booking.listingPurpose === "SELL" ? "Purchase details" : "Booking details"}
+        </CardTitle>
         <p className="break-all text-sm text-muted-foreground">
           {booking.bookingId ?? "Booking request"}
         </p>
@@ -195,7 +199,7 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
           </p>
         ) : null}
 
-        {getBookingKind(house.propertyType) === "home" ? (
+        {booking.listingPurpose !== "SELL" && getBookingKind(house.propertyType) === "home" ? (
           <p className="mt-2 text-sm text-muted-foreground">
             Number of months: {booking.months ?? 1}
           </p>

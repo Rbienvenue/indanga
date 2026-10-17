@@ -19,6 +19,10 @@ export function PropertyFeed({
 }: { ownerId?: string; lockedType?: string; columns?: 3 | 4 } = {}) {
   const gridClassName = `mt-10 grid gap-6 sm:grid-cols-2 ${columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"}`;
   const [propertyType, setPropertyType] = useQueryState("type", parseAsString.withDefault("all"));
+  const [listingPurpose, setListingPurpose] = useQueryState(
+    "listingPurpose",
+    parseAsString.withDefault("all"),
+  );
   const [subType, setSubType] = useQueryState("subType", parseAsString.withDefault("all"));
   const [budget, setBudget] = useQueryState("budget", parseAsString.withDefault("any"));
   const [province, setProvince] = useQueryState("province", parseAsString.withDefault("all"));
@@ -30,6 +34,7 @@ export function PropertyFeed({
 
   const hasActiveFilters =
     (!lockedType && propertyType !== "all") ||
+    listingPurpose !== "all" ||
     subType !== "all" ||
     budget !== "any" ||
     province !== "all" ||
@@ -39,6 +44,7 @@ export function PropertyFeed({
 
   function clearFilters() {
     if (!lockedType) void setPropertyType(null);
+    void setListingPurpose(null);
     void setSubType(null);
     void setBudget(null);
     void setProvince(null);
@@ -57,6 +63,7 @@ export function PropertyFeed({
           : "all";
   const filters = {
     propertyType: effectivePropertyType,
+    listingPurpose,
     subType,
     budget,
     location: effectiveLocation,
@@ -134,6 +141,7 @@ export function PropertyFeed({
                 description={house.description}
                 address={house.address}
                 propertyType={house.propertyType}
+                listingPurpose={house.listingPurpose}
                 badge={house.propertyType}
                 showManageActions={!!ownerId}
                 status={house.status}

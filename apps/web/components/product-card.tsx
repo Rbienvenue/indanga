@@ -47,6 +47,7 @@ export type ProductCardProps = {
   description?: string;
   address?: string | null;
   propertyType?: string;
+  listingPurpose: House["listingPurpose"];
   badge?: string;
   badgeClassName?: string;
   href?: string;
@@ -69,6 +70,7 @@ export function ProductCard({
   bedrooms,
   bathrooms,
   propertyType = "House",
+  listingPurpose,
   badge,
   badgeClassName = "bg-primary text-primary-foreground",
   href,
@@ -79,7 +81,8 @@ export function ProductCard({
   status,
   verificationStatus,
 }: ProductCardProps) {
-  const resolvedPriceUnit = priceUnit ?? getPriceUnit(propertyType);
+  const resolvedPriceUnit =
+    listingPurpose === "SELL" ? "" : (priceUnit ?? getPriceUnit(propertyType, listingPurpose));
   const displayCurrency = currency ?? "RWF";
   const { displayPrice, fromRooms } = getDisplayPrice(price, rooms);
   const queryClient = useQueryClient();
@@ -278,6 +281,9 @@ export function ProductCard({
       </div>
 
       <CardContent className="p-4">
+        <Badge variant="secondary" className="mb-2">
+          {listingPurpose === "SELL" ? "For sale" : "For rent"}
+        </Badge>
         <h3 className="text-base font-semibold text-foreground">{name}</h3>
         <div className="mt-1.5 flex items-center gap-1 text-sm text-muted-foreground">
           <MapPin className="size-3.5 shrink-0" />

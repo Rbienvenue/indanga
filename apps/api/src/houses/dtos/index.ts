@@ -1,4 +1,4 @@
-import { Currency, HouseStatus } from "@indanga/db";
+import { Currency, HouseStatus, ListingPurpose } from "@indanga/db";
 import { PartialType } from "@nestjs/mapped-types";
 import { Transform, Type } from "class-transformer";
 import {
@@ -124,6 +124,10 @@ export class CreateHouseDto {
   propertyType: string;
 
   @IsOptional()
+  @IsEnum(ListingPurpose)
+  listingPurpose?: ListingPurpose;
+
+  @IsOptional()
   @IsString()
   subType?: string;
 
@@ -209,6 +213,10 @@ export class FilterDto {
   @IsOptional()
   @IsString()
   propertyType?: string;
+
+  @IsOptional()
+  @IsEnum(ListingPurpose)
+  listingPurpose?: ListingPurpose;
 
   @IsOptional()
   @IsString()

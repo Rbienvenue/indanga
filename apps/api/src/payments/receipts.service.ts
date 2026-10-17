@@ -36,8 +36,10 @@ export class ReceiptsService {
     const serviceFee = getPaymentServiceFeeRwf(payment);
     const cautionFee = Math.round(Number(booking.cautionFee ?? 0) * exchangeRate);
     const kind = getBookingKind(booking.house.propertyType);
-    const period =
-      booking.checkIn && booking.checkOut
+    const isPurchase = booking.listingPurpose === "SELL";
+    const period = isPurchase
+      ? "One-time purchase"
+      : booking.checkIn && booking.checkOut
         ? `${booking.checkIn.toLocaleDateString("en-GB", { timeZone: "Africa/Kigali" })} - ${booking.checkOut.toLocaleDateString("en-GB", { timeZone: "Africa/Kigali" })}`
         : `${booking.months ?? 1} month${(booking.months ?? 1) === 1 ? "" : "s"} rent`;
     return {
@@ -56,9 +58,9 @@ export class ReceiptsService {
       description: `${booking.house.name}${booking.roomType ? ` · ${booking.roomType.name} × ${booking.roomCount ?? 1}` : ""}`,
       period,
       rate: booking.unitPrice == null ? null : Math.round(Number(booking.unitPrice) * exchangeRate),
-      duration: kind === "home" ? (booking.months ?? 1) : booking.nights,
+      duration: isPurchase ? 1 : kind === "home" ? (booking.months ?? 1) : booking.nights,
       quantity: kind === "hotel" ? (booking.roomCount ?? 1) : 1,
-      unit: kind === "car" ? "day" : kind === "hotel" ? "night" : "month",
+      unit: isPurchase ? "purchase" : kind === "car" ? "day" : kind === "hotel" ? "night" : "month",
       subtotal: total - serviceFee - cautionFee,
       cautionFee,
       serviceFee,

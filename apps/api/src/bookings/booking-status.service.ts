@@ -94,7 +94,21 @@ export class BookingStatusService {
           if (providerResponseDeadline(current) <= new Date())
             throw new BadRequestException("The provider response deadline has passed");
           const kind = getBookingKind(current.house.propertyType);
-          if (kind === "hotel") {
+          if (current.listingPurpose !== current.house.listingPurpose) {
+            throw new ConflictException("The listing purpose changed. Submit a new request");
+          }
+          if (current.listingPurpose === "SELL") {
+            const reserved = await tx.booking.count({
+              where: {
+                id: { not: current.id },
+                houseId: current.houseId,
+                ...reservingBookingsWhere(),
+              },
+            });
+            if (current.house.status !== HouseStatus.AVAILABLE || reserved > 0) {
+              throw new ConflictException("This property is no longer available for purchase");
+            }
+          } else if (kind === "hotel") {
             if (!current.roomTypeId || !current.checkIn || !current.checkOut) {
               throw new BadRequestException("This booking request has incomplete stay details");
             }
@@ -146,8 +160,11 @@ export class BookingStatusService {
       );
       await this.notifications.create({
         type: "SYSTEM",
-        title: "Availability confirmed",
-        message: `Booking ${accepted.bookingId ?? accepted.id}: the provider accepted your request. Complete payment by ${paymentDeadline.toLocaleString("en-RW", { timeZone: "Africa/Kigali" })} to secure the booking.`,
+        title:
+          accepted.listingPurpose === "SELL"
+            ? "Purchase request accepted"
+            : "Availability confirmed",
+        message: `Booking ${accepted.bookingId ?? accepted.id}: the provider accepted your request. Complete payment by ${paymentDeadline.toLocaleString("en-RW", { timeZone: "Africa/Kigali" })} to secure ${accepted.listingPurpose === "SELL" ? "the purchase" : "the booking"}.`,
         userId: accepted.clientId,
         bookingId: accepted.id,
       });
@@ -156,6 +173,17 @@ export class BookingStatusService {
 
     if (status !== BookingStatus.CANCELLED) {
       throw new BadRequestException("This booking status change is not allowed");
+    }
+
+    if (
+      booking.listingPurpose === "SELL" &&
+      [BookingStatus.COMPLETED, BookingStatus.CONFIRMED, BookingStatus.APPROVED].some(
+        (status) => status === booking.status,
+      )
+    ) {
+      throw new BadRequestException(
+        "Paid purchases cannot be cancelled through booking status changes",
+      );
     }
 
     const today = new Date();
@@ -173,6 +201,24 @@ export class BookingStatusService {
     });
 
     const updated = await this.db.$transaction(async (tx) => {
+      if (booking.listingPurpose === "SELL") {
+        const cancelled = await tx.booking.updateMany({
+          where: {
+            id,
+            status: {
+              in: [BookingStatus.REQUESTED, BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT],
+            },
+          },
+          data: { status: BookingStatus.CANCELLED },
+        });
+        if (cancelled.count === 0) {
+          throw new ConflictException("This purchase request can no longer be cancelled");
+        }
+        return tx.booking.findUniqueOrThrow({
+          where: { id },
+          include: { house: true, client: true },
+        });
+      }
       const updated = await tx.booking.update({
         where: { id },
         data: { status },
@@ -181,8 +227,8 @@ export class BookingStatusService {
 
       // Room-based hotels free capacity via dates; only flip whole-property listings.
       if (otherCurrentStays === 0 && booking.house.rooms.length === 0) {
-        await tx.house.update({
-          where: { id: booking.houseId },
+        await tx.house.updateMany({
+          where: { id: booking.houseId, status: HouseStatus.BOOKED, listingPurpose: "RENT" },
           data: { status: HouseStatus.AVAILABLE },
         });
       }

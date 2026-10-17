@@ -63,7 +63,7 @@ export function PropertyReview({
       <ReviewSection title="Basics" onEdit={() => onEdit(0)}>
         <p className="text-lg font-medium">{values.name}</p>
         <p className="text-sm text-muted-foreground">
-          {values.propertyType}
+          {values.propertyType} · {values.listingPurpose === "SELL" ? "For sale" : "For rent"}
           {values.subType ? ` · ${values.subType}` : ""}
         </p>
         <p className="whitespace-pre-wrap break-words text-sm">{values.description}</p>
@@ -94,14 +94,17 @@ export function PropertyReview({
           </ul>
         ) : (
           <p className="font-medium">
-            {formatCurrency(values.price ?? 0, values.currency)} {getPriceUnit(values.propertyType)}
+            {formatCurrency(values.price ?? 0, values.currency)}{" "}
+            {getPriceUnit(values.propertyType, values.listingPurpose)}
           </p>
         )}
-        {values.propertyType !== "Hotel" && values.cautionFee !== undefined && (
-          <p className="text-sm">
-            Caution fee: {formatCurrency(values.cautionFee, values.currency)} (fixed)
-          </p>
-        )}
+        {values.propertyType !== "Hotel" &&
+          values.listingPurpose !== "SELL" &&
+          values.cautionFee !== undefined && (
+            <p className="text-sm">
+              Caution fee: {formatCurrency(values.cautionFee, values.currency)} (fixed)
+            </p>
+          )}
         {values.propertyType === "House" && (
           <p className="text-sm text-muted-foreground">
             {values.bedrooms ?? 0} bedrooms · {values.bathrooms ?? 0} bathrooms

@@ -147,7 +147,21 @@ export function BookingRequestStatus({
   onBookAgain?: () => void;
   inlinePayment?: boolean;
 }) {
-  const guidance = statusGuidance[booking.status];
+  const isPurchase = booking.listingPurpose === "SELL";
+  const guidance =
+    isPurchase && booking.status === "REQUESTED"
+      ? {
+          title: "Purchase request sent",
+          message:
+            "The provider must accept your request before you pay. We will notify you when they respond.",
+        }
+      : isPurchase && booking.status === "COMPLETED"
+        ? {
+            title: "Purchase completed",
+            message:
+              "Keep your purchase reference and contact INDANGA support to arrange the handover.",
+          }
+        : statusGuidance[booking.status];
   const explore = ["DECLINED", "REJECTED", "EXPIRED"].includes(booking.status);
   const showPayments = ["PENDING", "EXPIRED", "CANCELLED", "COMPLETED"].includes(booking.status);
   const cancellable = ["REQUESTED", "PENDING", "AWAITING_PAYMENT"].includes(booking.status);
@@ -219,7 +233,7 @@ export function BookingRequestStatus({
           ) : null}
         </>
       )}
-      {getBookingKind(booking.house.propertyType) === "home" ? (
+      {!isPurchase && getBookingKind(booking.house.propertyType) === "home" ? (
         <p className="mt-2 text-sm text-muted-foreground">
           {booking.months ?? 1} month{(booking.months ?? 1) === 1 ? "" : "s"} rent
         </p>
@@ -251,7 +265,7 @@ export function BookingRequestStatus({
             disabled={cancelMutation.isPending}
             onClick={() => setCancelOpen(true)}
           >
-            Cancel booking
+            Cancel {isPurchase ? "purchase request" : "booking"}
           </Button>
         ) : null}
         <MessageButton label="Contact support" size="sm" />
@@ -259,10 +273,12 @@ export function BookingRequestStatus({
       <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel this booking?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Cancel this {isPurchase ? "purchase request" : "booking"}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Your booking request will be withdrawn and the provider will be notified. This
-              cannot be undone.
+              Your booking request will be withdrawn and the provider will be notified. This cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

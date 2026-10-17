@@ -170,8 +170,14 @@ function BookingPaymentForm({
       if (latest?.status === "COMPLETED") {
         void queryClient.invalidateQueries({ queryKey: ["bookings"] });
         void queryClient.invalidateQueries({ queryKey: ["payments"] });
-        if (latest.booking.status === "CONFIRMED" || latest.booking.status === "APPROVED") {
-          toast.success("Booking confirmed.");
+        if (
+          latest.booking.status === "CONFIRMED" ||
+          latest.booking.status === "APPROVED" ||
+          (booking.listingPurpose === "SELL" && latest.booking.status === "COMPLETED")
+        ) {
+          toast.success(
+            booking.listingPurpose === "SELL" ? "Purchase completed." : "Booking confirmed.",
+          );
           onPaid?.();
         } else toast.info("Payment received. Contact support to review your booking.");
       } else if (latest?.status === "FAILED") {
@@ -186,7 +192,7 @@ function BookingPaymentForm({
       socket.off("subscribed:payment", refresh);
       socket.off("payment.update", handleUpdate);
     };
-  }, [isConnected, onPaid, paymentId, queryClient, refreshPayment, socket]);
+  }, [booking.listingPurpose, isConnected, onPaid, paymentId, queryClient, refreshPayment, socket]);
 
   useEffect(() => {
     if (payment?.status !== "COMPLETED") return;
@@ -205,7 +211,8 @@ function BookingPaymentForm({
     quote.isFetching;
   const kind = getBookingKind(booking.house.propertyType);
   const quantity = kind === "hotel" ? (booking.roomCount ?? 1) : 1;
-  const duration = kind === "home" ? (booking.months ?? 1) : (booking.nights ?? 1);
+  const isPurchase = booking.listingPurpose === "SELL";
+  const duration = isPurchase ? 1 : kind === "home" ? (booking.months ?? 1) : (booking.nights ?? 1);
   const unitPrice = booking.unitPrice ?? booking.house.price ?? 0;
   const subtotal = unitPrice * quantity * duration;
   const serviceFee =
@@ -216,6 +223,7 @@ function BookingPaymentForm({
     <div className="space-y-4">
       <BookingPriceSummary
         bookingKind={kind}
+        isPurchase={isPurchase}
         currency={booking.currency ?? booking.house.currency}
         unitPrice={unitPrice}
         months={booking.months}
@@ -267,8 +275,12 @@ function BookingPaymentForm({
       {completed ? (
         <div role="status" className="space-y-3 rounded-lg bg-muted p-3">
           <p className="text-sm">
-            {payment.booking.status === "CONFIRMED" || payment.booking.status === "APPROVED"
-              ? "Payment received. Your booking is confirmed."
+            {payment.booking.status === "CONFIRMED" ||
+            payment.booking.status === "APPROVED" ||
+            (isPurchase && payment.booking.status === "COMPLETED")
+              ? isPurchase
+                ? "Payment received. Your purchase is complete."
+                : "Payment received. Your booking is confirmed."
               : "Payment received. Contact support to review your booking before making another payment."}
           </p>
           <ReceiptDialog paymentId={payment.id} />
@@ -412,7 +424,8 @@ export function BookingPaymentPanel({
       <p className="text-sm font-medium">Availability confirmed.</p>
       <p className="mt-1 text-sm text-muted-foreground">
         The provider accepted your request. Complete payment by{" "}
-        {deadline?.toLocaleString("en-RW", { timeZone: "Africa/Kigali" })} to secure the booking.
+        {deadline?.toLocaleString("en-RW", { timeZone: "Africa/Kigali" })} to secure{" "}
+        {booking.listingPurpose === "SELL" ? "the purchase" : "the booking"}.
       </p>
       {booking.bookingId ? (
         <p className="mt-2 text-xs text-muted-foreground">Booking ID: {booking.bookingId}</p>
