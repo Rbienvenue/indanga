@@ -58,7 +58,7 @@ export function PropertyReview({
         role="note"
         className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-800 dark:text-amber-300"
       >
-        Your listing will be reviewed by indanga before publishion.
+        Your listing will be reviewed by indanga before publishing.
       </p>
       <ReviewSection title="Basics" onEdit={() => onEdit(0)}>
         <p className="text-lg font-medium">{values.name}</p>
