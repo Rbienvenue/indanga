@@ -1,0 +1,11 @@
+{
+  "search": "Search",
+  "clear": "Clear search",
+  "filter": "Filter",
+  "all": "All",
+  "noResults": "No results found",
+  "previous": "Previous",
+  "next": "Next",
+  "pageCount": "Page {page} of {total}",
+  "reset": "Reset"
+}

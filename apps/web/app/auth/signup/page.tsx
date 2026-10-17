@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,6 +30,7 @@ import { signUp } from "@/lib/auth-client";
 import { combineFullName, signupSchema, type SignupValues } from "@/lib/validations/auth";
 
 export default function SignupPage() {
+  const t = useTranslations("auth");
   const router = useRouter();
   const form = useForm<SignupValues, unknown, SignupValues>({
     resolver: zodResolver(signupSchema),
@@ -73,7 +75,11 @@ export default function SignupPage() {
 
     if (error) {
       form.setError("root", {
-        message: error.message || "Unable to create your account. Try again.",
+        message:
+          error.code === "USER_ALREADY_EXISTS" ||
+          error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"
+            ? "accountExists"
+            : "signupError",
       });
       return;
     }
@@ -87,10 +93,8 @@ export default function SignupPage() {
   return (
     <>
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight  sm:text-4xl">Create your account</h1>
-        <p className="mt-3 max-w-sm leading-6 text-muted-foreground">
-          Save favorites, contact hosts, and keep every booking in one place.
-        </p>
+        <h1 className="text-3xl font-semibold tracking-tight  sm:text-4xl">{t("signupTitle")}</h1>
+        <p className="mt-3 max-w-sm leading-6 text-muted-foreground">{t("signupDescription")}</p>
       </div>
 
       <Form {...form}>
@@ -100,7 +104,7 @@ export default function SignupPage() {
             name="role"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Are you?</FormLabel>
+                <FormLabel>{t("areYou")}</FormLabel>
                 <FormControl>
                   <RolePicker
                     value={field.value}
@@ -119,17 +123,17 @@ export default function SignupPage() {
               name="providerType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>What do you provide?</FormLabel>
+                  <FormLabel>{t("provide")}</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
                     <FormControl>
                       <SelectTrigger className="h-11 w-full">
-                        <SelectValue placeholder="Select provider type" />
+                        <SelectValue placeholder={t("providerType")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="HOUSE">House</SelectItem>
-                      <SelectItem value="HOTEL">Hotel</SelectItem>
-                      <SelectItem value="CAR">Car</SelectItem>
+                      <SelectItem value="HOUSE">{t("house")}</SelectItem>
+                      <SelectItem value="HOTEL">{t("hotel")}</SelectItem>
+                      <SelectItem value="CAR">{t("car")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -144,11 +148,11 @@ export default function SignupPage() {
               name="firstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>First name</FormLabel>
+                  <FormLabel>{t("firstName")}</FormLabel>
                   <FormControl>
                     <Input
                       autoComplete="given-name"
-                      placeholder="First name"
+                      placeholder={t("firstName")}
                       className="h-11 bg-white px-3"
                       disabled={isPending}
                       {...field}
@@ -163,11 +167,11 @@ export default function SignupPage() {
               name="lastName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Second name</FormLabel>
+                  <FormLabel>{t("lastName")}</FormLabel>
                   <FormControl>
                     <Input
                       autoComplete="family-name"
-                      placeholder="Second name"
+                      placeholder={t("lastName")}
                       className="h-11 bg-white px-3"
                       disabled={isPending}
                       {...field}
@@ -185,7 +189,7 @@ export default function SignupPage() {
               name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone number</FormLabel>
+                  <FormLabel>{t("phone")}</FormLabel>
                   <FormControl>
                     <Input
                       type="tel"
@@ -205,12 +209,12 @@ export default function SignupPage() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("email")}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
                       autoComplete="email"
-                      placeholder="you@example.com"
+                      placeholder={t("emailPlaceholder")}
                       className="h-11 bg-white px-3"
                       disabled={isPending}
                       {...field}
@@ -229,12 +233,12 @@ export default function SignupPage() {
                 name="nationalId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>National ID</FormLabel>
+                    <FormLabel>{t("nationalId")}</FormLabel>
                     <FormControl>
                       <Input
                         inputMode="numeric"
                         autoComplete="off"
-                        placeholder="National ID"
+                        placeholder={t("nationalId")}
                         className="h-11 bg-white px-3"
                         disabled={isPending}
                         {...field}
@@ -253,11 +257,11 @@ export default function SignupPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t("password")}</FormLabel>
                   <FormControl>
                     <PasswordInput
                       autoComplete="new-password"
-                      placeholder="At least 8 characters"
+                      placeholder={t("passwordMinimum")}
                       className="h-11 bg-white px-3"
                       disabled={isPending}
                       {...field}
@@ -272,11 +276,11 @@ export default function SignupPage() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm password</FormLabel>
+                  <FormLabel>{t("confirmPassword")}</FormLabel>
                   <FormControl>
                     <PasswordInput
                       autoComplete="new-password"
-                      placeholder="Repeat password"
+                      placeholder={t("repeatPassword")}
                       className="h-11 bg-white px-3"
                       disabled={isPending}
                       {...field}
@@ -307,7 +311,7 @@ export default function SignupPage() {
                     />
                   </FormControl>
                   <FormLabel htmlFor="terms-accepted" className="font-normal leading-6">
-                    I have read and agree to the <TermsDialog />.
+                    {t.rich("acceptTerms", { terms: () => <TermsDialog /> })}
                   </FormLabel>
                 </div>
                 <FormMessage />
@@ -320,7 +324,11 @@ export default function SignupPage() {
               role="alert"
               className="rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
             >
-              {form.formState.errors.root.message}
+              {t(
+                form.formState.errors.root.message === "accountExists"
+                  ? "accountExists"
+                  : "signupError",
+              )}
             </p>
           ) : null}
 
@@ -330,15 +338,15 @@ export default function SignupPage() {
             className="h-11 w-full font-semibold cursor-pointer"
             disabled={isPending}
           >
-            {isPending ? "Creating account…" : "Create account"}
+            {isPending ? t("creatingAccount") : t("createAccount")}
           </Button>
         </form>
       </Form>
 
       <p className="mt-7 text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
+        {t("alreadyHaveAccount")}{" "}
         <Link href="/auth/login" className="font-semibold hover:underline">
-          Sign in
+          {t("signIn")}
         </Link>
       </p>
     </>

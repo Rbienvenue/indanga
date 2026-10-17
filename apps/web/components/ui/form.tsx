@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import type { Messages } from "@indanga/translations";
 import * as React from "react";
 import { Slot } from "radix-ui";
 import {
@@ -106,7 +108,17 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
 
 function FormMessage({ className, children, ...props }: React.ComponentProps<"p">) {
   const { error, formMessageId } = useFormField();
-  const body = error ? String(error.message ?? "") : children;
+  const t = useTranslations("validation");
+  const message = String(error?.message ?? "");
+  // Schemas keep stable keys so existing errors follow a language change.
+  const key = message.startsWith("validation.")
+    ? (message.slice("validation.".length) as keyof Messages["validation"])
+    : null;
+  const body = error
+    ? key && t.has(key)
+      ? t(key as keyof Messages["validation"])
+      : message
+    : children;
 
   if (!body) return null;
 

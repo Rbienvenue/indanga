@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -38,6 +39,7 @@ function maskEmail(email: string) {
 }
 
 export function ForgotPasswordForm() {
+  const t = useTranslations("auth");
   const router = useRouter();
   const [step, setStep] = useState<Step>("request");
   const [email, setEmail] = useState("");
@@ -66,7 +68,7 @@ export function ForgotPasswordForm() {
 
     if (error) {
       requestForm.setError("root", {
-        message: error.message || "Unable to send reset code. Try again.",
+        message: "requestResetError",
       });
       return;
     }
@@ -88,14 +90,14 @@ export function ForgotPasswordForm() {
 
       if (error) {
         setOtp("");
-        setOtpError(error.message || "Invalid or expired code");
+        setOtpError("invalidCode");
         return;
       }
 
       setStep("reset");
     } catch {
       setOtp("");
-      setOtpError("Something went wrong. Please try again.");
+      setOtpError("verificationError");
     } finally {
       setIsVerifyingOtp(false);
     }
@@ -109,13 +111,13 @@ export function ForgotPasswordForm() {
     try {
       const { error } = await authClient.emailOtp.requestPasswordReset({ email });
       if (error) {
-        setOtpError(error.message || "Failed to resend reset code");
+        setOtpError("resendError");
         return;
       }
       setOtp("");
-      toast.success("A new code has been sent to your email");
+      toast.success(t("codeSent"));
     } catch {
-      setOtpError("Failed to resend. Please try again.");
+      setOtpError("resendError");
     } finally {
       setIsResending(false);
     }
@@ -132,12 +134,12 @@ export function ForgotPasswordForm() {
 
     if (error) {
       resetForm.setError("root", {
-        message: error.message || "Invalid or expired code",
+        message: "invalidCode",
       });
       return;
     }
 
-    toast.success("Password reset successfully");
+    toast.success(t("passwordReset"));
     router.push("/auth/login");
   };
 
@@ -145,10 +147,10 @@ export function ForgotPasswordForm() {
     return (
       <>
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Forgot password?</h1>
-          <p className="mt-3 max-w-sm leading-6 text-muted-foreground">
-            Enter your email and we&apos;ll send you a six-digit code to reset your password.
-          </p>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            {t("forgotPassword")}
+          </h1>
+          <p className="mt-3 max-w-sm leading-6 text-muted-foreground">{t("requestDescription")}</p>
         </div>
 
         <Form {...requestForm}>
@@ -162,12 +164,12 @@ export function ForgotPasswordForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("email")}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
                       autoComplete="email"
-                      placeholder="you@example.com"
+                      placeholder={t("emailPlaceholder")}
                       className="h-11 px-3"
                       disabled={requestForm.formState.isSubmitting}
                       {...field}
@@ -183,7 +185,7 @@ export function ForgotPasswordForm() {
                 role="alert"
                 className="rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
               >
-                {requestForm.formState.errors.root.message}
+                {t("requestResetError")}
               </p>
             ) : null}
 
@@ -193,13 +195,13 @@ export function ForgotPasswordForm() {
               className="h-11 w-full cursor-pointer font-semibold"
               disabled={requestForm.formState.isSubmitting}
             >
-              {requestForm.formState.isSubmitting ? "Sending…" : "Send reset code"}
+              {requestForm.formState.isSubmitting ? t("sending") : t("sendReset")}
             </Button>
 
             <Button asChild variant="ghost" className="w-full">
               <Link href="/auth/login">
                 <ArrowLeft className="size-4" />
-                Back to sign in
+                {t("backSignIn")}
               </Link>
             </Button>
           </form>
@@ -216,16 +218,19 @@ export function ForgotPasswordForm() {
             <MailIcon className="size-6 text-primary" />
           </div>
           <h1 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Check your email
+            {t("checkEmail")}
           </h1>
           <p className="mt-3 max-w-sm leading-6 text-muted-foreground">
-            We sent a six-digit code to <span className="font-medium">{maskEmail(email)}</span>.
-            Enter it below to continue.
+            {t.rich("codeDescription", {
+              email: maskEmail(email),
+              strong: (chunks) => <span className="font-medium">{chunks}</span>,
+            })}
           </p>
         </div>
 
         <div className="flex flex-col items-center gap-6">
           <InputOTP
+            aria-label={t("verificationCode")}
             maxLength={6}
             pattern={REGEXP_ONLY_DIGITS}
             value={otp}
@@ -257,21 +262,27 @@ export function ForgotPasswordForm() {
               role="alert"
               className="rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
             >
-              {otpError}
+              {t(
+                otpError === "invalidCode"
+                  ? "invalidCode"
+                  : otpError === "resendError"
+                    ? "resendError"
+                    : "verificationError",
+              )}
             </p>
           ) : null}
 
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            Didn&apos;t receive the code?
+            {t("noCode")}
             <Button variant="link" className="px-1" onClick={onResend} disabled={isResending}>
-              {isResending ? "Sending…" : "Resend"}
+              {isResending ? t("sending") : t("resend")}
             </Button>
           </div>
 
           <Button asChild variant="ghost" className="w-full">
             <Link href="/auth/login">
               <ArrowLeft className="size-4" />
-              Back to sign in
+              {t("backSignIn")}
             </Link>
           </Button>
         </div>
@@ -282,10 +293,8 @@ export function ForgotPasswordForm() {
   return (
     <>
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Reset your password</h1>
-        <p className="mt-3 max-w-sm leading-6 text-muted-foreground">
-          Choose a new password for your account.
-        </p>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("resetTitle")}</h1>
+        <p className="mt-3 max-w-sm leading-6 text-muted-foreground">{t("resetDescription")}</p>
       </div>
 
       <Form {...resetForm}>
@@ -295,12 +304,12 @@ export function ForgotPasswordForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>New password</FormLabel>
+                <FormLabel>{t("newPassword")}</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
                     autoComplete="new-password"
-                    placeholder="Enter new password"
+                    placeholder={t("enterNewPassword")}
                     className="h-11 bg-white px-3"
                     disabled={resetForm.formState.isSubmitting}
                     {...field}
@@ -316,12 +325,12 @@ export function ForgotPasswordForm() {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm password</FormLabel>
+                <FormLabel>{t("confirmPassword")}</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
                     autoComplete="new-password"
-                    placeholder="Confirm new password"
+                    placeholder={t("confirmNewPassword")}
                     className="h-11 bg-white px-3"
                     disabled={resetForm.formState.isSubmitting}
                     {...field}
@@ -337,7 +346,7 @@ export function ForgotPasswordForm() {
               role="alert"
               className="rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
             >
-              {resetForm.formState.errors.root.message}
+              {t("invalidCode")}
             </p>
           ) : null}
 
@@ -347,7 +356,7 @@ export function ForgotPasswordForm() {
             className="h-11 w-full cursor-pointer font-semibold"
             disabled={resetForm.formState.isSubmitting}
           >
-            {resetForm.formState.isSubmitting ? "Resetting…" : "Reset password"}
+            {resetForm.formState.isSubmitting ? t("resetting") : t("resetPassword")}
           </Button>
         </form>
       </Form>

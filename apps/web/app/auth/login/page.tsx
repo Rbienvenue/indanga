@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +21,7 @@ import { signIn } from "@/lib/auth-client";
 import { loginSchema, type LoginValues } from "@/lib/validations/auth";
 
 export default function LoginPage() {
+  const t = useTranslations("auth");
   const router = useRouter();
   const form = useForm<LoginValues, unknown, LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -31,7 +33,9 @@ export default function LoginPage() {
     const { error, data } = await signIn.email(values);
 
     if (error) {
-      form.setError("root", { message: error.message || "Unable to sign in. Try again." });
+      form.setError("root", {
+        message: error.code === "INVALID_EMAIL_OR_PASSWORD" ? "invalidCredentials" : "signInError",
+      });
       return;
     }
 
@@ -53,10 +57,8 @@ export default function LoginPage() {
   return (
     <>
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight  sm:text-4xl">Sign in to continue</h1>
-        <p className="mt-3 max-w-sm leading-6 text-muted-foreground">
-          Access your saved homes, bookings, and conversations.
-        </p>
+        <h1 className="text-3xl font-semibold tracking-tight  sm:text-4xl">{t("loginTitle")}</h1>
+        <p className="mt-3 max-w-sm leading-6 text-muted-foreground">{t("loginDescription")}</p>
       </div>
 
       <Form {...form}>
@@ -66,12 +68,12 @@ export default function LoginPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t("email")}</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
                     autoComplete="email"
-                    placeholder="you@example.com"
+                    placeholder={t("emailPlaceholder")}
                     className="h-11 px-3"
                     disabled={isPending}
                     {...field}
@@ -88,15 +90,15 @@ export default function LoginPage() {
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t("password")}</FormLabel>
                   <Button asChild variant={"link"}>
-                    <Link href="/auth/forgot-password">Forgot password?</Link>
+                    <Link href="/auth/forgot-password">{t("forgotPassword")}</Link>
                   </Button>
                 </div>
                 <FormControl>
                   <PasswordInput
                     autoComplete="current-password"
-                    placeholder="Enter your password"
+                    placeholder={t("enterPassword")}
                     className="h-11 bg-white px-3"
                     disabled={isPending}
                     {...field}
@@ -112,7 +114,11 @@ export default function LoginPage() {
               role="alert"
               className="rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
             >
-              {form.formState.errors.root.message}
+              {t(
+                form.formState.errors.root.message === "invalidCredentials"
+                  ? "invalidCredentials"
+                  : "signInError",
+              )}
             </p>
           ) : null}
 
@@ -122,15 +128,15 @@ export default function LoginPage() {
             className="h-11 w-full font-semibold cursor-pointer"
             disabled={isPending}
           >
-            {isPending ? "Signing in…" : "Sign in"}
+            {isPending ? t("signingIn") : t("signIn")}
           </Button>
         </form>
       </Form>
 
       <p className="mt-7 text-center text-sm text-muted-foreground">
-        New to INDANGA?{" "}
+        {t("newHere")}{" "}
         <Link href="/auth/signup" className="font-semibold hover:underline">
-          Create an account
+          {t("createAnAccount")}
         </Link>
       </p>
     </>

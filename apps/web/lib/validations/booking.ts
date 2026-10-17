@@ -2,13 +2,25 @@ import { differenceInCalendarDays, startOfDay } from "date-fns";
 import { z } from "zod";
 
 export const bookingSchema = z.object({
-  houseId: z.string().min(1),
-  months: z.coerce.number<number>().int().min(1, "Select at least 1 month").optional(),
+  houseId: z.string().min(1, "validation.property"),
+  months: z.coerce
+    .number<number>({ error: "validation.positiveInteger" })
+    .int("validation.positiveInteger")
+    .min(1, "validation.months")
+    .optional(),
   checkIn: z.string().optional(),
   checkOut: z.string().optional(),
   roomTypeId: z.string().optional(),
-  roomCount: z.coerce.number<number>().int().min(1).optional(),
-  guestCount: z.coerce.number<number>().int().min(1).optional(),
+  roomCount: z.coerce
+    .number<number>({ error: "validation.positiveInteger" })
+    .int("validation.positiveInteger")
+    .min(1, "validation.positiveInteger")
+    .optional(),
+  guestCount: z.coerce
+    .number<number>({ error: "validation.positiveInteger" })
+    .int("validation.positiveInteger")
+    .min(1, "validation.positiveInteger")
+    .optional(),
 });
 
 export type BookingValues = z.infer<typeof bookingSchema>;
@@ -19,8 +31,8 @@ function parseLocalDate(value: string): Date {
 
 export const datedBookingSchema = bookingSchema
   .safeExtend({
-    checkIn: z.string().min(1, "Check-in date is required"),
-    checkOut: z.string().min(1, "Check-out date is required"),
+    checkIn: z.string().min(1, "validation.checkIn"),
+    checkOut: z.string().min(1, "validation.checkOut"),
   })
   .superRefine((data, ctx) => {
     const checkIn = parseLocalDate(data.checkIn);
@@ -29,7 +41,7 @@ export const datedBookingSchema = bookingSchema
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["checkOut"],
-        message: "Enter valid check-in and check-out dates",
+        message: "validation.validDates",
       });
       return;
     }
@@ -37,14 +49,14 @@ export const datedBookingSchema = bookingSchema
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["checkIn"],
-        message: "Check-in date cannot be in the past",
+        message: "validation.pastCheckIn",
       });
     }
     if (differenceInCalendarDays(checkOut, checkIn) < 1) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["checkOut"],
-        message: "Check-out date must be after check-in date",
+        message: "validation.afterCheckIn",
       });
     }
   });
@@ -52,9 +64,15 @@ export const datedBookingSchema = bookingSchema
 export type DatedBookingValues = z.infer<typeof datedBookingSchema>;
 
 export const hotelBookingSchema = datedBookingSchema.safeExtend({
-  roomTypeId: z.string().min(1, "Select a room type"),
-  guestCount: z.coerce.number<number>().int().min(1, "Select at least 1 guest"),
-  roomCount: z.coerce.number<number>().int().min(1, "Select at least 1 room"),
+  roomTypeId: z.string().min(1, "validation.roomType"),
+  guestCount: z.coerce
+    .number<number>({ error: "validation.positiveInteger" })
+    .int("validation.positiveInteger")
+    .min(1, "validation.guests"),
+  roomCount: z.coerce
+    .number<number>({ error: "validation.positiveInteger" })
+    .int("validation.positiveInteger")
+    .min(1, "validation.rooms"),
 });
 
 export type HotelBookingValues = z.infer<typeof hotelBookingSchema>;

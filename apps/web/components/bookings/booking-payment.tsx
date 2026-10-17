@@ -1,5 +1,6 @@
 "use client";
 
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -30,12 +31,6 @@ import { getBookingKind } from "@/lib/booking-kind";
 import { fetcher } from "@/lib/fetcher";
 import { cn, formatCurrency, formatBookingTotal } from "@/lib/utils";
 
-const paymentMethods = [
-  { method: "MOMO", label: "MoMo", logo: "/mtn.png" },
-  { method: "AIRTEL", label: "Airtel Money", logo: "/airtel.png" },
-  { method: "CARD", label: "Card", logo: "/cards.png" },
-] as const;
-
 const paymentSchema = z
   .object({
     method: z.enum(["MOMO", "AIRTEL", "CARD"]),
@@ -46,7 +41,7 @@ const paymentSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["phone"],
-        message: "Enter a valid Rwandan phone number",
+        message: "validation.rwandaPhone",
       });
     }
   });
@@ -78,6 +73,15 @@ function BookingPaymentForm({
   booking: BookingPropertyCardBooking;
   onPaid?: () => void;
 }) {
+  const t = useTranslations("payments");
+  const locale = useLocale();
+  const format = useFormatter();
+  const paymentMethods = [
+    { method: "MOMO", label: "MoMo", logo: "/mtn.png" },
+    { method: "AIRTEL", label: "Airtel Money", logo: "/airtel.png" },
+    { method: "CARD", label: t("card"), logo: "/cards.png" },
+  ] as const;
+
   const form = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
     defaultValues: { method: "MOMO", phone: "" },
@@ -110,9 +114,9 @@ function BookingPaymentForm({
   const mutation = useMutation({
     mutationFn: (values: z.infer<typeof paymentSchema>) => {
       if (!booking.paymentDeadline || new Date(booking.paymentDeadline) <= new Date()) {
-        throw new Error("The payment deadline has passed");
+        throw new Error(t("deadlineError"));
       }
-      if (!quote.data) throw new Error("Wait for the payment amount before paying.");
+      if (!quote.data) throw new Error(t("waitQuote"));
       return fetcher<ApiResponse<{ id: string; link?: string; amount: number; currency: "RWF" }>>(
         "/payments",
         {
@@ -144,17 +148,17 @@ function BookingPaymentForm({
       void refreshPayment();
       if (values.method === "CARD") {
         if (data.link) window.location.assign(data.link);
-        else toast.error("Could not start card payment");
+        else toast.error(t("cardError"));
         return;
       }
-      toast.success("Payment prompt sent", {
-        description: "Follow the instructions on your phone to complete payment.",
+      toast.success(t("promptSent"), {
+        description: t("phoneInstructions"),
       });
     },
-    onError: (error: Error) => {
+    onError: () => {
       void refreshPayment();
       void quote.refetch();
-      toast.error("Could not start payment", { description: error.message });
+      toast.error(t("startError"), { description: t("startErrorDescription") });
     },
   });
 
@@ -171,11 +175,11 @@ function BookingPaymentForm({
         void queryClient.invalidateQueries({ queryKey: ["bookings"] });
         void queryClient.invalidateQueries({ queryKey: ["payments"] });
         if (latest.booking.status === "CONFIRMED" || latest.booking.status === "APPROVED") {
-          toast.success("Booking confirmed.");
+          toast.success(t("confirmed"));
           onPaid?.();
-        } else toast.info("Payment received. Contact support to review your booking.");
+        } else toast.info(t("receivedSupport"));
       } else if (latest?.status === "FAILED") {
-        toast.error("Payment failed", { description: "You can retry before the deadline." });
+        toast.error(t("failed"), { description: t("retryBeforeDeadline") });
       }
     };
     // Recheck after joining the room to recover any update missed while disconnected.
@@ -186,7 +190,7 @@ function BookingPaymentForm({
       socket.off("subscribed:payment", refresh);
       socket.off("payment.update", handleUpdate);
     };
-  }, [isConnected, onPaid, paymentId, queryClient, refreshPayment, socket]);
+  }, [isConnected, onPaid, paymentId, queryClient, refreshPayment, socket, t]);
 
   useEffect(() => {
     if (payment?.status !== "COMPLETED") return;
@@ -238,29 +242,31 @@ function BookingPaymentForm({
       />
       {charge != null ? (
         <div className="rounded-lg bg-muted p-3 text-sm" role="status">
-          <p className="font-medium">You will be charged {formatCurrency(charge, "RWF")}.</p>
+          <p className="font-medium">
+            {t("charge", { amount: formatCurrency(charge, "RWF", locale) })}
+          </p>
         </div>
       ) : null}
       {quote.isError && !paymentId && !completed ? (
         <div role="alert" className="space-y-2 text-sm">
-          <p>{quote.error.message}</p>
+          <p>{t("quoteError")}</p>
           <Button variant="outline" size="sm" onClick={() => void quote.refetch()}>
-            Retry exchange rate
+            {t("retryRate")}
           </Button>
         </div>
       ) : null}
       {booking.checkIn && booking.checkOut ? (
         <p className="text-sm text-muted-foreground">
-          {new Date(booking.checkIn).toLocaleDateString()} →{" "}
-          {new Date(booking.checkOut).toLocaleDateString()}
+          {format.dateTime(new Date(booking.checkIn), { dateStyle: "medium" })} →{" "}
+          {format.dateTime(new Date(booking.checkOut), { dateStyle: "medium" })}
           {booking.roomType ? ` · ${booking.roomType.name}` : ""}
         </p>
       ) : null}
       {recovery.isError ? (
         <div role="alert" className="space-y-2 text-sm">
-          <p>Could not check your previous payment. Check its status before paying again.</p>
+          <p>{t("previousPaymentError")}</p>
           <Button variant="outline" size="sm" onClick={() => void refreshPayment()}>
-            Check payment status
+            {t("checkStatus")}
           </Button>
         </div>
       ) : null}
@@ -268,8 +274,8 @@ function BookingPaymentForm({
         <div role="status" className="space-y-3 rounded-lg bg-muted p-3">
           <p className="text-sm">
             {payment.booking.status === "CONFIRMED" || payment.booking.status === "APPROVED"
-              ? "Payment received. Your booking is confirmed."
-              : "Payment received. Contact support to review your booking before making another payment."}
+              ? t("receivedConfirmed")
+              : t("receivedReview")}
           </p>
           <ReceiptDialog paymentId={payment.id} />
         </div>
@@ -284,7 +290,7 @@ function BookingPaymentForm({
             name="method"
             render={({ field }) => (
               <FormItem>
-                <Label className="text-sm font-semibold">Choose a payment method</Label>
+                <Label className="text-sm font-semibold">{t("chooseMethod")}</Label>
                 <div className="mt-2 grid grid-cols-3 gap-2">
                   {paymentMethods.map((item) => (
                     <button
@@ -325,7 +331,7 @@ function BookingPaymentForm({
               render={({ field }) => (
                 <FormItem>
                   <Label htmlFor={`payment-phone-${booking.id}`} className="text-sm font-semibold">
-                    {method === "MOMO" ? "MTN phone number" : "Airtel phone number"}
+                    {method === "MOMO" ? t("mtnPhone") : t("airtelPhone")}
                   </Label>
                   <FormControl>
                     <Input
@@ -350,25 +356,25 @@ function BookingPaymentForm({
             disabled={disabled || deadlinePassed}
           >
             {completed ? (
-              "Payment received"
+              t("received")
             ) : recovery.isPending ? (
-              "Checking previous payment…"
+              t("checkingPrevious")
             ) : recovery.isError ? (
-              "Check payment status first"
+              t("checkStatusFirst")
             ) : deadlinePassed ? (
-              "Payment deadline passed"
+              t("deadlinePassed")
             ) : disabled ? (
               <>
                 <Loader2 className="size-4 animate-spin" />{" "}
                 {paymentId
-                  ? "Waiting for payment…"
+                  ? t("waitingPayment")
                   : mutation.isPending
-                    ? "Starting payment…"
-                    : "Getting payment amount…"}
+                    ? t("startingPayment")
+                    : t("gettingAmount")}
               </>
             ) : (
               <>
-                Pay {formatBookingTotal(booking)}
+                {t("pay", { amount: formatBookingTotal(booking, locale) })}
                 <ArrowRight className="size-4" />
               </>
             )}
@@ -376,17 +382,15 @@ function BookingPaymentForm({
           {paymentId ? (
             <div role="status" className="space-y-3 rounded-lg bg-muted p-3">
               <p className="text-sm">
-                {payment?.method === "CARD"
-                  ? "Your card payment is awaiting confirmation. Continue the same checkout to finish."
-                  : "Your payment is being confirmed. If prompted, approve it on your phone."}{" "}
-                Do not submit another payment.
+                {payment?.method === "CARD" ? t("cardPending") : t("mobilePending")}{" "}
+                {t("noDuplicate")}
               </p>
               {booking.bookingId ? (
-                <p className="break-all text-xs">Booking ID: {booking.bookingId}</p>
+                <p className="break-all text-xs">{t("bookingId", { id: booking.bookingId })}</p>
               ) : null}
               {payment?.method === "CARD" && payment.checkoutUrl && !deadlinePassed ? (
                 <Button asChild size="sm">
-                  <a href={payment.checkoutUrl}>Continue card payment</a>
+                  <a href={payment.checkoutUrl}>{t("continueCard")}</a>
                 </Button>
               ) : null}
             </div>
@@ -404,18 +408,29 @@ export function BookingPaymentPanel({
   booking: BookingPropertyCardBooking;
   inline?: boolean;
 }) {
+  const t = useTranslations("payments");
+  const format = useFormatter();
   const [open, setOpen] = useState(false);
   const deadline = booking.paymentDeadline ? new Date(booking.paymentDeadline) : null;
   const deadlinePassed = !deadline || deadline <= new Date();
   return (
     <div className={cn("relative z-10", !inline && "mt-4 border-t border-border/50 pt-4")}>
-      <p className="text-sm font-medium">Availability confirmed.</p>
+      <p className="text-sm font-medium">{t("availabilityConfirmed")}</p>
       <p className="mt-1 text-sm text-muted-foreground">
-        The provider accepted your request. Complete payment by{" "}
-        {deadline?.toLocaleString("en-RW", { timeZone: "Africa/Kigali" })} to secure the booking.
+        {t("paymentDeadline", {
+          date: deadline
+            ? format.dateTime(deadline, {
+                dateStyle: "medium",
+                timeStyle: "short",
+                timeZone: "Africa/Kigali",
+              })
+            : "—",
+        })}
       </p>
       {booking.bookingId ? (
-        <p className="mt-2 text-xs text-muted-foreground">Booking ID: {booking.bookingId}</p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {t("bookingId", { id: booking.bookingId })}
+        </p>
       ) : null}
       {inline ? (
         <div className="mt-5">
@@ -425,15 +440,13 @@ export function BookingPaymentPanel({
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="mt-3 w-full" disabled={deadlinePassed}>
-              {deadlinePassed ? "Payment deadline passed" : "Complete payment"}
+              {deadlinePassed ? t("deadlinePassed") : t("completePayment")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-h-[70dvh] overflow-y-auto sm:max-w-xl sm:p-4">
             <DialogHeader>
-              <DialogTitle>Complete payment</DialogTitle>
-              <DialogDescription>
-                Pay before the deadline to confirm your booking.
-              </DialogDescription>
+              <DialogTitle>{t("completePayment")}</DialogTitle>
+              <DialogDescription>{t("payBeforeDeadline")}</DialogDescription>
             </DialogHeader>
             <BookingPaymentForm booking={booking} onPaid={() => setOpen(false)} />
           </DialogContent>

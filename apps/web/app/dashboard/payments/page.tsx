@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -43,7 +44,6 @@ type Payment = {
 };
 
 type PaymentStats = { earnings: number; completedPayments: number; pendingPayments: number };
-const statusLabels = { PENDING: "Payment pending", COMPLETED: "Paid", FAILED: "Failed" };
 const statusColors = {
   PENDING: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
   COMPLETED: "bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300",
@@ -51,6 +51,13 @@ const statusColors = {
 };
 
 export default function PaymentsPage() {
+  const t = useTranslations("payments");
+  const locale = useLocale();
+  const statusLabels = {
+    PENDING: t("pendingLabel"),
+    COMPLETED: t("paid"),
+    FAILED: t("failedLabel"),
+  };
   const session = useSession();
   const isProvider = session?.user.role === "landlord";
   const [status, setStatus] = useState("all");
@@ -74,7 +81,7 @@ export default function PaymentsPage() {
   const columns: ColumnDef<Payment>[] = [
     {
       id: "booking",
-      header: "Booking",
+      header: t("booking"),
       accessorFn: (payment) => payment.booking.bookingId ?? payment.booking.id,
       cell: ({ row }) => (
         <div>
@@ -89,30 +96,34 @@ export default function PaymentsPage() {
       ? [
           {
             id: "client",
-            header: "Client",
+            header: t("client"),
             accessorFn: (payment: Payment) => payment.booking.client.name,
           },
         ]
       : []),
     {
       accessorKey: "createdAt",
-      header: "Date",
-      cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(),
+      header: t("date"),
+      cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(locale),
     },
-    { accessorKey: "method", header: "Method" },
+    {
+      accessorKey: "method",
+      header: t("method"),
+      cell: ({ row }) => (row.original.method === "CARD" ? t("card") : row.original.method),
+    },
     {
       id: "amount",
-      header: isProvider ? "Booking amount" : "Amount",
+      header: isProvider ? t("bookingAmount") : t("amount"),
       accessorFn: (payment) => (isProvider ? payment.bookingAmount : Number(payment.amount)),
       cell: ({ row, getValue }) => (
         <span className="font-semibold tabular-nums">
-          {formatCurrency(getValue<number>(), row.original.currency)}
+          {formatCurrency(getValue<number>(), row.original.currency, locale)}
         </span>
       ),
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: t("status"),
       cell: ({ row }) => (
         <Badge variant="secondary" className={statusColors[row.original.status]}>
           {statusLabels[row.original.status]}
@@ -131,9 +142,10 @@ export default function PaymentsPage() {
             variant="ghost"
             size="sm"
             onClick={() => setSelected(row.original)}
-            aria-label={`View transaction ${row.original.transactionReference}`}
+            aria-label={t("viewTransaction", { reference: row.original.transactionReference })}
           >
-            View <ArrowUpRight className="size-3.5" />
+            {t("view")}
+            <ArrowUpRight className="size-3.5" />
           </Button>
         </div>
       ),
@@ -143,19 +155,15 @@ export default function PaymentsPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <PageHeader
-        title="Payments"
-        description={
-          isProvider
-            ? "Track booking earnings and customer payment activity."
-            : "Your payment history and transaction details."
-        }
+        title={t("payments")}
+        description={isProvider ? t("providerDescription") : t("customerDescription")}
       />
       {isProvider &&
         (statsQuery.isError ? (
           <p role="alert" className="text-sm text-destructive">
-            Unable to load payment totals.{" "}
+            {t("totalsError")}{" "}
             <button className="underline" onClick={() => void statsQuery.refetch()}>
-              Retry
+              {t("retry")}
             </button>
           </p>
         ) : statsQuery.isLoading ? (
@@ -167,17 +175,17 @@ export default function PaymentsPage() {
         ) : (
           <section className="grid gap-4 sm:grid-cols-3">
             <StatCard
-              title="Booking earnings · all time"
-              value={formatCurrency(stats?.earnings ?? 0, "RWF")}
+              title={t("earnings")}
+              value={formatCurrency(stats?.earnings ?? 0, "RWF", locale)}
               icon={<WalletCards className="size-5" />}
             />
             <StatCard
-              title="Paid transactions · all time"
+              title={t("paidTransactions")}
               value={stats?.completedPayments ?? 0}
               icon={<CheckCircle className="size-5" />}
             />
             <StatCard
-              title="Pending payments"
+              title={t("pendingPayments")}
               value={stats?.pendingPayments ?? 0}
               icon={<Clock3 className="size-5" />}
             />
@@ -186,24 +194,23 @@ export default function PaymentsPage() {
       <section className="space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold">Transactions</h2>
+            <h2 className="text-lg font-semibold">{t("transactions")}</h2>
             <p className="text-sm text-muted-foreground">
-              {isProvider
-                ? "Booking amounts exclude Indanga’s service fee. Earnings include paid transactions only."
-                : "Amounts include the booking price and service fee."}
+              {isProvider ? t("providerAmounts") : t("customerAmounts")}
             </p>
           </div>
           <Button asChild variant="outline" size="sm">
             <Link href="/dashboard/bookings">
-              Open bookings <ArrowUpRight />
+              {t("openBookings")}
+              <ArrowUpRight />
             </Link>
           </Button>
         </div>
         {query.isError ? (
           <p role="alert" className="text-sm text-destructive">
-            Unable to load transactions.{" "}
+            {t("transactionsError")}{" "}
             <button className="underline" onClick={() => void query.refetch()}>
-              Retry
+              {t("retry")}
             </button>
           </p>
         ) : (
@@ -212,20 +219,20 @@ export default function PaymentsPage() {
             data={query.data?.data ?? []}
             loading={query.isLoading}
             zebra={false}
-            emptyState={<p className="text-sm text-muted-foreground">No transactions found.</p>}
+            emptyState={<p className="text-sm text-muted-foreground">{t("noTransactions")}</p>}
             filterBy={[
               {
                 id: "status",
-                placeholder: "All statuses",
+                placeholder: t("allStatuses"),
                 value: status,
                 onChange: (value) => {
                   setStatus(value);
                   setPage(1);
                 },
                 options: [
-                  { label: "Paid", value: "COMPLETED" },
-                  { label: "Payment pending", value: "PENDING" },
-                  { label: "Failed", value: "FAILED" },
+                  { label: t("paid"), value: "COMPLETED" },
+                  { label: t("pendingLabel"), value: "PENDING" },
+                  { label: t("failedLabel"), value: "FAILED" },
                 ],
               },
             ]}
@@ -245,67 +252,73 @@ export default function PaymentsPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Transaction details</DialogTitle>
+            <DialogTitle>{t("transactionDetails")}</DialogTitle>
           </DialogHeader>
           {selected && (
             <dl className="space-y-4 text-sm">
               <div>
-                <dt className="text-muted-foreground">Booking</dt>
+                <dt className="text-muted-foreground">{t("booking")}</dt>
                 <dd className="font-medium">{selected.booking.bookingId ?? selected.booking.id}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Property / vehicle</dt>
+                <dt className="text-muted-foreground">{t("propertyVehicle")}</dt>
                 <dd>{selected.booking.house.name}</dd>
               </div>
               {isProvider && (
                 <div>
-                  <dt className="text-muted-foreground">Client</dt>
+                  <dt className="text-muted-foreground">{t("client")}</dt>
                   <dd>{selected.booking.client.name}</dd>
                 </div>
               )}
               {getBookingKind(selected.booking.house.propertyType) === "home" ? (
                 <div>
-                  <dt className="text-muted-foreground">Number of months</dt>
+                  <dt className="text-muted-foreground">{t("months")}</dt>
                   <dd>{selected.booking.months ?? 1}</dd>
                 </div>
               ) : null}
               {selected.booking.checkIn && selected.booking.checkOut && (
                 <div>
-                  <dt className="text-muted-foreground">Booking period</dt>
+                  <dt className="text-muted-foreground">{t("period")}</dt>
                   <dd>
-                    {new Date(selected.booking.checkIn).toLocaleDateString()} →{" "}
-                    {new Date(selected.booking.checkOut).toLocaleDateString()}
+                    {new Date(selected.booking.checkIn).toLocaleDateString(locale)} →{" "}
+                    {new Date(selected.booking.checkOut).toLocaleDateString(locale)}
                     {selected.booking.nights
-                      ? ` · ${selected.booking.nights} ${getBookingKind(selected.booking.house.propertyType) === "car" ? "day" : "night"}${selected.booking.nights === 1 ? "" : "s"}`
+                      ? t(
+                          getBookingKind(selected.booking.house.propertyType) === "car"
+                            ? "durationDays"
+                            : "durationNights",
+                          { count: selected.booking.nights },
+                        )
                       : ""}
                   </dd>
                 </div>
               )}
               <div>
                 <dt className="text-muted-foreground">
-                  {isProvider ? "Booking amount" : "Amount"}
+                  {isProvider ? t("bookingAmount") : t("amount")}
                 </dt>
                 <dd className="text-xl font-semibold tabular-nums">
                   {formatCurrency(
                     isProvider ? selected.bookingAmount : selected.amount,
                     selected.currency,
+                    locale,
                   )}
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Status</dt>
+                <dt className="text-muted-foreground">{t("status")}</dt>
                 <dd>{statusLabels[selected.status]}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Payment method</dt>
-                <dd>{selected.method}</dd>
+                <dt className="text-muted-foreground">{t("paymentMethod")}</dt>
+                <dd>{selected.method === "CARD" ? t("card") : selected.method}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Date</dt>
-                <dd>{new Date(selected.createdAt).toLocaleString()}</dd>
+                <dt className="text-muted-foreground">{t("date")}</dt>
+                <dd>{new Date(selected.createdAt).toLocaleString(locale)}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Transaction reference</dt>
+                <dt className="text-muted-foreground">{t("transactionReference")}</dt>
                 <dd className="break-all font-mono text-xs">{selected.transactionReference}</dd>
               </div>
             </dl>

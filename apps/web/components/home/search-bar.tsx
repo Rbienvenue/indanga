@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Building2, Car, Home, MapPin, Search } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { parseAsString, useQueryState } from "nuqs";
@@ -18,55 +19,6 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocations } from "@/hooks/use-locations";
 import { cn } from "@/lib/utils";
-
-const propertyTypes = [
-  { value: "homes", label: "Homes", icon: Home },
-  { value: "hotels", label: "Hotels", icon: Building2 },
-  { value: "cars", label: "Cars", icon: Car },
-] as const;
-
-const subTypeOptions: Record<string, readonly { value: string; label: string }[]> = {
-  homes: [
-    { value: "all", label: "All property types" },
-    { value: "1 Bedroom", label: "1 Bedroom" },
-    { value: "2 Bedroom", label: "2 Bedroom" },
-    { value: "3 Bedroom", label: "3 Bedroom" },
-    { value: "Family House", label: "Family House" },
-    { value: "Villa", label: "Villa" },
-    { value: "Economic House", label: "Economic House" },
-    { value: "House", label: "House" },
-  ],
-  hotels: [
-    { value: "all", label: "All hotel types" },
-    { value: "Apartment", label: "Apartment" },
-    { value: "hotel", label: "Hotel" },
-    { value: "motel", label: "Motel" },
-    { value: "lodge", label: "Lodge" },
-    { value: "guesthouse", label: "Guesthouse" },
-    { value: "resort", label: "Resort" },
-  ],
-  cars: [
-    { value: "all", label: "All vehicle types" },
-    { value: "sedan", label: "Sedan" },
-    { value: "van", label: "Van" },
-    { value: "suv", label: "SUV" },
-    { value: "pickup", label: "Pickup" },
-    { value: "bus", label: "Bus" },
-  ],
-};
-
-const budgetOptions = [
-  { value: "any", label: "Any budget" },
-  { value: "50000-200000", label: "RWF 50K – 200K" },
-  { value: "200000-500000", label: "RWF 200K – 500K" },
-  { value: "500000-", label: "RWF 500K+" },
-] as const;
-
-const budgetAnyLabels: Record<string, string> = {
-  homes: "Any monthly budget",
-  hotels: "Any nightly budget",
-  cars: "Any daily budget",
-};
 
 type SearchBarProps = {
   className?: string;
@@ -101,6 +53,56 @@ function buildSearchHref(
 }
 
 export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps) {
+  const t = useTranslations("discovery");
+  const propertyTypes = [
+    { value: "homes", label: t("homes"), icon: Home },
+    { value: "hotels", label: t("hotelsTab"), icon: Building2 },
+    { value: "cars", label: t("cars"), icon: Car },
+  ] as const;
+
+  const subTypeOptions: Record<string, readonly { value: string; label: string }[]> = {
+    homes: [
+      { value: "all", label: t("allPropertyTypes") },
+      { value: "1 Bedroom", label: t("oneBedroom") },
+      { value: "2 Bedroom", label: t("twoBedrooms") },
+      { value: "3 Bedroom", label: t("threeBedrooms") },
+      { value: "Family House", label: t("familyHouse") },
+      { value: "Villa", label: t("villa") },
+      { value: "Economic House", label: t("economicHouse") },
+      { value: "House", label: t("house") },
+    ],
+    hotels: [
+      { value: "all", label: t("allHotelTypes") },
+      { value: "Apartment", label: t("apartment") },
+      { value: "hotel", label: t("hotel") },
+      { value: "motel", label: t("motel") },
+      { value: "lodge", label: t("lodge") },
+      { value: "guesthouse", label: t("guesthouse") },
+      { value: "resort", label: t("resort") },
+    ],
+    cars: [
+      { value: "all", label: t("allVehicles") },
+      { value: "sedan", label: t("sedan") },
+      { value: "van", label: t("van") },
+      { value: "suv", label: t("suv") },
+      { value: "pickup", label: t("pickup") },
+      { value: "bus", label: t("bus") },
+    ],
+  };
+
+  const budgetOptions = [
+    { value: "any", label: t("anyBudget") },
+    { value: "50000-200000", label: "RWF 50K – 200K" },
+    { value: "200000-500000", label: "RWF 200K – 500K" },
+    { value: "500000-", label: "RWF 500K+" },
+  ] as const;
+
+  const budgetAnyLabels: Record<string, string> = {
+    homes: t("monthlyBudget"),
+    hotels: t("nightlyBudget"),
+    cars: t("dailyBudget"),
+  };
+
   const router = useRouter();
   const pathname = usePathname();
   const [searchContainer, setSearchContainer] = useState<HTMLElement | null>(null);
@@ -289,10 +291,10 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
             >
               <SelectTrigger className="w-full">
                 <MapPin className="size-4 text-muted-foreground" />
-                <SelectValue placeholder={isLoadingLocations ? "Loading..." : "All provinces"} />
+                <SelectValue placeholder={isLoadingLocations ? t("loading") : t("allProvinces")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All provinces</SelectItem>
+                <SelectItem value="all">{t("allProvinces")}</SelectItem>
                 {locations.provinces.map((p) => (
                   <SelectItem key={p} value={p}>
                     {p}
@@ -309,11 +311,11 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
               <SelectTrigger className="w-full">
                 <MapPin className="size-4 text-muted-foreground" />
                 <SelectValue
-                  placeholder={province === "all" ? "Select province first" : "All districts"}
+                  placeholder={province === "all" ? t("provinceFirst") : t("allDistricts")}
                 />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All districts</SelectItem>
+                <SelectItem value="all">{t("allDistricts")}</SelectItem>
                 {districtOptions.map((d) => (
                   <SelectItem key={d} value={d}>
                     {d}
@@ -330,11 +332,11 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
               <SelectTrigger className="w-full">
                 <MapPin className="size-4 text-muted-foreground" />
                 <SelectValue
-                  placeholder={district === "all" ? "Select district first" : "All sectors"}
+                  placeholder={district === "all" ? t("districtFirst") : t("allSectors")}
                 />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All sectors</SelectItem>
+                <SelectItem value="all">{t("allSectors")}</SelectItem>
                 {sectorOptions.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
@@ -374,7 +376,7 @@ export function SearchBar({ className, redirectTo, lockedType }: SearchBarProps)
               onClick={handleSearch}
             >
               <Search className="size-4" />
-              Search
+              {t("search")}
             </Button>
           </div>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useFormatter, useTranslations } from "next-intl";
 import type { House } from "@/@types";
 import { BadgeCheck } from "lucide-react";
 import Link from "next/link";
@@ -23,18 +24,6 @@ const verificationStyles: Record<VerificationStatus, string> = {
     "border-blue-200 bg-blue-100 text-blue-800 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200",
 };
 
-const verificationLabels: Record<VerificationStatus, string> = {
-  ReviewedByIndanga: "Reviewed by INDANGA",
-  VerifiedByIndanga: "Verified by INDANGA",
-};
-
-const verificationDescriptions: Record<VerificationStatus, string> = {
-  ReviewedByIndanga:
-    "We checked the information submitted by the provider before publishing this listing. Prices and availability can change, so review the latest details before booking.",
-  VerifiedByIndanga:
-    "INDANGA checked the provider’s identity and reviewed key listing information, including the location, photos, pricing, and availability.",
-};
-
 export function PropertyVerificationBadge({
   status,
   listingStatus,
@@ -46,10 +35,28 @@ export function PropertyVerificationBadge({
   className?: string;
   lastReviewed?: string | Date | null;
 }) {
+  const t = useTranslations("properties");
+  const format = useFormatter();
+  const verificationLabels: Record<VerificationStatus, string> = {
+    ReviewedByIndanga: t("reviewedLabel"),
+    VerifiedByIndanga: t("verifiedLabel"),
+  };
+
+  const verificationDescriptions: Record<VerificationStatus, string> = {
+    ReviewedByIndanga: t("reviewedDescription"),
+    VerifiedByIndanga: t("verifiedDescription"),
+  };
+
   if (!status || listingStatus === "PENDING") return null;
 
   const reviewedLabel = lastReviewed
-    ? `${status === "VerifiedByIndanga" ? "Verified" : "Reviewed"} on ${new Date(lastReviewed).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`
+    ? t(status === "VerifiedByIndanga" ? "verifiedOn" : "reviewedOn", {
+        date: format.dateTime(new Date(lastReviewed), {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }),
+      })
     : null;
 
   return (
@@ -57,8 +64,8 @@ export function PropertyVerificationBadge({
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label={`${verificationLabels[status]} — learn what this means`}
-          title="What does this mean?"
+          aria-label={t("verificationAria", { label: verificationLabels[status] })}
+          title={t("verificationMeaning")}
           onClick={(e) => e.stopPropagation()}
           className={cn(
             "cursor-pointer rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
@@ -83,16 +90,13 @@ export function PropertyVerificationBadge({
         {reviewedLabel ? (
           <p className="text-xs font-semibold text-foreground">{reviewedLabel}</p>
         ) : null}
-        <p className="text-xs leading-5 text-muted-foreground">
-          Verification does not guarantee future availability, unchanged pricing, or the quality of
-          every service. Review the listing and booking terms before making a payment.
-        </p>
+        <p className="text-xs leading-5 text-muted-foreground">{t("verificationDisclaimer")}</p>
         <Link
           href="/support#faqs"
           onClick={(e) => e.stopPropagation()}
           className="text-xs font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
         >
-          Learn more in the Support Center
+          {t("learnSupport")}
         </Link>
       </PopoverContent>
     </Popover>

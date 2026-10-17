@@ -1,0 +1,8 @@
+{
+  "nextMonth": "Mois suivant",
+  "previousMonth": "Mois précédent",
+  "month": "Choisir le mois",
+  "year": "Choisir l’année",
+  "selectedDate": "{date}, sélectionné",
+  "todayDate": "{date}, aujourd’hui"
+}

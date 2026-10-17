@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { House } from "@/@types";
 import { useQueries } from "@tanstack/react-query";
 import Image from "next/image";
@@ -9,38 +10,32 @@ import { ArrowRight } from "lucide-react";
 import type { PaginationResponse } from "@/@types";
 import { fetcher } from "@/lib/fetcher";
 
-const categories = [
-  {
-    title: "Homes",
-    subtitle: "Find your next home",
-    propertyTypeFilter: "House,Studio",
-    image: "/image2.jpeg",
-    link: "/homes",
-  },
-  {
-    title: "Hotel Rooms",
-    subtitle: "Book the best hotels",
-    propertyTypeFilter: "Hotel,Apartment",
-    image: "/room3.jpg",
-    link: "/hotels",
-  },
-  {
-    title: "Cars",
-    subtitle: "Rent a car easily",
-    propertyTypeFilter: "Car",
-    image: "/car2.jpg",
-    link: "/cars",
-  },
-];
-
-function formatCount(total: number | undefined, isLoading: boolean) {
-  if (isLoading) return "…";
-  if (total === undefined) return "";
-  if (total === 0) return "No listings yet";
-  return `${total} Listing${total === 1 ? "" : "s"}`;
-}
-
 export function Categories() {
+  const t = useTranslations("discovery");
+  const categories = [
+    {
+      title: t("homes"),
+      subtitle: t("homeSubtitle"),
+      propertyTypeFilter: "House,Studio",
+      image: "/image2.jpeg",
+      link: "/homes",
+    },
+    {
+      title: t("hotels"),
+      subtitle: t("hotelSubtitle"),
+      propertyTypeFilter: "Hotel,Apartment",
+      image: "/room3.jpg",
+      link: "/hotels",
+    },
+    {
+      title: t("cars"),
+      subtitle: t("carSubtitle"),
+      propertyTypeFilter: "Car",
+      image: "/car2.jpg",
+      link: "/cars",
+    },
+  ];
+
   const countQueries = useQueries({
     queries: categories.map((cat) => ({
       queryKey: ["properties", "category-count", cat.propertyTypeFilter],
@@ -59,14 +54,14 @@ export function Categories() {
         <div className="mb-10 flex items-end justify-between">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-2xl">
-              Popular Categories
+              {t("popularCategories")}
             </h2>
           </div>
           <Link
             href="/properties"
             className="hidden text-sm font-medium text-primary transition-colors hover:text-primary/80 sm:inline-flex sm:items-center sm:gap-1"
           >
-            View all
+            {t("viewAll")}
             <ArrowRight className="size-3.5" />
           </Link>
         </div>
@@ -101,7 +96,11 @@ export function Categories() {
                   <h3 className="text-xl font-bold text-white">{cat.title}</h3>
                   <p className="mt-1 text-sm text-white/70">{cat.subtitle}</p>
                   <p className="mt-2 text-xs font-medium text-white/70">
-                    {formatCount(total, isLoading)}
+                    {isLoading
+                      ? "…"
+                      : total === undefined
+                        ? ""
+                        : t("listingCount", { count: total })}
                   </p>
                 </div>
               </Link>

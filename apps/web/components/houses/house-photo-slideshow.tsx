@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -24,6 +25,7 @@ export function HousePhotoSlideshow({
   media: string[];
   initialIndex?: number;
 }) {
+  const t = useTranslations("properties");
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(initialIndex + 1);
   const [count, setCount] = useState(media.length);
@@ -69,11 +71,14 @@ export function HousePhotoSlideshow({
               <CarouselItem key={`${src}-${index}`} className="pl-0">
                 <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-muted">
                   {isVideoMediaUrl(src) ? (
-                    <Video src={src} title={`${houseName} video ${index + 1}`} />
+                    <Video
+                      src={src}
+                      title={t("propertyVideo", { name: houseName, index: index + 1 })}
+                    />
                   ) : (
                     <Image
                       src={src}
-                      alt={`${houseName} photo ${index + 1}`}
+                      alt={t("propertyImage", { name: houseName, index: index + 1 })}
                       fill
                       priority={index === initialIndex}
                       className="object-cover"
@@ -91,7 +96,7 @@ export function HousePhotoSlideshow({
                 type="button"
                 variant="secondary"
                 size="icon"
-                aria-label="Previous photo"
+                aria-label={t("previousPhoto")}
                 onClick={() => api?.scrollPrev()}
                 className="absolute top-1/2 left-3 size-10 -translate-y-1/2 rounded-full border border-black/10 bg-white/95 text-slate-950 shadow-lg hover:bg-white"
               >
@@ -101,7 +106,7 @@ export function HousePhotoSlideshow({
                 type="button"
                 variant="secondary"
                 size="icon"
-                aria-label="Next photo"
+                aria-label={t("nextPhoto")}
                 onClick={() => api?.scrollNext()}
                 className="absolute top-1/2 right-3 size-10 -translate-y-1/2 rounded-full border border-black/10 bg-white/95 text-slate-950 shadow-lg hover:bg-white"
               >
@@ -125,7 +130,7 @@ export function HousePhotoSlideshow({
               key={`${src}-thumb-${index}`}
               type="button"
               onClick={() => scrollTo(index)}
-              aria-label={`Go to photo ${index + 1}`}
+              aria-label={t("goToImage", { index: index + 1 })}
               aria-current={current === index + 1}
               className={cn(
                 "relative aspect-[4/3] overflow-hidden rounded-lg ring-offset-2 ring-offset-[#f7f5f0] transition-opacity dark:ring-offset-slate-950",

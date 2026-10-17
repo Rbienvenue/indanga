@@ -1,32 +1,34 @@
+import { useTranslations } from "next-intl";
 import { Headphones, ShieldCheck, Tag } from "lucide-react";
 
-const trustSignals = [
-  {
-    icon: ShieldCheck,
-    title: "Reviewed listings",
-    description: "We check information submitted by providers before publication.",
-    color: "text-emerald-600",
-    background: "bg-emerald-100",
-  },
-  {
-    icon: Tag,
-    title: "Clear prices",
-    description: "See the list price and additional charges before you book.",
-    color: "text-blue-600",
-    background: "bg-blue-100",
-  },
-  {
-    icon: Headphones,
-    title: "Local support",
-    description: "Get help from the INDANGA team in Rwanda.",
-    color: "text-emerald-600",
-    background: "bg-emerald-100",
-  },
-];
-
 export function TrustSignals() {
+  const t = useTranslations("discovery");
+  const trustSignals = [
+    {
+      icon: ShieldCheck,
+      title: t("reviewed"),
+      description: t("reviewedDescription"),
+      color: "text-emerald-600",
+      background: "bg-emerald-100",
+    },
+    {
+      icon: Tag,
+      title: t("clearPrices"),
+      description: t("clearPricesDescription"),
+      color: "text-blue-600",
+      background: "bg-blue-100",
+    },
+    {
+      icon: Headphones,
+      title: t("localSupport"),
+      description: t("localSupportDescription"),
+      color: "text-emerald-600",
+      background: "bg-emerald-100",
+    },
+  ];
+
   return (
-    <section aria-label="Why book with INDANGA" className="px-4 pb-8 pt-4 sm:px-6 lg:px-8">
+    <section aria-label={t("whyBook")} className="px-4 pb-8 pt-4 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-3 sm:grid-cols-3">
         {trustSignals.map(({ icon: Icon, title, description, color, background }) => (
           <div

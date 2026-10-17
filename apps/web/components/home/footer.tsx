@@ -1,39 +1,48 @@
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
-import { FaEnvelope, FaFacebookF, FaInstagram, FaLinkedinIn, FaRegEnvelope, FaTiktok, FaXTwitter, FaYoutube } from "react-icons/fa6";
+import { FaInstagram, FaRegEnvelope, FaTiktok } from "react-icons/fa6";
 import { Separator } from "@/components/ui/separator";
 import { ProviderAgreementDialog } from "@/components/legal/provider-agreement-dialog";
 
-const exploreLinks = [
-  { label: "Homes", href: "/homes" },
-  { label: "Hotels & Apartments", href: "/hotels" },
-  { label: "Cars", href: "/cars" },
-];
-
-const companyLinks = [
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/about#contact" },
-  { label: "Privacy policy", href: "/privacy-policy" },
-  { label: "Safety and Verification Policy", href: "/safety-and-verification-policy" },
-  { label: "Terms of use", href: "/terms-and-conditions" },
-];
-
-const trustLinks = [
-  { label: "Help Center", href: "/support" },
-  { label: "Safety and verification", href: "/support#safety" },
-  { label: "Prices and fees", href: "/support#prices" },
-  { label: "Cancellation and refunds", href: "/refund-cancellation-policy" },
-];
-
-const socialLinks = [
-  { label: "Instagram", icon: FaInstagram, link: "https://www.instagram.com/indangacom?obrf=MTI0YTFxNWd0NWd5OA%3D%3D&utm_source=qr" },
-  {label: "Tiktok", icon: FaTiktok, link: "https://www.tiktok.com/@indanga8?_r=1&_t=ZS-9ASg3eNexTa"},
-  {label: "Mail", icon: FaRegEnvelope}
-  
-];
-
 export function Footer() {
+  const t = useTranslations("discovery");
+  const exploreLinks = [
+    { label: t("homes"), href: "/homes" },
+    { label: t("hotelsApartments"), href: "/hotels" },
+    { label: t("cars"), href: "/cars" },
+  ];
+
+  const companyLinks = [
+    { label: t("about"), href: "/about" },
+    { label: t("contact"), href: "/about#contact" },
+    { label: t("privacy"), href: "/privacy-policy" },
+    { label: t("safetyPolicy"), href: "/safety-and-verification-policy" },
+    { label: t("terms"), href: "/terms-and-conditions" },
+  ];
+
+  const trustLinks = [
+    { label: t("helpCenter"), href: "/support" },
+    { label: t("safety"), href: "/support#safety" },
+    { label: t("pricesFees"), href: "/support#prices" },
+    { label: t("cancellation"), href: "/refund-cancellation-policy" },
+  ];
+
+  const socialLinks = [
+    {
+      label: "Instagram",
+      icon: FaInstagram,
+      link: "https://www.instagram.com/indangacom?obrf=MTI0YTFxNWd0NWd5OA%3D%3D&utm_source=qr",
+    },
+    {
+      label: "Tiktok",
+      icon: FaTiktok,
+      link: "https://www.tiktok.com/@indanga8?_r=1&_t=ZS-9ASg3eNexTa",
+    },
+    { label: t("mail"), icon: FaRegEnvelope },
+  ];
+
   return (
     <footer id="contact" className="border-t bg-muted/60">
       <div className="mx-auto max-w-7xl px-4 pt-6 pb-3 sm:px-6 lg:px-8">
@@ -49,8 +58,8 @@ export function Footer() {
               />
               <span className="text-xl font-bold text-primary">INDANGA</span>
             </Link>
-            <p className="mt-2 text-xs text-muted-foreground">Live, book, Move</p>
-            <nav aria-label="Social media" className="mt-3 flex items-center gap-3">
+            <p className="mt-2 text-xs text-muted-foreground">{t("tagline")}</p>
+            <nav aria-label={t("social")} className="mt-3 flex items-center gap-3">
               {socialLinks.map(({ label, link, icon: Icon }) => (
                 <a
                   key={label}
@@ -65,7 +74,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-2 text-xs font-semibold">Explore</h3>
+            <h3 className="mb-2 text-xs font-semibold">{t("explore")}</h3>
             <ul className="flex flex-col gap-1.5">
               {exploreLinks.map((link) => (
                 <li key={link.label}>
@@ -81,7 +90,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-2 text-xs font-semibold">Trust and support</h3>
+            <h3 className="mb-2 text-xs font-semibold">{t("trustSupport")}</h3>
             <ul className="flex flex-col gap-1.5">
               {trustLinks.map((link) => (
                 <li key={link.label}>
@@ -97,7 +106,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-2 text-xs font-semibold">Company</h3>
+            <h3 className="mb-2 text-xs font-semibold">{t("company")}</h3>
             <ul className="flex flex-col gap-1.5">
               {companyLinks.map((link) => (
                 <li key={link.label}>
@@ -116,7 +125,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-2 text-xs font-semibold">Contact</h3>
+            <h3 className="mb-2 text-xs font-semibold">{t("contact")}</h3>
             <div className="flex flex-col gap-2 text-xs text-muted-foreground">
               <a
                 href="mailto:support@indanga.com"
@@ -125,7 +134,7 @@ export function Footer() {
                 <Mail className="size-3.5 shrink-0" aria-hidden="true" />
                 support@indanga.com
               </a>
-              <span className="text-[11px]">Customer support</span>
+              <span className="text-[11px]">{t("customerSupport")}</span>
               <a
                 href="mailto:info@indanga.com"
                 className="inline-flex items-center gap-2 transition-colors hover:text-primary"
@@ -133,7 +142,7 @@ export function Footer() {
                 <Mail className="size-3.5 shrink-0" aria-hidden="true" />
                 info@indanga.com
               </a>
-              <span className="text-[11px]">General enquiries</span>
+              <span className="text-[11px]">{t("enquiries")}</span>
               <a
                 href="tel:+250788765547"
                 className="inline-flex items-center gap-2 transition-colors hover:text-primary"
@@ -141,9 +150,7 @@ export function Footer() {
                 <Phone className="size-3.5 shrink-0" aria-hidden="true" />
                 +250 788 765 547
               </a>
-              <span className="text-[11px]">
-                24/7 available
-              </span>
+              <span className="text-[11px]">{t("alwaysAvailable")}</span>
               <span className="inline-flex items-center gap-2">
                 <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
                 Kigali, Rwanda
@@ -155,8 +162,8 @@ export function Footer() {
         <Separator className="my-3" />
 
         <div className="flex flex-col justify-between gap-1 text-[10px] text-muted-foreground sm:flex-row sm:items-center">
-          <p>&copy; {new Date().getFullYear()} INDANGA. All rights reserved.</p>
-          <p>Building a more connected Rwanda.</p>
+          <p>{t("copyright", { year: new Date().getFullYear() })}</p>
+          <p>{t("buildingRwanda")}</p>
         </div>
       </div>
     </footer>

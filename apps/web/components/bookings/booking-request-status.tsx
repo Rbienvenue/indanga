@@ -1,5 +1,6 @@
 "use client";
 
+import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -34,56 +35,6 @@ import { getBookingKind } from "@/lib/booking-kind";
 import { fetcher } from "@/lib/fetcher";
 
 type BookingStatusKey = BookingPropertyCardBooking["status"];
-
-const statusGuidance: Record<BookingStatusKey, { title: string; message: string }> = {
-  REQUESTED: {
-    title: "Request received — sit back and relax",
-    message:
-      "Your request is now with the provider and everything is in motion. Providers usually respond within 30 minutes, and you'll be notified here as soon as they do. Your booking isn't confirmed yet, and no payment is required until it is.",
-  },
-  PENDING: {
-    title: "Booking pending",
-    message:
-      "Your booking is still being processed. Check your payment history or contact support before making another payment.",
-  },
-  AWAITING_PAYMENT: {
-    title: "Awaiting payment",
-    message:
-      "The provider accepted your request. Complete payment before the deadline to secure your booking.",
-  },
-  CONFIRMED: {
-    title: "Booking confirmed",
-    message: "Keep your booking reference and message the provider to arrange check-in or pickup.",
-  },
-  APPROVED: {
-    title: "Booking active",
-    message: "Keep your booking reference and message the provider to arrange check-in or pickup.",
-  },
-  DECLINED: {
-    title: "Booking request declined",
-    message:
-      "The provider could not accept your request. Explore another listing or contact support for help.",
-  },
-  REJECTED: {
-    title: "Booking request rejected",
-    message: "This request was not accepted. Explore another listing or contact support for help.",
-  },
-  EXPIRED: {
-    title: "Booking expired",
-    message:
-      "This reservation is no longer active. Explore another listing. If you made a payment, check your payment history and contact support.",
-  },
-  CANCELLED: {
-    title: "Booking cancelled",
-    message:
-      "Review your payment history and contact support to check cancellation terms and any refund eligibility.",
-  },
-  COMPLETED: {
-    title: "Booking completed",
-    message:
-      "Review your payment history and contact support if you have an unresolved issue with this booking.",
-  },
-};
 
 const statusVisual: Record<BookingStatusKey, { icon: LucideIcon; tile: string; card: string }> = {
   REQUESTED: {
@@ -147,6 +98,51 @@ export function BookingRequestStatus({
   onBookAgain?: () => void;
   inlinePayment?: boolean;
 }) {
+  const t = useTranslations("bookings");
+  const format = useFormatter();
+  const statusGuidance: Record<BookingStatusKey, { title: string; message: string }> = {
+    REQUESTED: {
+      title: t("requestedTitle"),
+      message: t("requestedMessage"),
+    },
+    PENDING: {
+      title: t("pendingTitle"),
+      message: t("pendingMessage"),
+    },
+    AWAITING_PAYMENT: {
+      title: t("awaitingTitle"),
+      message: t("awaitingMessage"),
+    },
+    CONFIRMED: {
+      title: t("confirmedTitle"),
+      message: t("confirmedMessage"),
+    },
+    APPROVED: {
+      title: t("activeTitle"),
+      message: t("confirmedMessage"),
+    },
+    DECLINED: {
+      title: t("declinedTitle"),
+      message: t("declinedMessage"),
+    },
+    REJECTED: {
+      title: t("rejectedTitle"),
+      message: t("rejectedMessage"),
+    },
+    EXPIRED: {
+      title: t("expiredTitle"),
+      message: t("expiredMessage"),
+    },
+    CANCELLED: {
+      title: t("cancelledTitle"),
+      message: t("cancelledMessage"),
+    },
+    COMPLETED: {
+      title: t("completedTitle"),
+      message: t("completedMessage"),
+    },
+  };
+
   const guidance = statusGuidance[booking.status];
   const explore = ["DECLINED", "REJECTED", "EXPIRED"].includes(booking.status);
   const showPayments = ["PENDING", "EXPIRED", "CANCELLED", "COMPLETED"].includes(booking.status);
@@ -162,11 +158,11 @@ export function BookingRequestStatus({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["bookings"] });
       setCancelOpen(false);
-      toast.success("Booking cancelled", { position: "top-center" });
+      toast.success(t("cancelledTitle"), { position: "top-center" });
     },
-    onError: (error) => {
-      toast.error("Could not cancel booking", {
-        description: error instanceof Error ? error.message : "Please try again.",
+    onError: () => {
+      toast.error(t("cancelError"), {
+        description: t("retry"),
         position: "top-center",
       });
     },
@@ -196,24 +192,26 @@ export function BookingRequestStatus({
             <p className="mt-3 flex items-center gap-2 rounded-lg bg-background/70 px-3 py-2 text-sm">
               <CalendarClock className="size-4 shrink-0 text-muted-foreground" />
               <span>
-                Provider response due by{" "}
-                {new Date(booking.responseDeadline).toLocaleString("en-RW", {
-                  timeZone: "Africa/Kigali",
-                })}{" "}
-                (Kigali).
+                {t("responseDeadline", {
+                  date: format.dateTime(new Date(booking.responseDeadline), {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                    timeZone: "Africa/Kigali",
+                  }),
+                })}
               </span>
             </p>
           ) : null}
           {booking.status === "DECLINED" && booking.declineReason ? (
             <p className="mt-3 break-words rounded-lg bg-background/70 px-3 py-2 text-sm">
-              <span className="font-medium">Reason: </span>
+              <span className="font-medium">{t("reason")}</span>
               {booking.declineReason}
             </p>
           ) : null}
           {booking.bookingId ? (
             <p className="mt-3 flex items-center gap-2 text-sm">
               <Ticket className="size-4 shrink-0 text-muted-foreground" />
-              <span className="text-muted-foreground">Booking ID:</span>
+              <span className="text-muted-foreground">{t("bookingIdLabel")}</span>
               <span className="break-all font-mono font-medium">{booking.bookingId}</span>
             </p>
           ) : null}
@@ -221,26 +219,26 @@ export function BookingRequestStatus({
       )}
       {getBookingKind(booking.house.propertyType) === "home" ? (
         <p className="mt-2 text-sm text-muted-foreground">
-          {booking.months ?? 1} month{(booking.months ?? 1) === 1 ? "" : "s"} rent
+          {t("monthRent", { count: booking.months ?? 1 })}
         </p>
       ) : null}
       {booking.guestCount != null ? (
         <p className="mt-2 text-sm text-muted-foreground">
           {booking.roomType
-            ? `${booking.roomType.name} · ${booking.roomCount ?? 1} room${booking.roomCount === 1 || booking.roomCount == null ? "" : "s"} · `
-            : ""}
-          {booking.guestCount} guest{booking.guestCount === 1 ? "" : "s"}
+            ? t("bookedRooms", { name: booking.roomType.name, count: booking.roomCount ?? 1 })
+            : ""}{" "}
+          {t("bookedGuests", { count: booking.guestCount })}
         </p>
       ) : null}
       <div className="mt-4 flex flex-wrap gap-2 border-t border-border/60 pt-4">
         {explore ? (
           <Button asChild variant="outline" size="sm">
-            <Link href="/properties">Explore listings</Link>
+            <Link href="/properties">{t("exploreListings")}</Link>
           </Button>
         ) : null}
         {showPayments ? (
           <Button asChild variant="outline" size="sm">
-            <Link href="/dashboard/payments">Payment history</Link>
+            <Link href="/dashboard/payments">{t("paymentHistory")}</Link>
           </Button>
         ) : null}
         {cancellable ? (
@@ -251,22 +249,21 @@ export function BookingRequestStatus({
             disabled={cancelMutation.isPending}
             onClick={() => setCancelOpen(true)}
           >
-            Cancel booking
+            {t("cancelBooking")}
           </Button>
         ) : null}
-        <MessageButton label="Contact support" size="sm" />
+        <MessageButton label={t("contactSupport")} size="sm" />
       </div>
       <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel this booking?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your booking request will be withdrawn and the provider will be notified. This
-              cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("cancelQuestion")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("cancelDescription")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={cancelMutation.isPending}>Keep booking</AlertDialogCancel>
+            <AlertDialogCancel disabled={cancelMutation.isPending}>
+              {t("keepBooking")}
+            </AlertDialogCancel>
             <AlertDialogAction
               disabled={cancelMutation.isPending}
               onClick={(e) => {
@@ -274,17 +271,15 @@ export function BookingRequestStatus({
                 cancelMutation.mutate();
               }}
             >
-              {cancelMutation.isPending ? "Cancelling…" : "Yes, cancel"}
+              {cancelMutation.isPending ? t("cancelling") : t("yesCancel")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <p className="mt-2 text-xs text-muted-foreground">
-        Include your booking reference when contacting support.
-      </p>
+      <p className="mt-2 text-xs text-muted-foreground">{t("includeReference")}</p>
       {booking.status === "CONFIRMED" && onBookAgain ? (
         <Button className="mt-3 w-full" variant="outline" onClick={onBookAgain}>
-          Book again
+          {t("bookAgain")}
         </Button>
       ) : null}
     </div>

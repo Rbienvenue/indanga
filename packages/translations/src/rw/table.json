@@ -1,0 +1,11 @@
+{
+  "search": "Shakisha",
+  "clear": "Siba ibyo ushaka",
+  "filter": "Yungurura",
+  "all": "Byose",
+  "noResults": "Nta bisubizo byabonetse",
+  "previous": "Ibanza",
+  "next": "Ikurikira",
+  "pageCount": "Ipaji {page} muri {total}",
+  "reset": "Subiza uko byari"
+}

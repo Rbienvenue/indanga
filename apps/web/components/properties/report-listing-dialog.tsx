@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -28,9 +29,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { fetcher } from "@/lib/fetcher";
 
 const schema = z.object({
-  reason: z.string().trim().min(10, "Describe your concern in at least 10 characters").max(2000),
+  reason: z
+    .string()
+    .trim()
+    .min(10, "validation.reportMinimum")
+    .max(2000, "validation.reportMaximum"),
 });
 export function ReportListingDialog({ houseId }: { houseId: string }) {
+  const t = useTranslations("properties");
   const [open, setOpen] = useState(false);
   const session = useSession();
   const form = useForm<z.infer<typeof schema>>({
@@ -41,29 +47,29 @@ export function ReportListingDialog({ houseId }: { houseId: string }) {
     mutationFn: (values: z.infer<typeof schema>) =>
       fetcher(`/properties/${houseId}/reports`, { method: "POST", body: JSON.stringify(values) }),
     onSuccess: () => {
-      toast.success("Report saved. INDANGA will review your concern.");
+      toast.success(t("reportSaved"));
       setOpen(false);
       form.reset();
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: () => toast.error(t("reportError")),
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="w-full text-destructive">
           <AlertTriangle className="size-4" />
-          Report this listing
+          {t("reportListing")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Report this listing</DialogTitle>
+          <DialogTitle>{t("reportListing")}</DialogTitle>
         </DialogHeader>
         {!session?.user ? (
           <div className="space-y-3">
-            <p>Sign in to submit a report.</p>
+            <p>{t("signInReport")}</p>
             <Button asChild>
-              <Link href="/auth/login">Sign in</Link>
+              <Link href="/auth/login">{t("signIn")}</Link>
             </Button>
           </div>
         ) : (
@@ -77,7 +83,7 @@ export function ReportListingDialog({ houseId }: { houseId: string }) {
                 name="reason"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>What is wrong with this listing?</FormLabel>
+                    <FormLabel>{t("reportQuestion")}</FormLabel>
                     <FormControl>
                       <Textarea {...field} maxLength={2000} disabled={mutation.isPending} />
                     </FormControl>
@@ -85,11 +91,9 @@ export function ReportListingDialog({ houseId }: { houseId: string }) {
                   </FormItem>
                 )}
               />
-              <p className="text-xs text-muted-foreground">
-                Do not include passwords, payment credentials or identity document numbers.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("reportPrivacy")}</p>
               <Button type="submit" disabled={mutation.isPending}>
-                {mutation.isPending ? "Submitting…" : "Submit report"}
+                {mutation.isPending ? t("submitting") : t("submitReport")}
               </Button>
             </form>
           </Form>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { UseFormReturn } from "react-hook-form";
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,13 +15,14 @@ export function HomeBookingFields({
   form: UseFormReturn<BookingValues>;
   submitting: boolean;
 }) {
+  const t = useTranslations("bookings");
   return (
     <FormField
       control={form.control}
       name="months"
       render={({ field }) => (
         <FormItem className="w-1/2 min-w-0">
-          <FormLabel className="text-sm font-semibold">Number of months</FormLabel>
+          <FormLabel className="text-sm font-semibold">{t("monthsLabel")}</FormLabel>
           <div className="mt-2 flex items-center gap-2">
             <Button
               type="button"
@@ -29,7 +31,7 @@ export function HomeBookingFields({
               className="size-11 shrink-0"
               disabled={submitting || (field.value ?? 1) <= 1}
               onClick={() => field.onChange(Math.max((field.value ?? 1) - 1, 1))}
-              aria-label="Fewer months"
+              aria-label={t("fewerMonths")}
             >
               <Minus className="size-4" />
             </Button>
@@ -52,7 +54,7 @@ export function HomeBookingFields({
               className="size-11 shrink-0"
               disabled={submitting}
               onClick={() => field.onChange((field.value ?? 1) + 1)}
-              aria-label="More months"
+              aria-label={t("moreMonths")}
             >
               <Plus className="size-4" />
             </Button>

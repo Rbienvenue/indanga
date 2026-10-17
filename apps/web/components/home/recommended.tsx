@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -15,6 +16,7 @@ interface Props {
   className?: string;
 }
 export function Recommended({ className }: Props) {
+  const t = useTranslations("discovery");
   const { data, isLoading, isError } = useQuery<PaginationResponse<HouseWithRooms>>({
     queryKey: ["properties", "recommended"],
     queryFn: () => fetcher("/properties?limit=6&type=featured"),
@@ -28,7 +30,7 @@ export function Recommended({ className }: Props) {
         <div className="mb-10 flex items-end justify-between">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-2xl">
-              Recommended For You
+              {t("recommended")}
             </h2>
           </div>
           <div className="hidden items-center gap-2 sm:flex">
@@ -54,13 +56,9 @@ export function Recommended({ className }: Props) {
             ))}
           </div>
         ) : isError ? (
-          <p className="text-center text-sm text-muted-foreground">
-            Could not load recommended houses. Please try again later.
-          </p>
+          <p className="text-center text-sm text-muted-foreground">{t("recommendedError")}</p>
         ) : houses.length === 0 ? (
-          <p className="text-center text-sm text-muted-foreground">
-            No recommended houses available right now.
-          </p>
+          <p className="text-center text-sm text-muted-foreground">{t("recommendedEmpty")}</p>
         ) : (
           <>
             <div className={cn("grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4", className)}>
@@ -78,7 +76,7 @@ export function Recommended({ className }: Props) {
                   bedrooms={house.bedrooms}
                   bathrooms={house.bathrooms}
                   propertyType={house.propertyType}
-                  badge="Featured"
+                  badge={t("featured")}
                   status={house.status}
                   verificationStatus={house.verificationStatus}
                 />
@@ -86,7 +84,7 @@ export function Recommended({ className }: Props) {
             </div>
             <div className="flex justify-center items-center mt-5 ">
               <Button size={"lg"} className="w-40" asChild>
-                <Link href="/properties">View All</Link>
+                <Link href="/properties">{t("viewAll")}</Link>
               </Button>
             </div>
           </>

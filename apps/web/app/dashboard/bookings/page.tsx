@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { BookingStatus } from "@indanga/db";
 import type { House } from "@/@types";
 import { useQuery } from "@tanstack/react-query";
@@ -18,13 +19,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { fetcher } from "@/lib/fetcher";
 
 const PAGE_SIZE = 6;
-const bookingFilters = [
-  { value: "all", label: "All" },
-  { value: "REQUESTED", label: "New" },
-  { value: "AWAITING_PAYMENT", label: "Awaiting payment" },
-  { value: "CONFIRMED", label: "Confirmed" },
-] as const satisfies readonly { value: BookingStatus | "all"; label: string }[];
-type BookingFilter = (typeof bookingFilters)[number]["value"];
+type BookingFilter = BookingStatus | "all";
 
 type BookingWithHouse = Booking & {
   paymentDeadline?: string | null;
@@ -42,28 +37,21 @@ type BookingWithHouse = Booking & {
 };
 
 function EmptyBookings({ isAgent, filtered }: { isAgent: boolean; filtered: boolean }) {
+  const t = useTranslations("bookings");
   return (
     <div className="mt-6 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/30 px-6 py-16 text-center">
       <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
         <Calendar className="size-8" />
       </div>
       <h2 className="mt-6 text-xl font-semibold">
-        {filtered
-          ? "No bookings with this status"
-          : isAgent
-            ? "No booking requests yet"
-            : "No bookings yet"}
+        {filtered ? t("noStatusBookings") : isAgent ? t("noRequests") : t("noBookings")}
       </h2>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        {filtered
-          ? "Choose another status or All to see your other bookings."
-          : isAgent
-            ? "Booking requests from tenants will appear here."
-            : "Houses you book will appear here."}
+        {filtered ? t("otherStatus") : isAgent ? t("requestsHere") : t("bookingsHere")}
       </p>
       {!isAgent && (
         <Button asChild className="mt-6">
-          <Link href="/">Explore listings</Link>
+          <Link href="/">{t("exploreListings")}</Link>
         </Button>
       )}
     </div>
@@ -81,16 +69,15 @@ function Pagination({
   isFetching: boolean;
   onPageChange: (page: number) => void;
 }) {
+  const t = useTranslations("bookings");
   if (totalPages <= 1) return null;
 
   return (
     <nav
-      aria-label="Bookings pagination"
+      aria-label={t("paginationLabel")}
       className="mt-6 flex items-center justify-between border-t pt-5"
     >
-      <p className="text-sm text-muted-foreground">
-        Page {page} of {totalPages}
-      </p>
+      <p className="text-sm text-muted-foreground">{t("pageCount", { page, total: totalPages })}</p>
       <div className="flex gap-2">
         <Button
           variant="outline"
@@ -99,7 +86,7 @@ function Pagination({
           onClick={() => onPageChange(Math.max(1, page - 1))}
         >
           <ChevronLeft />
-          Previous
+          {t("previous")}
         </Button>
         <Button
           variant="outline"
@@ -107,7 +94,7 @@ function Pagination({
           disabled={page === totalPages || isFetching}
           onClick={() => onPageChange(page + 1)}
         >
-          Next
+          {t("next")}
           <ChevronRight />
         </Button>
       </div>
@@ -116,6 +103,13 @@ function Pagination({
 }
 
 export default function BookingsPage() {
+  const t = useTranslations("bookings");
+  const bookingFilters = [
+    { value: "all", label: t("all") },
+    { value: "REQUESTED", label: t("new") },
+    { value: "AWAITING_PAYMENT", label: t("awaitingTitle") },
+    { value: "CONFIRMED", label: t("confirmedFilter") },
+  ] as const satisfies readonly { value: BookingStatus | "all"; label: string }[];
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<BookingFilter>("all");
   const [selectedId, setSelectedId] = useState<string>();
@@ -145,17 +139,17 @@ export default function BookingsPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              {isAgent ? "Bookings" : "My Bookings"}
+              {isAgent ? t("bookings") : t("myBookings")}
             </h1>
             <p className="text-muted-foreground">
-              {isAgent ? "Bookings from tenants." : "Properties you have booked."}
+              {isAgent ? t("tenantBookings") : t("yourBookings")}
             </p>
           </div>
         </div>
 
         {!isAgent && (
           <Button asChild>
-            <Link href="/">Explore Listings</Link>
+            <Link href="/">{t("exploreListings")}</Link>
           </Button>
         )}
       </section>
@@ -171,7 +165,7 @@ export default function BookingsPage() {
           setSelectedId(undefined);
         }}
       >
-        <TabsList aria-label="Filter bookings by status" className="h-auto max-w-full flex-wrap">
+        <TabsList aria-label={t("filterStatus")} className="h-auto max-w-full flex-wrap">
           {bookingFilters.map((filter) => (
             <TabsTrigger key={filter.value} value={filter.value}>
               {filter.label}
@@ -187,15 +181,13 @@ export default function BookingsPage() {
             </section>
           ) : bookingsQuery.isError ? (
             <div className="mt-6 rounded-2xl border border-dashed border-border/70 bg-muted/30 px-6 py-16 text-center">
-              <p className="text-sm text-muted-foreground">
-                Could not load your bookings. Please try again.
-              </p>
+              <p className="text-sm text-muted-foreground">{t("bookingsLoadError")}</p>
               <Button
                 variant="outline"
                 className="mt-5"
                 onClick={() => void bookingsQuery.refetch()}
               >
-                Try again
+                {t("tryAgain")}
               </Button>
             </div>
           ) : bookings.length === 0 ? (

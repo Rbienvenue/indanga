@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useMutation } from "@tanstack/react-query";
 import { MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,13 +10,8 @@ import { Button } from "@/components/ui/button";
 import { fetcher } from "@/lib/fetcher";
 import type { Conversation } from "./types";
 
-export function MessageButton({
-  label,
-  size,
-}: {
-  label?: string;
-  size?: "default" | "sm";
-}) {
+export function MessageButton({ label, size }: { label?: string; size?: "default" | "sm" }) {
+  const t = useTranslations("bookings");
   const router = useRouter();
   const mutation = useMutation({
     mutationFn: () =>
@@ -23,7 +19,7 @@ export function MessageButton({
         method: "POST",
       }),
     onSuccess: ({ data }) => router.push(`/dashboard/messages?conversation=${data.id}`),
-    onError: (error: Error) => toast.error(error.message),
+    onError: () => toast.error(t("supportError")),
   });
   return (
     <Button
@@ -38,7 +34,7 @@ export function MessageButton({
       }}
     >
       <MessageSquare className="size-4" />
-      {mutation.isPending ? "Opening…" : (label ?? "Message support")}
+      {mutation.isPending ? t("opening") : (label ?? t("messageSupport"))}
     </Button>
   );
 }

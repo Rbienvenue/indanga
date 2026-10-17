@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z.email("Enter a valid email address"),
-  password: z.string().min(5, "Password must be at least 5 characters"),
+  email: z.email("validation.email"),
+  password: z.string().min(5, "validation.passwordFive"),
 });
 
 const NATIONAL_ID_PATTERN = /^\d{16}$/;
@@ -13,7 +13,7 @@ function refineNationalId(values: { role: string; nationalId?: string }, ctx: z.
     if (!NATIONAL_ID_PATTERN.test(nationalId)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "National ID must be exactly 16 digits",
+        message: "validation.nationalId",
         path: ["nationalId"],
       });
     }
@@ -22,28 +22,28 @@ function refineNationalId(values: { role: string; nationalId?: string }, ctx: z.
 
 export const signupSchema = z
   .object({
-    firstName: z.string().trim().min(2, "Enter your first name"),
-    lastName: z.string().trim().min(2, "Enter your second name"),
-    role: z.enum(["tenant", "landlord"], { message: "Select a role" }),
+    firstName: z.string().trim().min(2, "validation.firstName"),
+    lastName: z.string().trim().min(2, "validation.lastName"),
+    role: z.enum(["tenant", "landlord"], { message: "validation.role" }),
     providerType: z.enum(["HOUSE", "HOTEL", "CAR"]),
     phoneNumber: z
       .string()
       .trim()
-      .regex(/^\+?[0-9]{9,15}$/, "Enter a valid phone number"),
+      .regex(/^\+?[0-9]{9,15}$/, "validation.phone"),
     // Rwanda national ID is 16 digits; optional for tenant, required for landlord.
     nationalId: z.string().trim().optional(),
-    email: z.email("Enter a valid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string().min(1, "Confirm your password"),
+    email: z.email("validation.email"),
+    password: z.string().min(8, "validation.passwordEight"),
+    confirmPassword: z.string().min(1, "validation.confirmPassword"),
     termsAccepted: z.boolean().refine((accepted) => accepted, {
-      message: "You must accept the Terms & Conditions to create an account",
+      message: "validation.acceptTerms",
     }),
   })
   .superRefine((values, ctx) => {
     if (values.password !== values.confirmPassword) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Passwords do not match",
+        message: "validation.passwordMatch",
         path: ["confirmPassword"],
       });
     }
@@ -53,14 +53,14 @@ export const signupSchema = z
 
 export const createUserSchema = z
   .object({
-    name: z.string().trim().min(2, "Enter the user's full name"),
-    email: z.email("Enter a valid email address"),
+    name: z.string().trim().min(2, "validation.fullName"),
+    email: z.email("validation.email"),
     phoneNumber: z
       .string()
       .trim()
-      .regex(/^\+?[0-9]{9,15}$/, "Enter a valid phone number"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    role: z.enum(["tenant", "landlord", "admin"], { message: "Select a role" }),
+      .regex(/^\+?[0-9]{9,15}$/, "validation.phone"),
+    password: z.string().min(8, "validation.passwordEight"),
+    role: z.enum(["tenant", "landlord", "admin"], { message: "validation.role" }),
     providerType: z.enum(["HOUSE", "HOTEL", "CAR"]),
     // Required for landlords (matches signup), optional otherwise.
     nationalId: z.string().trim().optional(),
@@ -78,19 +78,19 @@ export const editUserSchema = z
   .superRefine(refineNationalId);
 
 export const forgotPasswordSchema = z.object({
-  email: z.email("Enter a valid email address"),
+  email: z.email("validation.email"),
 });
 
 export const resetPasswordSchema = z
   .object({
-    password: z.string().min(5, "Password must be at least 5 characters"),
-    confirmPassword: z.string().min(1, "Confirm your password"),
+    password: z.string().min(5, "validation.passwordFive"),
+    confirmPassword: z.string().min(1, "validation.confirmPassword"),
   })
   .superRefine((values, ctx) => {
     if (values.password !== values.confirmPassword) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Passwords do not match",
+        message: "validation.passwordMatch",
         path: ["confirmPassword"],
       });
     }

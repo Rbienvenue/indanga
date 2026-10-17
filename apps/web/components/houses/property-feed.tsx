@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { HouseWithRooms } from "@/lib/booking-kind";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Home } from "lucide-react";
@@ -17,6 +18,7 @@ export function PropertyFeed({
   lockedType,
   columns = 4,
 }: { ownerId?: string; lockedType?: string; columns?: 3 | 4 } = {}) {
+  const t = useTranslations("discovery");
   const gridClassName = `mt-10 grid gap-6 sm:grid-cols-2 ${columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"}`;
   const [propertyType, setPropertyType] = useQueryState("type", parseAsString.withDefault("all"));
   const [subType, setSubType] = useQueryState("subType", parseAsString.withDefault("all"));
@@ -91,11 +93,9 @@ export function PropertyFeed({
         </section>
       ) : housesQuery.isError ? (
         <div className="mt-10 rounded-2xl border border-dashed border-border/70 bg-muted/30 px-6 py-16 text-center">
-          <p className="text-sm text-muted-foreground">
-            Could not load properties. Please try again.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("propertiesError")}</p>
           <Button variant="outline" className="mt-5" onClick={() => void housesQuery.refetch()}>
-            Try again
+            {t("retry")}
           </Button>
         </div>
       ) : houses.length === 0 ? (
@@ -103,15 +103,13 @@ export function PropertyFeed({
           <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Home className="size-8" />
           </div>
-          <h2 className="mt-6 text-xl font-semibold">No properties found</h2>
+          <h2 className="mt-6 text-xl font-semibold">{t("noProperties")}</h2>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            {hasActiveFilters
-              ? "Try changing the property type or budget, or clear all filters to see everything."
-              : "There are no properties available right now. Please check back later."}
+            {hasActiveFilters ? t("changeFilters") : t("propertiesEmpty")}
           </p>
           {hasActiveFilters ? (
             <Button variant="outline" className="mt-5" onClick={clearFilters}>
-              Clear filters
+              {t("clearFilters")}
             </Button>
           ) : null}
         </div>
@@ -150,7 +148,7 @@ export function PropertyFeed({
                 disabled={housesQuery.isFetchingNextPage}
                 onClick={() => void housesQuery.fetchNextPage()}
               >
-                {housesQuery.isFetchingNextPage ? "Loading properties..." : "Load more properties"}
+                {housesQuery.isFetchingNextPage ? t("loadingProperties") : t("loadMore")}
               </Button>
             </div>
           ) : null}

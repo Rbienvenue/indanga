@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
+import type { Messages } from "@indanga/translations";
 import type { House, RoomType } from "@/@types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -7,116 +9,36 @@ import {
   Bath,
   BedDouble,
   Building2,
-  BadgeCheck,
   ChevronRight,
   Heart,
   Home,
   KeyRound,
-  LockKeyhole,
   MapPin,
-  Maximize2,
   MessageCircle,
-  RotateCcw,
   ShieldCheck,
   Share2,
-  WalletCards,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import type { ApiResponse } from "@/@types";
 import { BookingCard } from "@/components/houses/BookingCard";
-import { HousePhotoSlideshow } from "@/components/houses/house-photo-slideshow";
+import { PropertyGallery } from "./property-gallery";
+import { ListingInformation } from "./listing-information";
+import { LocaleSelector } from "@/components/locale-selector";
 import { PropertyVerificationBadge } from "@/components/properties/property-verification-badge";
 import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
-import { isVideoMediaUrl } from "@/lib/property-media";
 import { amenityIcons, parseAmenities } from "@/lib/amenities";
-import { propertyAmenityLabels } from "@/lib/validations/house";
 import { cn, formatCurrency } from "@/lib/utils";
 import { Footer } from "@/components/home/footer";
-
-function Gallery({ house }: { house: House }) {
-  const media = house.media.length > 0 ? house.media : [];
-  const images =
-    media.length > 0 ? Array.from({ length: 5 }, (_, index) => media[index % media.length]) : [];
-  const hasVideos = media.some(isVideoMediaUrl);
-  const [open, setOpen] = useState(false);
-  const [initialIndex, setInitialIndex] = useState(0);
-
-  function openSlideshow(index: number) {
-    setInitialIndex(index);
-    setOpen(true);
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <div className="relative grid h-[18rem] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-2xl sm:h-[22rem] lg:h-[24rem]">
-        {images.map((src, index) => (
-          <button
-            key={`${src}-${index}`}
-            type="button"
-            onClick={() => openSlideshow(index % media.length)}
-            className={cn(
-              "group relative overflow-hidden bg-muted text-left",
-              index === 0 ? "col-span-4 row-span-2 sm:col-span-2" : "hidden sm:block",
-            )}
-          >
-            {isVideoMediaUrl(src) ? (
-              <video
-                src={src}
-                preload="metadata"
-                muted
-                playsInline
-                aria-label={`${house.name} video ${index + 1}`}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <Image
-                src={src}
-                alt={`${house.name} view ${index + 1}`}
-                fill
-                priority={index === 0}
-                className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                sizes={index === 0 ? "(max-width: 640px) 100vw, 50vw" : "25vw"}
-              />
-            )}
-            <span className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
-          </button>
-        ))}
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => openSlideshow(0)}
-          className="absolute right-4 bottom-4 z-10 h-10 border border-black/10 bg-white/95 px-4 text-slate-950 shadow-lg hover:bg-white"
-        >
-          <Maximize2 />
-          {hasVideos ? "View all media" : "View all photos"}
-        </Button>
-      </div>
-
-      <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto bg-[#f7f5f0] p-5 dark:bg-slate-950 sm:max-w-5xl">
-        <DialogTitle className="text-xl">{house.name}</DialogTitle>
-        {open ? (
-          <HousePhotoSlideshow
-            key={initialIndex}
-            houseName={house.name}
-            media={media}
-            initialIndex={initialIndex}
-          />
-        ) : null}
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function ActionButton({
   icon: Icon,
@@ -133,6 +55,7 @@ function ActionButton({
     <button
       type="button"
       onClick={onClick}
+      aria-label={label}
       className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
     >
       <Icon className={cn("size-4", active && "fill-rose-500 text-rose-500")} />
@@ -142,6 +65,8 @@ function ActionButton({
 }
 
 export function HouseDetails({ houseId }: { houseId: string }) {
+  const t = useTranslations("properties");
+  const locale = useLocale();
   const router = useRouter();
   const session = useSession();
   const queryClient = useQueryClient();
@@ -160,10 +85,10 @@ export function HouseDetails({ houseId }: { houseId: string }) {
       }),
     onSuccess: ({ data }) => {
       setIsFavorite(data.isFavorite);
-      toast.success(data.isFavorite ? "Saved to your favorites." : "Removed from your favorites.");
+      toast.success(data.isFavorite ? t("favoriteSaved") : t("favoriteRemoved"));
       void queryClient.invalidateQueries({ queryKey: ["properties", "favorites"] });
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: () => toast.error(t("favoriteError")),
   });
 
   function requireAuthentication(): boolean {
@@ -183,8 +108,8 @@ export function HouseDetails({ houseId }: { houseId: string }) {
 
   async function shareHouse() {
     const shareData = {
-      title: houseQuery.data?.data.name ?? "INDANGA home",
-      text: "Take a look at this home on INDANGA.",
+      title: houseQuery.data?.data.name ?? t("homeLink"),
+      text: t("shareDescription"),
       url: window.location.href,
     };
 
@@ -194,7 +119,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
     }
 
     await navigator.clipboard.writeText(window.location.href);
-    toast.success("Link copied to your clipboard.");
+    toast.success(t("linkCopied"));
   }
 
   if (houseQuery.isLoading) return <HouseDetailsSkeleton />;
@@ -206,16 +131,16 @@ export function HouseDetails({ houseId }: { houseId: string }) {
           <div className="mx-auto mb-5 grid size-14 place-items-center rounded-full bg-white shadow-sm dark:bg-slate-900">
             <Home className="size-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold">We could not find this home</h1>
+          <h1 className="text-2xl font-bold">{t("notFound")}</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
-            It may no longer be listed, or there may be a temporary connection problem.
+            {t("notFoundDescription")}
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Button variant="outline" asChild className="h-10 px-4">
-              <Link href="/">Back home</Link>
+              <Link href="/">{t("backHome")}</Link>
             </Button>
             <Button className="h-10 px-4" onClick={() => houseQuery.refetch()}>
-              Try again
+              {t("retry")}
             </Button>
           </div>
         </div>
@@ -224,48 +149,27 @@ export function HouseDetails({ houseId }: { houseId: string }) {
   }
 
   const house = houseQuery.data.data;
+  const typeKey = house.propertyType.toLowerCase() as keyof Messages["properties"]["types"];
+  const typeLabel = t.has(`types.${typeKey}`) ? t(`types.${typeKey}`) : house.propertyType;
   const rooms: RoomType[] = (house as House & { rooms?: RoomType[] }).rooms ?? [];
   const roomPrices = rooms.map((room) => room.price);
   const fromPrice = roomPrices.length > 0 ? Math.min(...roomPrices) : null;
   const isAvailable = house.status === "AVAILABLE";
   const bookingKind = getBookingKind(house.propertyType);
   const amenities = parseAmenities(house.metadata);
-  const detailCopy =
-    bookingKind === "car"
-      ? {
-          spaceEyebrow: "The vehicle",
-          spaceHeading: "Ready for the road",
-          whyHeading: "Designed for an easy rental",
-          firstTitle: "Ready to drive away",
-          firstDescription: `A ${house.propertyType.toLowerCase()} available for flexible rental, priced per day.`,
-          availabilityDescription:
-            "Availability is kept current so you know when a car is ready to book.",
-        }
-      : bookingKind === "hotel"
-        ? {
-            spaceEyebrow: "The stay",
-            spaceHeading: "A place to rest easy",
-            whyHeading: "Designed for an easy stay",
-            firstTitle: "Ready for your stay",
-            firstDescription: `A ${house.propertyType.toLowerCase()} listed for comfortable short stays, booked per night.`,
-            availabilityDescription:
-              "Availability is kept current so you know when a room is ready to book.",
-          }
-        : {
-            spaceEyebrow: "The space",
-            spaceHeading: "A place to settle into",
-            whyHeading: "Designed for an easy move",
-            firstTitle: "Ready to call home",
-            firstDescription: `A ${house.propertyType.toLowerCase()} listed for long-term monthly living.`,
-            availabilityDescription:
-              "Availability is kept current so you know when a home is ready to book.",
-          };
+  const detailCopy = {
+    spaceHeading: t(`${bookingKind}SpaceHeading`),
+    whyHeading: t(`${bookingKind}WhyHeading`),
+    firstTitle: t(`${bookingKind}FirstTitle`),
+    firstDescription: t(`${bookingKind}Description`),
+    availabilityDescription: t(`${bookingKind}Availability`),
+  };
 
   return (
     <div className="min-h-screen bg-[#f7f5f0] text-slate-950 dark:bg-slate-950 dark:text-slate-50">
       <header className="sticky top-0 z-40 border-b border-slate-900/8 bg-[#f7f5f0]/90 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/90">
         <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3" aria-label="INDANGA home">
+          <Link href="/" className="flex items-center gap-3" aria-label={t("homeLink")}>
             <Image
               src="/logo.png"
               alt="INDANGA"
@@ -278,10 +182,11 @@ export function HouseDetails({ houseId }: { houseId: string }) {
             </span>
           </Link>
           <div className="flex items-center gap-1">
-            <ActionButton icon={Share2} label="Share" onClick={shareHouse} />
+            <LocaleSelector />
+            <ActionButton icon={Share2} label={t("share")} onClick={shareHouse} />
             <ActionButton
               icon={Heart}
-              label={isFavorite ? "Saved" : "Save"}
+              label={isFavorite ? t("saved") : t("save")}
               active={isFavorite}
               onClick={() => {
                 if (requireAuthentication()) favoriteMutation.mutate();
@@ -292,7 +197,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                 <Link
                   href={`/auth/login?callbackUrl=${encodeURIComponent(`/properties/${houseId}`)}`}
                 >
-                  Sign in
+                  {t("signIn")}
                 </Link>
               </Button>
             ) : null}
@@ -307,13 +212,13 @@ export function HouseDetails({ houseId }: { houseId: string }) {
             className="inline-flex items-center gap-1.5 transition-colors hover:text-primary"
           >
             <ArrowLeft className="size-4" />
-            Explore Properties
+            {t("exploreProperties")}
           </Link>
           <ChevronRight className="size-3.5" />
-          <span className="truncate">{house.propertyType}</span>
+          <span className="truncate">{typeLabel}</span>
         </div>
 
-        <Gallery house={house} />
+        <PropertyGallery house={house} />
 
         <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_32rem] lg:gap-12">
           <div>
@@ -321,7 +226,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
               <div>
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-[#17174a] px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-                    {house.propertyType}
+                    {typeLabel}
                   </span>
                   <PropertyVerificationBadge
                     status={house.verificationStatus}
@@ -336,7 +241,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                         : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
                     )}
                   >
-                    {isAvailable ? "Available now" : "Currently booked"}
+                    {isAvailable ? t("availableNow") : t("currentlyBooked")}
                   </span>
                 </div>
                 <h1 className="max-w-3xl text-3xl leading-tight font-black tracking-[-0.035em] sm:text-4xl">
@@ -354,17 +259,17 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                 <PropertyFact
                   icon={Bath}
                   value={house.bathrooms}
-                  label={house.bathrooms === 1 ? "bathroom" : "bathrooms"}
+                  label={t("bathroomLabel", { count: house.bathrooms })}
                 />
               ) : null}
               {house.bedrooms > 0 ? (
                 <PropertyFact
                   icon={BedDouble}
                   value={house.bedrooms}
-                  label={house.bedrooms === 1 ? "bedroom" : "bedrooms"}
+                  label={t("bedroomLabel", { count: house.bedrooms })}
                 />
               ) : null}
-              <PropertyFact icon={Building2} value={house.propertyType} label="property type" />
+              <PropertyFact icon={Building2} value={typeLabel} label={t("propertyType")} />
             </div>
 
             <section className="py-9">
@@ -379,7 +284,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
             {amenities.length > 0 ? (
               <>
                 <section className="py-9">
-                  <h2 className="mt-2 text-2xl font-bold tracking-tight">What this place offers</h2>
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight">{t("amenitiesTitle")}</h2>
                   <ul className="mt-6 grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2">
                     {amenities.map((amenity) => {
                       const Icon = amenityIcons[amenity];
@@ -387,7 +292,7 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                         <li key={amenity} className="flex items-center gap-4">
                           <Icon className="size-6 shrink-0 text-slate-950 dark:text-slate-50" />
                           <span className="text-base text-slate-800 dark:text-slate-200">
-                            {propertyAmenityLabels[amenity]}
+                            {t(`amenities.${amenity}`)}
                           </span>
                         </li>
                       );
@@ -403,10 +308,11 @@ export function HouseDetails({ houseId }: { houseId: string }) {
               <>
                 <section className="py-9">
                   <h2 className="mt-2 text-2xl font-bold tracking-tight">
-                    Rooms
                     {fromPrice != null
-                      ? ` · from ${formatCurrency(fromPrice, house.currency ?? "RWF")}`
-                      : ""}
+                      ? t("roomsFrom", {
+                          price: formatCurrency(fromPrice, house.currency ?? "RWF", locale),
+                        })
+                      : t("roomsTitle")}
                   </h2>
                   <ul className="mt-6 grid gap-4 sm:grid-cols-2">
                     {rooms.map((room) => (
@@ -417,12 +323,11 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                         <div>
                           <p className="font-bold">{room.name}</p>
                           <p className="mt-0.5 text-sm text-muted-foreground">
-                            {room.totalRooms} {room.totalRooms === 1 ? "room" : "rooms"} available
-                            in this category · Sleeps {room.capacity}
+                            {t("roomCategory", { count: room.totalRooms, capacity: room.capacity })}
                           </p>
                         </div>
                         <p className="text-lg font-black text-primary">
-                          {formatCurrency(room.price, house.currency ?? "RWF")}
+                          {formatCurrency(room.price, house.currency ?? "RWF", locale)}
                         </p>
                       </li>
                     ))}
@@ -443,18 +348,18 @@ export function HouseDetails({ houseId }: { houseId: string }) {
                 />
                 <Feature
                   icon={MapPin}
-                  title="Convenient location"
-                  description={`Set in ${house.location}, with the full address available for your visit.`}
+                  title={t("convenientLocation")}
+                  description={t("locationDescription", { location: house.location })}
                 />
                 <Feature
                   icon={ShieldCheck}
-                  title="Clear availability"
+                  title={t("clearAvailability")}
                   description={detailCopy.availabilityDescription}
                 />
                 <Feature
                   icon={MessageCircle}
-                  title="Support when needed"
-                  description="Your booking stays connected to INDANGA from confirmation onward."
+                  title={t("supportNeeded")}
+                  description={t("bookingSupport")}
                 />
               </div>
             </section>
@@ -491,113 +396,6 @@ export function HouseDetails({ houseId }: { houseId: string }) {
         />
       </div>
     </div>
-  );
-}
-
-function ListingInformation({
-  house,
-  bookingKind,
-  isAvailable,
-}: {
-  house: House;
-  bookingKind: "home" | "hotel" | "car";
-  isAvailable: boolean;
-}) {
-  const priceUnit = bookingKind === "hotel" ? "night" : bookingKind === "car" ? "day" : "month";
-
-  return (
-    <section className="divide-y divide-slate-900/10 border-b border-slate-900/10 dark:divide-white/10 dark:border-white/10">
-      <AccordionRow icon={Home} title="About this listing">
-        <p>{house.description}</p>
-        {bookingKind !== "car" && (
-          <p className="mt-3">
-            Located in {house.location}, this {house.propertyType.toLowerCase()} has{" "}
-            {house.bedrooms} {house.bedrooms === 1 ? "bedroom" : "bedrooms"} and {house.bathrooms}{" "}
-            {house.bathrooms === 1 ? "bathroom" : "bathrooms"}.
-          </p>
-        )}
-      </AccordionRow>
-      <AccordionRow icon={WalletCards} title="Price details">
-        <p>
-          {house.price
-            ? `${formatCurrency(house.price, house.currency ?? "RWF")} per ${priceUnit}.`
-            : ""}{" "}
-          The displayed price is the listing rate; confirm the total at booking.
-        </p>
-        <p className="mt-3">
-          INDANGA keeps payment inside the platform so your booking record stays connected to your
-          account.
-        </p>
-      </AccordionRow>
-      {house.status !== "PENDING" && (
-        <AccordionRow icon={BadgeCheck} title="Verification and listing information">
-          <p>
-            {house.verificationStatus === "VerifiedByIndanga"
-              ? "Verified by INDANGA. INDANGA checked the provider&apos;s identity and reviewed key listing information, including the location, photos, pricing, and availability."
-              : "Reviewed by INDANGA. We checked the information submitted by the provider before publishing this listing. Prices and availability can change, so review the latest details before booking."}
-          </p>
-          <p className="mt-3 text-muted-foreground">
-            {house.verificationStatus === "VerifiedByIndanga" ? "Verified" : "Reviewed"} on{" "}
-            {new Date(house.updatedAt).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-            . Verification does not guarantee future availability, unchanged pricing, or the quality
-            of every service. Review the listing and booking terms before making a payment.
-          </p>
-          <p className="mt-3">
-            Availability: {isAvailable ? "available to book now" : "currently unavailable"}.
-          </p>
-        </AccordionRow>
-      )}
-      <AccordionRow icon={RotateCcw} title="Cancellation and refunds">
-        <p>
-          Cancellation and refund eligibility depends on the booking status and the provider&apos;s
-          terms.
-        </p>
-        <p className="mt-3">
-          Contact INDANGA support before cancelling if you need help reviewing your booking.
-        </p>
-      </AccordionRow>
-      <AccordionRow icon={LockKeyhole} title="Stay safe">
-        <p>
-          Your safety matters Keep all booking details, payment instructions, and receipts. Confirm
-          the listing, provider, price, and cancellation terms before paying. INDANGA will never ask
-          you to hide a payment or bypass the official booking process.
-        </p>
-        <p className="mt-3">
-          Report suspicious activity to &nbsp;
-          <Link href="mailto:support@indanga.com" className="text-primary underline">
-            support@indanga.com
-          </Link>
-          .
-        </p>
-      </AccordionRow>
-    </section>
-  );
-}
-
-function AccordionRow({
-  icon: Icon,
-  title,
-  children,
-}: {
-  icon: typeof Home;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <details className="group py-5">
-      <summary className="flex cursor-pointer list-none items-center gap-4 text-sm font-bold [&::-webkit-details-marker]:hidden">
-        <Icon className="size-5 shrink-0 text-slate-700 dark:text-slate-300" />
-        <span className="flex-1">{title}</span>
-        <ChevronRight className="size-4 shrink-0 text-slate-500 transition-transform group-open:rotate-90" />
-      </summary>
-      <div className="ml-9 max-w-3xl pt-4 text-sm leading-6 text-slate-600 dark:text-slate-400">
-        {children}
-      </div>
-    </details>
   );
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { Bath, BedDouble, CalendarDays, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,19 +36,6 @@ const statusStyles: Record<BookingCardStatus, string> = {
   CONFIRMED: "bg-green-600 text-white",
   DECLINED: "bg-red-600 text-white",
   EXPIRED: "bg-slate-500 text-white",
-};
-
-const statusLabels: Record<BookingCardStatus, string> = {
-  PENDING: "Pending",
-  APPROVED: "Active",
-  REJECTED: "Rejected",
-  CANCELLED: "Cancelled",
-  COMPLETED: "Completed",
-  REQUESTED: "Request sent",
-  AWAITING_PAYMENT: "Awaiting payment",
-  CONFIRMED: "Confirmed",
-  DECLINED: "Declined",
-  EXPIRED: "Expired",
 };
 
 export interface BookingPropertyCardBooking {
@@ -94,6 +82,8 @@ export function BookingPropertyCard({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const t = useTranslations("bookings");
+  const locale = useLocale();
   const { house, status } = booking;
 
   return (
@@ -117,33 +107,35 @@ export function BookingPropertyCard({
       <div className="min-w-0 flex-1 break-words">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="font-medium">{house.name}</p>
-          <Badge className={statusStyles[status]}>{statusLabels[status]}</Badge>
+          <Badge className={statusStyles[status]}>{t(`status.${status}`)}</Badge>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          {booking.bookingId ?? "Booking request"}
+          {booking.bookingId ?? t("bookingRequest")}
           {house.propertyType ? ` · ${house.propertyType}` : ""}
         </p>
         {booking.checkIn && booking.checkOut ? (
           <p className="mt-2 text-sm">
-            {new Date(booking.checkIn).toLocaleDateString()} →{" "}
-            {new Date(booking.checkOut).toLocaleDateString()}
+            {new Date(booking.checkIn).toLocaleDateString(locale)} →{" "}
+            {new Date(booking.checkOut).toLocaleDateString(locale)}
           </p>
         ) : null}
         {getBookingKind(house.propertyType) === "home" ? (
           <p className="mt-2 text-sm text-muted-foreground">
-            {booking.months ?? 1} month{(booking.months ?? 1) === 1 ? "" : "s"} rent
+            {t("monthRent", { count: booking.months ?? 1 })}
           </p>
         ) : null}
         {booking.guestCount != null ? (
           <p className="mt-2 text-sm text-muted-foreground">
             {booking.roomType
-              ? `${booking.roomType.name} · ${booking.roomCount ?? 1} room${booking.roomCount === 1 || booking.roomCount == null ? "" : "s"} · `
-              : ""}
-            {booking.guestCount} guest{booking.guestCount === 1 ? "" : "s"}
+              ? t("bookedRooms", { name: booking.roomType.name, count: booking.roomCount ?? 1 })
+              : ""}{" "}
+            {t("bookedGuests", { count: booking.guestCount })}
           </p>
         ) : null}
         {booking.totalAmount != null ? (
-          <p className="mt-2 text-sm font-medium">{formatBookingTotal(booking)} total</p>
+          <p className="mt-2 text-sm font-medium">
+            {formatBookingTotal(booking, locale)} {t("totalLower")}
+          </p>
         ) : null}
       </div>
     </button>
@@ -151,16 +143,18 @@ export function BookingPropertyCard({
 }
 
 export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCardBooking }) {
+  const t = useTranslations("bookings");
+  const locale = useLocale();
   const { house } = booking;
-  const dayLabel = getBookingKind(house.propertyType) === "car" ? "day" : "night";
+  const dayLabel = getBookingKind(house.propertyType) === "car" ? "daysCount" : "nightsCount";
   const hasStay = !!booking.checkIn && !!booking.checkOut;
 
   return (
     <Card className="h-fit gap-0">
       <CardHeader>
-        <CardTitle>Booking details</CardTitle>
+        <CardTitle>{t("bookingDetails")}</CardTitle>
         <p className="break-all text-sm text-muted-foreground">
-          {booking.bookingId ?? "Booking request"}
+          {booking.bookingId ?? t("bookingRequest")}
         </p>
       </CardHeader>
       <CardContent className="p-4">
@@ -174,30 +168,40 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
 
         {booking.totalAmount != null && (
           <div className="mt-3 flex items-baseline gap-1">
-            <span className="text-lg font-bold text-primary">{formatBookingTotal(booking)}</span>
-            <span className="text-sm text-muted-foreground">total</span>
+            <span className="text-lg font-bold text-primary">
+              {formatBookingTotal(booking, locale)}
+            </span>
+            <span className="text-sm text-muted-foreground">{t("totalLower")}</span>
           </div>
         )}
 
         {booking.roomType ? (
           <p className="mt-2 text-sm text-muted-foreground">
             {booking.roomType.name}
-            {booking.roomCount && booking.roomCount > 1 ? ` × ${booking.roomCount} rooms` : ""}
+            {booking.roomCount && booking.roomCount > 1
+              ? t("roomQuantity", { count: booking.roomCount })
+              : ""}
             {booking.unitPrice != null
-              ? ` · ${formatCurrency(booking.unitPrice, booking.currency ?? booking.house.currency ?? "RWF")} / night`
+              ? t("nightlyRate", {
+                  price: formatCurrency(
+                    booking.unitPrice,
+                    booking.currency ?? booking.house.currency ?? "RWF",
+                    locale,
+                  ),
+                })
               : ""}
           </p>
         ) : null}
 
         {booking.guestCount != null ? (
           <p className="mt-2 text-sm text-muted-foreground">
-            Number of guests: {booking.guestCount}
+            {t("guestCountValue", { count: booking.guestCount })}
           </p>
         ) : null}
 
         {getBookingKind(house.propertyType) === "home" ? (
           <p className="mt-2 text-sm text-muted-foreground">
-            Number of months: {booking.months ?? 1}
+            {t("monthCountValue", { count: booking.months ?? 1 })}
           </p>
         ) : null}
 
@@ -205,13 +209,12 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
           <div className="mt-3 flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-3 py-2.5">
             <CalendarDays className="size-4 shrink-0 text-primary" />
             <p className="text-sm font-medium text-foreground">
-              {new Date(booking.checkIn as string).toLocaleDateString()} →{" "}
-              {new Date(booking.checkOut as string).toLocaleDateString()}
+              {new Date(booking.checkIn as string).toLocaleDateString(locale)} →{" "}
+              {new Date(booking.checkOut as string).toLocaleDateString(locale)}
               {booking.nights ? (
                 <span className="text-muted-foreground">
                   {" "}
-                  · {booking.nights} {dayLabel}
-                  {booking.nights > 1 ? "s" : ""}
+                  · {t(dayLabel, { count: booking.nights })}
                 </span>
               ) : null}
             </p>
@@ -221,7 +224,7 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
         <BookingRequestStatus booking={booking} inlinePayment={false} />
 
         <div className="relative z-10 mt-3 flex flex-wrap gap-2">
-          <MessageButton label="Contact support" />
+          <MessageButton label={t("contactSupport")} />
           {booking.payments?.map((payment) => (
             <ReceiptDialog key={payment.id} paymentId={payment.id} />
           ))}
@@ -231,13 +234,13 @@ export function BookingPropertyDetails({ booking }: { booking: BookingPropertyCa
           {house.bedrooms > 0 && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <BedDouble className="size-3.5" />
-              {house.bedrooms} {house.bedrooms === 1 ? "Bed" : "Beds"}
+              {t("bedsCount", { count: house.bedrooms })}
             </div>
           )}
           {house.bathrooms > 0 && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Bath className="size-3.5" />
-              {house.bathrooms} {house.bathrooms === 1 ? "Bath" : "Baths"}
+              {t("bathsCount", { count: house.bathrooms })}
             </div>
           )}
         </div>

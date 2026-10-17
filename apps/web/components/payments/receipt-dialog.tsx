@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import localFont from "next/font/local";
@@ -49,6 +50,8 @@ type Receipt = {
 };
 
 export function ReceiptDialog({ paymentId }: { paymentId: string }) {
+  const t = useTranslations("payments");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const query = useQuery<ApiResponse<Receipt>>({
@@ -67,8 +70,8 @@ export function ReceiptDialog({ paymentId }: { paymentId: string }) {
       link.download = `receipt-${paymentId}.pdf`;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not download receipt");
+    } catch {
+      toast.error(t("receiptDownloadError"));
     } finally {
       setDownloading(false);
     }
@@ -77,19 +80,19 @@ export function ReceiptDialog({ paymentId }: { paymentId: string }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" onClick={(event) => event.stopPropagation()}>
-          View receipt
+          {t("viewReceipt")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto p-0 sm:max-w-2xl">
         <DialogHeader className="sr-only">
-          <DialogTitle>Payment receipt</DialogTitle>
+          <DialogTitle>{t("receiptTitle")}</DialogTitle>
         </DialogHeader>
         {query.isLoading ? (
-          <p className="p-8">Loading receipt…</p>
+          <p className="p-8">{t("loadingReceipt")}</p>
         ) : query.isError ? (
           <div className="space-y-3 p-8">
-            <p role="alert">Unable to load receipt.</p>
-            <Button onClick={() => void query.refetch()}>Retry</Button>
+            <p role="alert">{t("receiptError")}</p>
+            <Button onClick={() => void query.refetch()}>{t("retry")}</Button>
           </div>
         ) : receipt ? (
           <article className={`${receiptFont.className} bg-white text-slate-900`}>
@@ -119,16 +122,16 @@ export function ReceiptDialog({ paymentId }: { paymentId: string }) {
                   onClick={() => void download()}
                 >
                   <Download className="size-4" />
-                  {downloading ? "Preparing…" : "Download PDF"}
+                  {downloading ? t("preparing") : t("downloadPdf")}
                 </Button>
-                <h2 className="text-xl font-bold tracking-tight">PAYMENT RECEIPT</h2>
+                <h2 className="text-xl font-bold tracking-tight">{t("receiptHeading")}</h2>
                 <p className="mt-1 break-all text-xs text-slate-500">{receipt.id}</p>
-                <p className="mt-2 text-xs font-bold text-emerald-700">PAID</p>
+                <p className="mt-2 text-xs font-bold text-emerald-700">{t("paidHeading")}</p>
               </div>
             </header>
             <section className="grid gap-6 px-6 py-7 sm:grid-cols-2 sm:px-8">
               <div>
-                <p className="text-xs text-slate-500">RECEIVED FROM</p>
+                <p className="text-xs text-slate-500">{t("receivedFrom")}</p>
                 <p className="mt-2 font-bold">{receipt.customer.name}</p>
                 <p className="break-all text-sm text-slate-500">{receipt.customer.email}</p>
                 {receipt.customer.phone ? (
@@ -136,16 +139,21 @@ export function ReceiptDialog({ paymentId }: { paymentId: string }) {
                 ) : null}
               </div>
               <div className="sm:text-right">
-                <p className="text-xs text-slate-500">PAYMENT DETAILS</p>
+                <p className="text-xs text-slate-500">{t("paymentDetails")}</p>
                 <p className="mt-2 text-sm">
-                  Paid{" "}
-                  {new Date(receipt.issuedAt).toLocaleDateString("en-GB", {
-                    timeZone: "Africa/Kigali",
+                  {t("paidOn", {
+                    date: new Date(receipt.issuedAt).toLocaleDateString(locale, {
+                      timeZone: "Africa/Kigali",
+                    }),
                   })}
                 </p>
-                <p className="text-sm">Method {receipt.method}</p>
+                <p className="text-sm">
+                  {t("methodValue", {
+                    method: receipt.method === "CARD" ? t("card") : receipt.method,
+                  })}
+                </p>
                 <p className="mt-1 break-all text-xs text-slate-500">
-                  Booking {receipt.bookingReference}
+                  {t("bookingId", { id: receipt.bookingReference })}
                 </p>
               </div>
             </section>
@@ -153,8 +161,8 @@ export function ReceiptDialog({ paymentId }: { paymentId: string }) {
               <table className="w-full table-fixed border-collapse text-sm">
                 <thead>
                   <tr className="border-y border-slate-200 text-left text-xs text-slate-500">
-                    <th className="w-2/3 py-2 font-normal">DESCRIPTION</th>
-                    <th className="py-2 text-right font-normal">AMOUNT</th>
+                    <th className="w-2/3 py-2 font-normal">{t("descriptionHeading")}</th>
+                    <th className="py-2 text-right font-normal">{t("amountHeading")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -162,47 +170,49 @@ export function ReceiptDialog({ paymentId }: { paymentId: string }) {
                     <td className="py-4 pr-3">
                       <p className="break-words">{receipt.description}</p>
                       <p className="mt-2 text-xs text-slate-500">{receipt.period}</p>
-                      <p className="mt-1 text-xs text-slate-500">Provider: {receipt.provider}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {t("providerValue", { provider: receipt.provider })}
+                      </p>
                       {receipt.rate != null ? (
                         <p className="mt-1 text-xs text-slate-500">
-                          {formatCurrency(receipt.rate, receipt.currency)} / {receipt.unit} ×{" "}
-                          {receipt.duration ?? 1} × {receipt.quantity}
+                          {formatCurrency(receipt.rate, receipt.currency, locale)} / {receipt.unit}{" "}
+                          × {receipt.duration ?? 1} × {receipt.quantity}
                         </p>
                       ) : null}
                     </td>
                     <td className="py-4 text-right align-top tabular-nums">
-                      {formatCurrency(receipt.subtotal, receipt.currency)}
+                      {formatCurrency(receipt.subtotal, receipt.currency, locale)}
                     </td>
                   </tr>
                 </tbody>
               </table>
               <dl className="ml-auto mt-5 max-w-72 space-y-2 text-sm">
                 {[
-                  ["Subtotal", receipt.subtotal],
-                  ["Service fee", receipt.serviceFee],
-                  ...((receipt.cautionFee ?? 0) > 0 ? [["Caution fee", receipt.cautionFee]] : []),
-                  ["Total", receipt.total],
-                  ["Amount paid", receipt.amountPaid],
+                  [t("subtotal"), receipt.subtotal],
+                  [t("serviceFee"), receipt.serviceFee],
+                  ...((receipt.cautionFee ?? 0) > 0 ? [[t("cautionFee"), receipt.cautionFee]] : []),
+                  [t("total"), receipt.total],
+                  [t("amountPaid"), receipt.amountPaid],
                 ].map(([label, value]) => (
                   <div
                     key={label}
-                    className={`flex justify-between gap-3 ${label === "Amount paid" ? "border-t border-slate-200 pt-3 font-bold" : ""}`}
+                    className={`flex justify-between gap-3 ${label === t("amountPaid") ? "border-t border-slate-200 pt-3 font-bold" : ""}`}
                   >
                     <dt className="text-slate-500">{label}</dt>
                     <dd className="tabular-nums">
-                      {formatCurrency(Number(value), receipt.currency)}
+                      {formatCurrency(Number(value), receipt.currency, locale)}
                     </dd>
                   </div>
                 ))}
               </dl>
               {["EXPIRED", "CANCELLED", "DECLINED", "REJECTED"].includes(receipt.bookingStatus) ? (
                 <p className="mt-7 border-t border-slate-200 pt-4 text-xs text-amber-800">
-                  Payment was received. This booking is not active. Contact support for assistance.
+                  {t("inactiveBooking")}
                 </p>
               ) : null}
             </section>
             <footer className="border-t border-slate-200 px-6 py-5 text-center text-xs text-slate-500">
-              Questions? Contact support@indanga.com and include your booking reference.
+              {t("receiptSupport")}
             </footer>
           </article>
         ) : null}

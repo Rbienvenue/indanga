@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -16,9 +17,10 @@ export function PropertyStatusBadge({
   status: PropertyStatus;
   className?: string;
 }) {
+  const t = useTranslations("properties.status");
   return (
     <Badge variant="secondary" className={cn(statusStyles[status], className)}>
-      {status}
+      {t(status)}
     </Badge>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
@@ -15,6 +16,7 @@ import {
   Users,
 } from "lucide-react";
 
+import type { Messages } from "@indanga/translations";
 import type { ApiResponse } from "@/@types";
 import type { House } from "@/@types";
 import { DeletePropertyDialog } from "@/components/dashboard/properties/delete-property-dialog";
@@ -29,7 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetcher } from "@/lib/fetcher";
 import { isVideoMediaUrl } from "@/lib/property-media";
-import { getPriceUnit } from "@/lib/booking-kind";
+import { getBookingKind } from "@/lib/booking-kind";
 import { getDisplayPrice } from "@/lib/room-pricing";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useSession } from "./providers/session-provider";
@@ -79,7 +81,11 @@ export function ProductCard({
   status,
   verificationStatus,
 }: ProductCardProps) {
-  const resolvedPriceUnit = priceUnit ?? getPriceUnit(propertyType);
+  const t = useTranslations("properties");
+  const locale = useLocale();
+  const resolvedPriceUnit = priceUnit ?? t(`unit.${getBookingKind(propertyType)}`);
+  const typeKey = propertyType.toLowerCase() as keyof Messages["properties"]["types"];
+  const typeLabel = t.has(`types.${typeKey}`) ? t(`types.${typeKey}`) : propertyType;
   const displayCurrency = currency ?? "RWF";
   const { displayPrice, fromRooms } = getDisplayPrice(price, rooms);
   const queryClient = useQueryClient();
@@ -135,8 +141,8 @@ export function ProductCard({
     capacities.length === 0
       ? null
       : Math.min(...capacities) === Math.max(...capacities)
-        ? `Sleeps ${capacities[0]}`
-        : `Sleeps ${Math.min(...capacities)}–${Math.max(...capacities)}`;
+        ? t("sleeps", { count: capacities[0] })
+        : t("sleepsRange", { min: Math.min(...capacities), max: Math.max(...capacities) });
 
   const card = (
     <Card
@@ -151,7 +157,7 @@ export function ProductCard({
       {href && (
         <Link
           href={href}
-          aria-label={`View ${name}`}
+          aria-label={t("viewProperty", { name })}
           className="absolute inset-0 z-[1] rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         />
       )}
@@ -173,7 +179,7 @@ export function ProductCard({
               >
                 <Image
                   src={src}
-                  alt={`${name} - image ${index + 1}`}
+                  alt={t("propertyImage", { name, index: index + 1 })}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 33vw"
@@ -188,7 +194,7 @@ export function ProductCard({
           <>
             <button
               type="button"
-              aria-label="Previous image"
+              aria-label={t("previousImage")}
               onClick={goToPrev}
               className={cn(
                 "absolute left-2 top-1/2 z-10 -translate-y-1/2 inline-flex size-7 items-center justify-center rounded-full bg-white/90 text-foreground/70 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:text-foreground",
@@ -199,7 +205,7 @@ export function ProductCard({
             </button>
             <button
               type="button"
-              aria-label="Next image"
+              aria-label={t("nextImage")}
               onClick={goToNext}
               className={cn(
                 "absolute right-2 top-1/2 z-10 -translate-y-1/2 inline-flex size-7 items-center justify-center rounded-full bg-white/90 text-foreground/70 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:text-foreground",
@@ -223,7 +229,7 @@ export function ProductCard({
               <button
                 key={index}
                 type="button"
-                aria-label={`Go to image ${index + 1}`}
+                aria-label={t("goToImage", { index: index + 1 })}
                 onClick={(e) => goToSlide(e, index)}
                 className={cn(
                   "size-1.5 rounded-full transition-all",
@@ -241,7 +247,7 @@ export function ProductCard({
               badgeClassName,
             )}
           >
-            {badge}
+            {badge === propertyType ? typeLabel : badge}
           </Badge>
         )}
         {verificationStatus && (
@@ -263,7 +269,7 @@ export function ProductCard({
         ) : (
           <button
             type="button"
-            aria-label={favoriteState ? "Remove from favorites" : "Add to favorites"}
+            aria-label={favoriteState ? t("removeFavorite") : t("addFavorite")}
             disabled={favoriteMutation.isPending || !isLoggedIn}
             onClick={(e) => {
               e.preventDefault();
@@ -288,14 +294,18 @@ export function ProductCard({
           <div className="flex items-baseline gap-1 whitespace-nowrap">
             {displayPrice != null ? (
               <>
-                {fromRooms ? <span className="text-sm text-muted-foreground">From</span> : null}
+                {fromRooms ? (
+                  <span className="text-sm text-muted-foreground">{t("from")}</span>
+                ) : null}
                 <span className="text-lg font-bold text-primary">
-                  {formatCurrency(displayPrice, displayCurrency)}
+                  {formatCurrency(displayPrice, displayCurrency, locale)}
                 </span>
                 <span className="text-sm text-muted-foreground">{resolvedPriceUnit}</span>
               </>
             ) : (
-              <span className="text-sm font-semibold text-muted-foreground">Contact for price</span>
+              <span className="text-sm font-semibold text-muted-foreground">
+                {t("contactPrice")}
+              </span>
             )}
           </div>
           {status && <PropertyStatusBadge status={status} />}
@@ -311,13 +321,13 @@ export function ProductCard({
           {bedrooms > 0 && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <BedDouble className="size-3.5" />
-              {bedrooms} {bedrooms === 1 ? "Bed" : "Beds"}
+              {t("beds", { count: bedrooms })}
             </div>
           )}
           {bathrooms > 0 && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Bath className="size-3.5" />
-              {bathrooms} {bathrooms === 1 ? "Bath" : "Baths"}
+              {t("baths", { count: bathrooms })}
             </div>
           )}
         </div>

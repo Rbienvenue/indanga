@@ -1,37 +1,39 @@
+import { useTranslations } from "next-intl";
 import { CheckCircle2, ChevronRight, FileText, ListChecks, Search } from "lucide-react";
 
-const steps = [
-  {
-    icon: Search,
-    step: "1",
-    title: "Discover",
-    description: "Search for homes, hotels or cars in your preferred location.",
-  },
-  {
-    icon: ListChecks,
-    step: "2",
-    title: "Compare",
-    description: "View photos, prices, amenities and reviews.",
-  },
-  {
-    icon: FileText,
-    step: "3",
-    title: "Check the details",
-    description: "Read listing information, policies and provider details.",
-  },
-  {
-    icon: CheckCircle2,
-    step: "4",
-    title: "Continue",
-    description: "Contact the provider or book directly through INDANGA.",
-  },
-];
-
 export function HowItWorks() {
+  const t = useTranslations("discovery");
+  const steps = [
+    {
+      icon: Search,
+      step: "1",
+      title: t("discover"),
+      description: t("discoverDescription"),
+    },
+    {
+      icon: ListChecks,
+      step: "2",
+      title: t("compare"),
+      description: t("compareDescription"),
+    },
+    {
+      icon: FileText,
+      step: "3",
+      title: t("checkDetails"),
+      description: t("checkDetailsDescription"),
+    },
+    {
+      icon: CheckCircle2,
+      step: "4",
+      title: t("continue"),
+      description: t("continueDescription"),
+    },
+  ];
+
   return (
     <section id="how-it-works" className="border-t bg-background px-4 py-7 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <h2 className="text-base font-semibold text-foreground">How it works</h2>
+        <h2 className="text-base font-semibold text-foreground">{t("howItWorks")}</h2>
         <ol className="mt-4 grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((item, index) => (
             <li key={item.title} className="relative flex items-start gap-3">

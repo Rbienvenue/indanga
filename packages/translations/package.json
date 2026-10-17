@@ -14,10 +14,11 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && node scripts/check-messages.mjs",
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt . --check",
-    "clean": "rm -rf node_modules dist .turbo"
+    "clean": "rm -rf node_modules dist .turbo",
+    "check:messages": "node scripts/check-messages.mjs"
   },
   "devDependencies": {
     "tsdown": "^0.22.3",

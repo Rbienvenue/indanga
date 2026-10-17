@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -15,6 +16,7 @@ import {
 import { TermsContent } from "./terms-content";
 
 export function TermsDialog() {
+  const t = useTranslations("auth");
   const [open, setOpen] = useState(false);
 
   return (
@@ -29,21 +31,19 @@ export function TermsDialog() {
         }}
         className="font-semibold text-primary underline underline-offset-2"
       >
-        Terms &amp; Conditions
+        {t("termsTitle")}
       </button>
       <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-3xl">
         <DialogHeader className="shrink-0">
-          <DialogTitle>Terms &amp; Conditions</DialogTitle>
-          <DialogDescription>
-            IND-LGL-001 · Version 1.0 · Effective 29 September 2026 · Republic of Rwanda
-          </DialogDescription>
+          <DialogTitle>{t("termsTitle")}</DialogTitle>
+          <DialogDescription>{t("termsVersion")}</DialogDescription>
         </DialogHeader>
         <div className="-mx-1 overflow-y-auto px-1 py-1">
           <TermsContent />
         </div>
         <DialogFooter className="shrink-0 pt-2">
           <Button asChild variant="outline">
-            <Link href="/terms-and-conditions">Open full page</Link>
+            <Link href="/terms-and-conditions">{t("openFullPage")}</Link>
           </Button>
         </DialogFooter>
       </DialogContent>

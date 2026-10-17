@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 
-const slides = [
-  { image: "/family-house.jpg", alt: "A welcoming home" },
-  { image: "/slide-4.jpg", alt: "A modern living space" },
-  { image: "/hotel room 1.jpg", alt: "A modern living space" },
-  { image: "/hotel room 2.jpg", alt: "A modern living space" },
-];
-
-const words = ["Stay", "Home", "Ride"];
-
 export function Hero() {
+  const t = useTranslations("discovery");
+  const slides = [
+    { image: "/family-house.jpg", alt: t("welcomingHome") },
+    { image: "/slide-4.jpg", alt: t("modernSpace") },
+    { image: "/hotel room 1.jpg", alt: t("modernSpace") },
+    { image: "/hotel room 2.jpg", alt: t("modernSpace") },
+  ];
+
+  const words = useMemo(() => [t("stay"), t("home"), t("ride")], [t]);
   const [activeSlide, setActiveSlide] = useState(0);
   const [wordIndex, setWordIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
@@ -24,7 +25,7 @@ export function Hero() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [slides.length]);
 
   useEffect(() => {
     const currentWord = words[wordIndex];
@@ -52,7 +53,7 @@ export function Hero() {
     }, delay);
 
     return () => clearTimeout(timeout);
-  }, [displayText, isDeleting, wordIndex]);
+  }, [displayText, isDeleting, wordIndex, words]);
 
   return (
     <section className="relative w-full overflow-hidden pt-18 pb-14 md:pt-31 lg:pt-18">
@@ -82,7 +83,7 @@ export function Hero() {
       {/* Content – centered heading */}
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-center px-4 py-8 text-center sm:px-6 sm:py-10 lg:px-8">
         <h1 className="text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
-          Find Your Perfect
+          {t("findPerfect")}
           <br />
           <span aria-live="polite" className="inline-block min-h-[1.2em] min-w-[4ch]">
             {displayText}
@@ -93,7 +94,7 @@ export function Hero() {
           </span>
         </h1>
         <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/70 sm:text-base">
-          Search verified homes, hotels, and cars all in one place.
+          {t("heroDescription")}
         </p>
       </div>
     </section>

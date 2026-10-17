@@ -1,10 +1,10 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import type { House, RoomType } from "@/@types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, CalendarIcon, Headphones, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { ArrowLeft, ArrowRight, Headphones, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -15,14 +15,14 @@ import { ReportListingDialog } from "@/components/properties/report-listing-dial
 import { BookingRequestStatus } from "@/components/bookings/booking-request-status";
 import { usePropertyBooking } from "@/components/bookings/use-property-booking";
 import { PolicyAcceptance } from "@/components/houses/booking-policy-acceptance";
+import { BookingDateFields } from "./booking-date-fields";
 import { HomeBookingFields } from "@/components/houses/home-booking-fields";
 import { HotelBookingFields } from "@/components/houses/hotel-booking-fields";
 import { BookingPriceSummary } from "@/components/houses/BookingPriceSummary";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+import { Form } from "@/components/ui/form";
+
 import { fetcher } from "@/lib/fetcher";
 import { getBookingKind } from "@/lib/booking-kind";
 import { calcServiceFee, type ServiceFee } from "@/lib/service-fee";
@@ -36,7 +36,6 @@ import {
   getNights,
   hotelBookingSchema,
 } from "@/lib/validations/booking";
-import { addDays, format, startOfDay } from "date-fns";
 
 type RoomAvailability = {
   roomType: RoomType;
@@ -62,6 +61,8 @@ export function BookingCard({
   onPolicyAcceptanceChange,
   compact = false,
 }: BookingCardProps) {
+  const t = useTranslations("bookings");
+  const locale = useLocale();
   const [step, setStep] = useState<"booking" | "details">("booking");
   const [dismissedBookingId, setDismissedBookingId] = useState<string | null>(null);
   const bookingQuery = usePropertyBooking(house.id);
@@ -123,13 +124,7 @@ export function BookingCard({
   const availabilityByRoom = new Map(
     (availabilityQuery.data?.data ?? []).map((entry) => [entry.roomType.id, entry]),
   );
-  const today = startOfDay(new Date());
-  const checkInDate = checkIn ? new Date(`${checkIn}T00:00:00`) : undefined;
-  const checkOutDate = checkOut ? new Date(`${checkOut}T00:00:00`) : undefined;
-  const checkOutMinDate = checkInDate ? addDays(checkInDate, 1) : addDays(today, 1);
-  const bookThisLabel = `Book this ${bookingKind === "hotel" ? "room" : bookingKind}`;
-  const priceUnitLabel =
-    bookingKind === "hotel" ? "per night" : bookingKind === "car" ? "per day" : "per month";
+  const bookThisLabel = t(`book${bookingKind}`);
 
   const requestMutation = useMutation({
     mutationFn: ({
@@ -153,15 +148,14 @@ export function BookingCard({
       bookingQuery.saveBooking(data);
       setDismissedBookingId(null);
       setStep("booking");
-      toast.success("Booking request sent — we've got you!", {
-        description:
-          "Providers usually respond within 30 minutes. We'll notify you here as soon as they do.",
+      toast.success(t("requestSent"), {
+        description: t("responseNotice"),
         position: "top-center",
       });
     },
-    onError: (error) => {
-      toast.error("Could not send booking request", {
-        description: error instanceof Error ? error.message : "Please try again.",
+    onError: () => {
+      toast.error(t("requestError"), {
+        description: t("retry"),
         position: "top-center",
       });
     },
@@ -179,13 +173,13 @@ export function BookingCard({
       <>
         {fromRooms ? (
           <span className="mr-1 text-sm font-semibold text-slate-500 dark:text-slate-400">
-            From
+            {t("from")}
           </span>
         ) : null}
-        {formatCurrency(cardPrice, currency)}
+        {formatCurrency(cardPrice, currency, locale)}
       </>
     ) : (
-      "Contact for price"
+      t("contactPrice")
     );
 
   if (bookingQuery.isLoading || bookingQuery.isError) {
@@ -193,11 +187,11 @@ export function BookingCard({
       <div className="rounded-2xl border bg-card p-6">
         {bookingQuery.isError ? (
           <Button variant="outline" onClick={() => void bookingQuery.refetch()}>
-            Retry loading your booking
+            {t("retryBooking")}
           </Button>
         ) : (
           <p className="flex items-center gap-2 text-sm">
-            <Loader2 className="size-4 animate-spin" /> Loading your booking…
+            <Loader2 className="size-4 animate-spin" /> {t("loadingBooking")}
           </p>
         )}
       </div>
@@ -233,7 +227,7 @@ export function BookingCard({
               disabled={!isAvailable || !hasAcceptedPolicy || (isHotel && rooms.length === 0)}
               onClick={beginCheckout}
             >
-              {isAvailable ? bookThisLabel : "Unavailable"}
+              {isAvailable ? bookThisLabel : t("unavailable")}
             </Button>
           </div>
           <PolicyAcceptance
@@ -252,17 +246,17 @@ export function BookingCard({
             <p className="flex flex-wrap items-baseline gap-x-1.5 text-2xl font-black tracking-tight">
               {fromRooms ? (
                 <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                  From
+                  {t("from")}
                 </span>
               ) : null}
-              <span>{formatCurrency(cardPrice, currency)}</span>
+              <span>{formatCurrency(cardPrice, currency, locale)}</span>
               <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                / {priceUnitLabel.replace("per ", "")}
+                / {t(`unit${bookingKind}`)}
               </span>
             </p>
           ) : (
             <p className="text-lg font-bold text-slate-500 dark:text-slate-400">
-              Contact for price
+              {t("contactPrice")}
             </p>
           )}
           <PolicyAcceptance
@@ -275,14 +269,16 @@ export function BookingCard({
             disabled={!isAvailable || !hasAcceptedPolicy}
             onClick={beginCheckout}
           >
-            {isAvailable ? bookThisLabel : "Not available"}
+            {isAvailable ? bookThisLabel : t("unavailable")}
           </Button>
         </div>
         <div className="rounded-xl border border-slate-900/10 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
           <div className="flex items-center gap-3">
             <Headphones className="size-6 shrink-0 text-primary" />
             <div className="text-[13px] leading-5">
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Need help?</p>
+              <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                {t("needHelp")}
+              </p>
               <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-slate-500 dark:text-slate-400">
                 <a
                   href="mailto:support@indanga.com"
@@ -322,7 +318,7 @@ export function BookingCard({
         onClick={() => setStep("booking")}
         className="mb-3 -ml-2 gap-1.5 text-muted-foreground"
       >
-        <ArrowLeft className="size-4" /> Back
+        <ArrowLeft className="size-4" /> {t("back")}
       </Button>
       <BookingPriceSummary
         bookingKind={bookingKind}
@@ -349,7 +345,7 @@ export function BookingCard({
               (values.guestCount ?? 1) > selectedRoom.capacity * quantity
             ) {
               form.setError("guestCount", {
-                message: "Guest count exceeds the selected rooms’ capacity",
+                message: "validation.roomCapacity",
               });
               return;
             }
@@ -361,104 +357,7 @@ export function BookingCard({
             <HomeBookingFields form={form} submitting={submitting} />
           ) : null}
           {isDated ? (
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="checkIn"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <Label className="text-sm font-semibold">
-                      {bookingKind === "car" ? "Pick date" : "Check-in"}
-                    </Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={submitting}
-                            className={cn(
-                              "mt-2 h-11 justify-start px-3 text-left font-normal",
-                              !field.value && "text-muted-foreground",
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 size-4" />
-                            {checkInDate ? (
-                              format(checkInDate, "LLL dd, y")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={checkInDate}
-                          disabled={{ before: today }}
-                          onSelect={(date) => {
-                            field.onChange(date ? format(date, "yyyy-MM-dd") : "");
-                            const nextCheckOut = form.getValues("checkOut");
-                            if (
-                              date &&
-                              nextCheckOut &&
-                              new Date(`${nextCheckOut}T00:00:00`) <= startOfDay(date)
-                            ) {
-                              form.setValue("checkOut", "", { shouldValidate: true });
-                            }
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="checkOut"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <Label className="text-sm font-semibold">
-                      {bookingKind === "car" ? "Return date" : "Check-out"}
-                    </Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={submitting}
-                            className={cn(
-                              "mt-2 h-11 justify-start px-3 text-left font-normal",
-                              !field.value && "text-muted-foreground",
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 size-4" />
-                            {checkOutDate ? (
-                              format(checkOutDate, "LLL dd, y")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={checkOutDate}
-                          disabled={{ before: checkOutMinDate }}
-                          onSelect={(date) =>
-                            field.onChange(date ? format(date, "yyyy-MM-dd") : "")
-                          }
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <BookingDateFields form={form} submitting={submitting} bookingKind={bookingKind} />
           ) : null}
 
           {isHotel ? (
@@ -479,11 +378,12 @@ export function BookingCard({
           <Button type="submit" className="h-11 w-full font-bold" disabled={submitting}>
             {submitting ? (
               <>
-                <Loader2 className="animate-spin" /> Sending request...
+                <Loader2 className="animate-spin" /> {t("sendingRequest")}
               </>
             ) : (
               <>
-                Send booking request <ArrowRight className="size-4" />
+                {t("sendRequest")}
+                <ArrowRight className="size-4" />
               </>
             )}
           </Button>

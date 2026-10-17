@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   type ColumnDef,
   flexRender,
@@ -82,6 +83,7 @@ export function DataTable<TData>({
   emptyState,
   pagination,
 }: DataTableProps<TData>) {
+  const t = useTranslations("table");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [searchInput, setSearchInput] = useState(search?.value ?? "");
   const hasToolbar = Boolean(actions || search || filterBy.length);
@@ -147,15 +149,15 @@ export function DataTable<TData>({
                 onKeyDown={(event) => {
                   if (event.key === "Escape") handleClearSearch();
                 }}
-                placeholder={search.placeholder ?? "Search"}
-                aria-label={search.placeholder ?? "Search"}
+                placeholder={search.placeholder ?? t("search")}
+                aria-label={search.placeholder ?? t("search")}
                 className="h-full min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
               />
               {searchInput ? (
                 <button
                   type="button"
                   onClick={handleClearSearch}
-                  aria-label="Clear search"
+                  aria-label={t("clear")}
                   className="shrink-0 rounded-sm p-0.5 text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <X className="size-3.5" />
@@ -168,10 +170,10 @@ export function DataTable<TData>({
             {filterBy.map((filter) => (
               <Select key={filter.id} value={filter.value} onValueChange={filter.onChange}>
                 <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue placeholder={filter.placeholder ?? "Filter"} />
+                  <SelectValue placeholder={filter.placeholder ?? t("filter")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{filter.placeholder ?? "All"}</SelectItem>
+                  <SelectItem value="all">{filter.placeholder ?? t("all")}</SelectItem>
                   {filter.options.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -183,7 +185,7 @@ export function DataTable<TData>({
 
             {canReset && (search || filterBy.length) ? (
               <Button variant="ghost" size="sm" onClick={handleResetAll}>
-                Reset
+                {t("reset")}
                 {activeFilterCount ? (
                   <span className="rounded-full bg-primary/10 px-1.5 text-xs font-semibold text-primary">
                     {activeFilterCount}
@@ -267,7 +269,7 @@ export function DataTable<TData>({
           ) : (
             <TableRow>
               <TableCell colSpan={visibleColumnCount} className="px-4 py-12 text-center">
-                {emptyState ?? <p className="text-sm text-muted-foreground">No results found</p>}
+                {emptyState ?? <p className="text-sm text-muted-foreground">{t("noResults")}</p>}
               </TableCell>
             </TableRow>
           )}
@@ -277,7 +279,7 @@ export function DataTable<TData>({
       {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between border-t px-4 py-3">
           <p className="text-xs text-muted-foreground">
-            Page {pagination.page} of {pagination.totalPages}
+            {t("pageCount", { page: pagination.page, total: pagination.totalPages })}
           </p>
           <div className="flex gap-2">
             <Button
@@ -287,7 +289,7 @@ export function DataTable<TData>({
               onClick={() => pagination.onPageChange(pagination.page - 1)}
             >
               <ChevronLeft />
-              Previous
+              {t("previous")}
             </Button>
             <Button
               variant="outline"
@@ -295,7 +297,7 @@ export function DataTable<TData>({
               disabled={pagination.page >= pagination.totalPages}
               onClick={() => pagination.onPageChange(pagination.page + 1)}
             >
-              Next
+              {t("next")}
               <ChevronRight />
             </Button>
           </div>

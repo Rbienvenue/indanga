@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import type { RoomType } from "@/@types";
 import type { UseFormReturn } from "react-hook-form";
 import { BedDouble, Minus, Plus } from "lucide-react";
@@ -47,6 +48,8 @@ export function HotelBookingFields({
   quantity: number;
   availabilityByRoom: Map<string, RoomAvailability>;
 }) {
+  const t = useTranslations("bookings");
+  const locale = useLocale();
   const selectedRoom = rooms.find((room) => room.id === roomTypeId);
   const selectedAvailability = roomTypeId ? availabilityByRoom.get(roomTypeId) : undefined;
   const maxRooms = selectedAvailability
@@ -60,7 +63,7 @@ export function HotelBookingFields({
         name="roomTypeId"
         render={({ field }) => (
           <FormItem className="flex min-w-0 flex-col">
-            <Label className="text-sm font-semibold">Room type</Label>
+            <Label className="text-sm font-semibold">{t("roomType")}</Label>
             <Select
               value={field.value ?? ""}
               onValueChange={(value) => {
@@ -71,7 +74,7 @@ export function HotelBookingFields({
             >
               <FormControl>
                 <SelectTrigger className="mt-2 h-11 w-full">
-                  <SelectValue placeholder="Select a room type" />
+                  <SelectValue placeholder={t("selectRoom")} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -85,9 +88,12 @@ export function HotelBookingFields({
                     <SelectItem key={room.id} value={room.id} disabled={left <= 0}>
                       <span className="flex items-center gap-2">
                         <BedDouble className="size-4 text-muted-foreground" />
-                        {room.name} · {formatCurrency(room.price, currency)} / night · Sleeps{" "}
-                        {room.capacity} ·{" "}
-                        {left <= 0 ? "sold out" : `${left} room${left > 1 ? "s" : ""} left`}
+                        {t("roomOption", {
+                          name: room.name,
+                          price: formatCurrency(room.price, currency, locale),
+                          capacity: room.capacity,
+                          availability: t("roomsLeft", { count: left }),
+                        })}
                       </span>
                     </SelectItem>
                   );
@@ -103,7 +109,7 @@ export function HotelBookingFields({
         name="roomCount"
         render={({ field }) => (
           <FormItem className="min-w-0">
-            <Label className="text-sm font-semibold">Number of rooms</Label>
+            <Label className="text-sm font-semibold">{t("roomCount")}</Label>
             <div className="mt-2 flex items-center gap-2">
               <Button
                 type="button"
@@ -112,7 +118,7 @@ export function HotelBookingFields({
                 className="size-11 shrink-0"
                 disabled={submitting || quantity <= 1}
                 onClick={() => field.onChange(Math.max(quantity - 1, 1))}
-                aria-label="Fewer rooms"
+                aria-label={t("fewerRooms")}
               >
                 <Minus className="size-4" />
               </Button>
@@ -140,16 +146,14 @@ export function HotelBookingFields({
                 className="size-11 shrink-0"
                 disabled={submitting || !selectedRoom || quantity >= maxRooms}
                 onClick={() => field.onChange(Math.min(quantity + 1, Math.max(maxRooms, 1)))}
-                aria-label="More rooms"
+                aria-label={t("moreRooms")}
               >
                 <Plus className="size-4" />
               </Button>
             </div>
             {selectedRoom && checkIn && checkOut && nights > 0 ? (
               <p className="mt-1 text-xs text-muted-foreground">
-                {maxRooms > 0
-                  ? `${maxRooms} ${selectedRoom.name} room${maxRooms > 1 ? "s" : ""} available for these dates`
-                  : `No ${selectedRoom.name} rooms left for these dates`}
+                {t("roomsAvailable", { count: maxRooms, name: selectedRoom.name })}
               </p>
             ) : null}
             <FormMessage />
@@ -162,7 +166,7 @@ export function HotelBookingFields({
         name="guestCount"
         render={({ field }) => (
           <FormItem className="col-start-1 min-w-0">
-            <FormLabel className="text-sm font-semibold">Number of guests</FormLabel>
+            <FormLabel className="text-sm font-semibold">{t("guestCount")}</FormLabel>
             <div className="mt-2 flex items-center gap-2">
               <Button
                 type="button"
@@ -171,7 +175,7 @@ export function HotelBookingFields({
                 className="size-11 shrink-0"
                 disabled={submitting || (field.value ?? 1) <= 1}
                 onClick={() => field.onChange(Math.max((field.value ?? 1) - 1, 1))}
-                aria-label="Fewer guests"
+                aria-label={t("fewerGuests")}
               >
                 <Minus className="size-4" />
               </Button>
@@ -198,14 +202,14 @@ export function HotelBookingFields({
                 className="size-11 shrink-0"
                 disabled={submitting || !selectedRoom || (field.value ?? 1) >= maxGuests}
                 onClick={() => field.onChange(Math.min((field.value ?? 1) + 1, maxGuests))}
-                aria-label="More guests"
+                aria-label={t("moreGuests")}
               >
                 <Plus className="size-4" />
               </Button>
             </div>
             {selectedRoom ? (
               <p className="text-xs text-muted-foreground">
-                Up to {selectedRoom.capacity * quantity} guests across the selected rooms
+                {t("guestCapacity", { count: selectedRoom.capacity * quantity })}
               </p>
             ) : null}
             <FormMessage />

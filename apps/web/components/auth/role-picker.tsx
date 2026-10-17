@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { Building2, CheckCircle2, Home, type LucideIcon } from "lucide-react";
 
@@ -12,21 +13,6 @@ type RoleOption = {
   description: string;
   icon: LucideIcon;
 };
-
-const defaultRoles: RoleOption[] = [
-  {
-    value: "tenant",
-    title: "Client",
-    description: "Looking for a house to rent",
-    icon: Home,
-  },
-  {
-    value: "landlord",
-    title: "Agent",
-    description: "Want to list and manage properties",
-    icon: Building2,
-  },
-];
 
 type RolePickerProps = {
   value?: string;
@@ -41,10 +27,27 @@ export function RolePicker({
   value,
   defaultValue = "tenant",
   onValueChange,
-  options = defaultRoles,
+  options,
   className,
   disabled = false,
 }: RolePickerProps) {
+  const t = useTranslations("auth");
+  const defaultRoles: RoleOption[] = [
+    {
+      value: "tenant",
+      title: t("client"),
+      description: t("clientDescription"),
+      icon: Home,
+    },
+    {
+      value: "landlord",
+      title: t("agent"),
+      description: t("agentDescription"),
+      icon: Building2,
+    },
+  ];
+
+  const roles = options ?? defaultRoles;
   const [internalValue, setInternalValue] = React.useState(defaultValue);
   const selectedValue = value ?? internalValue;
 
@@ -62,7 +65,7 @@ export function RolePicker({
       className={cn("grid grid-cols-2 gap-3", className)}
       disabled={disabled}
     >
-      {options.map((option) => {
+      {roles.map((option) => {
         const isActive = selectedValue === option.value;
 
         return (
